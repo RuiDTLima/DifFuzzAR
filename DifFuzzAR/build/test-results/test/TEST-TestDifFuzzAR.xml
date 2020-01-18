@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="TestDifFuzzAR" tests="58" skipped="0" failures="8" errors="0" timestamp="2020-01-18T19:51:33" hostname="DESKTOP-7DJQ80D" time="0.197">
+  <properties/>
+  <testcase name="testDiscoverMethod[0](apache_ftpserver_clear_safe\Driver_Clear.java, pe.matches)" classname="TestDifFuzzAR" time="0.028"/>
+  <testcase name="testDiscoverMethod[1](apache_ftpserver_clear_unsafe\Driver_Clear.java, pe.matches)" classname="TestDifFuzzAR" time="0.005"/>
+  <testcase name="testDiscoverMethod[2](apache_ftpserver_md5_safe\Driver_MD5.java, pe.matches)" classname="TestDifFuzzAR" time="0.005"/>
+  <testcase name="testDiscoverMethod[3](apache_ftpserver_md5_unsafe\Driver_MD5.java, pe.matches)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[4](apache_ftpserver_salted_encrypt_unsafe\Driver_Salted_Encrypt.java, pe.encrypt)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[5](apache_ftpserver_salted_safe\Driver_Salted.java, pe.matches)" classname="TestDifFuzzAR" time="0.004"/>
+  <testcase name="testDiscoverMethod[6](apache_ftpserver_salted_unsafe\Driver_Salted.java, pe.matches)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[7](apache_ftpserver_stringutils_safe\Driver_StringUtilsPad.java, StringUtils.pad)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[8](apache_ftpserver_stringutils_unsafe\Driver_StringUtilsPad.java, StringUtils.pad)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[9](blazer_array_safe\MoreSanity_Array_FuzzDriver.java, MoreSanity.array_safe)" classname="TestDifFuzzAR" time="0.004"/>
+  <testcase name="testDiscoverMethod[10](blazer_array_unsafe\MoreSanity_Array_FuzzDriver.java, MoreSanity.array_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[11](blazer_gpt14_safe\GPT14_FuzzDriver.java, GPT14.modular_exponentiation_safe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[12](blazer_gpt14_unsafe\GPT14_FuzzDriver.java, GPT14.modular_exponentiation_inline_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[13](blazer_k96_safe\K96_FuzzDriver.java, K96.modular_exponentiation_safe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[14](blazer_k96_unsafe\K96_FuzzDriver.java, K96.modular_exponentiation_unsafe)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[15](blazer_loopandbranch_safe\MoreSanity_LoopAndBranch_FuzzDriver.java, MoreSanity.loopAndbranch_safe)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[16](blazer_loopandbranch_unsafe\MoreSanity_LoopAndBranch_FuzzDriver.java, MoreSanity.loopAndbranch_unsafe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[17](blazer_modpow1_safe\ModPow1_FuzzDriver.java, ModPow1.modPow1_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[18](blazer_modpow1_unsafe\ModPow1_FuzzDriver.java, ModPow1.modPow1_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[19](blazer_modpow2_safe\ModPow2_FuzzDriver.java, ModPow2.modPow2_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[20](blazer_modpow2_unsafe\ModPow2_FuzzDriver.java, ModPow2.modPow2_unsafe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[21](blazer_passwordEq_safe\User_FuzzDriver.java, User.passwordsEqual_safe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[22](blazer_passwordEq_unsafe\User_FuzzDriver.java, User.passwordsEqual_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[23](blazer_sanity_safe\Sanity_FuzzDriver.java, Sanity.sanity_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[24](blazer_sanity_unsafe\Sanity_FuzzDriver.java, Sanity.sanity_unsafe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[25](blazer_straightline_safe\Sanity_FuzzDriver.java, Sanity.straightline_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[26](blazer_straightline_unsafe\Sanity_FuzzDriver.java, Sanity.straightline_unsafe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[27](blazer_unixlogin_safe\Timing_FuzzDriver.java, Timing.login_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[28](blazer_unixlogin_unsafe\Timing_FuzzDriver.java, Timing.login_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[29](example_PWCheck_safe\Driver.java, PWCheck.pwcheck3_safe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[30](example_PWCheck_unsafe\Driver.java, PWCheck.pwcheck1_unsafe)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[31](github_authmreloaded_safe\Driver.java, encrMethod.comparePassword)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[32](github_authmreloaded_unsafe\Driver.java, encrMethod.comparePassword)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[33](stac_crime_unsafe\CRIME_Driver.java, LZ77T.compress)" classname="TestDifFuzzAR" time="0.002">
+    <failure message="java.lang.AssertionError: null" type="java.lang.AssertionError">java.lang.AssertionError: null
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.fail(Assert.java:102)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:83)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[34](stac_ibasys_unsafe\ImageMatcher_FuzzDriver.java, ImageMatcherWorker.test)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[35](themis_boot-stateless-auth_safe\Driver.java, th.parseUserFromToken)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[36](themis_boot-stateless-auth_unsafe\Driver.java, th.parseUserFromToken)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[37](themis_dynatable_unsafe\Driver.java, ser1.getPeople)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[38](themis_GWT_advanced_table_unsafe\Driver.java, ser1.getRows)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[39](themis_jdk_safe\MessageDigest_FuzzDriver.java, MessageDigest.isEqual_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[40](themis_jdk_unsafe\MessageDigest_FuzzDriver.java, MessageDigest.isEqual_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[41](themis_jetty_safe\Credential_FuzzDriver.java, Credential.stringEquals_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[42](themis_jetty_unsafe\Credential_FuzzDriver.java, Credential.stringEquals_original)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[43](themis_oacc_unsafe\Driver.java, public_credentials.equals)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[44](themis_openmrs-core_unsafe\Driver.java, Security.hashMatches)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[45](themis_orientdb_safe\OSecurityManager_FuzzDriver.java, manager.checkPassword_safe)" classname="TestDifFuzzAR" time="0.003">
+    <failure message="java.lang.AssertionError: expected [manager.checkPassword_safe] but found [new OSecurityManager]" type="java.lang.AssertionError">java.lang.AssertionError: expected [manager.checkPassword_safe] but found [new OSecurityManager]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.assertEqualsImpl(Assert.java:136)
+	at org.testng.Assert.assertEquals(Assert.java:118)
+	at org.testng.Assert.assertEquals(Assert.java:575)
+	at org.testng.Assert.assertEquals(Assert.java:585)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:92)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[46](themis_orientdb_unsafe\OSecurityManager_FuzzDriver.java, manager.checkPassword_unsafe)" classname="TestDifFuzzAR" time="0.002">
+    <failure message="java.lang.AssertionError: expected [manager.checkPassword_unsafe] but found [new OSecurityManager]" type="java.lang.AssertionError">java.lang.AssertionError: expected [manager.checkPassword_unsafe] but found [new OSecurityManager]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.assertEqualsImpl(Assert.java:136)
+	at org.testng.Assert.assertEquals(Assert.java:118)
+	at org.testng.Assert.assertEquals(Assert.java:575)
+	at org.testng.Assert.assertEquals(Assert.java:585)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:92)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[47](themis_pac4j_safe\Driver.java, dbAuth.validate_safe)" classname="TestDifFuzzAR" time="0.003">
+    <failure message="java.lang.StringIndexOutOfBoundsException: begin 33, end -1, length 39" type="java.lang.StringIndexOutOfBoundsException">java.lang.StringIndexOutOfBoundsException: begin 33, end -1, length 39
+	at java.base/java.lang.String.checkBoundsBeginEnd(String.java:3319)
+	at java.base/java.lang.String.substring(String.java:1874)
+	at java.base/java.lang.String.subSequence(String.java:1913)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:87)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[48](themis_pac4j_unsafe\Driver.java, dbAuth.validate_unsafe)" classname="TestDifFuzzAR" time="0.002">
+    <failure message="java.lang.StringIndexOutOfBoundsException: begin 33, end -1, length 39" type="java.lang.StringIndexOutOfBoundsException">java.lang.StringIndexOutOfBoundsException: begin 33, end -1, length 39
+	at java.base/java.lang.String.checkBoundsBeginEnd(String.java:3319)
+	at java.base/java.lang.String.substring(String.java:1874)
+	at java.base/java.lang.String.subSequence(String.java:1913)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:87)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[49](themis_pac4j_unsafe_ext\Driver.java, dbAuth.validate_unsafe)" classname="TestDifFuzzAR" time="0.002">
+    <failure message="java.lang.StringIndexOutOfBoundsException: begin 33, end -1, length 39" type="java.lang.StringIndexOutOfBoundsException">java.lang.StringIndexOutOfBoundsException: begin 33, end -1, length 39
+	at java.base/java.lang.String.checkBoundsBeginEnd(String.java:3319)
+	at java.base/java.lang.String.substring(String.java:1874)
+	at java.base/java.lang.String.subSequence(String.java:1913)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:87)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[50](themis_picketbox_safe\UsernamePasswordLoginModule_FuzzDriver.java, UsernamePasswordLoginModule.validatePassword_safe)" classname="TestDifFuzzAR" time="0.003"/>
+  <testcase name="testDiscoverMethod[51](themis_picketbox_unsafe\UsernamePasswordLoginModule_FuzzDriver.java, UsernamePasswordLoginModule.validatePassword_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[52](themis_spring-security_safe\PasswordEncoderUtils_FuzzDriver.java, PasswordEncoderUtils.equals_safe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[53](themis_spring-security_unsafe\PasswordEncoderUtils_FuzzDriver.java, PasswordEncoderUtils.equals_unsafe)" classname="TestDifFuzzAR" time="0.001"/>
+  <testcase name="testDiscoverMethod[54](themis_tomcat_safe\Tomcat_FuzzDriver.java, DSR.authenticate_safe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[55](themis_tomcat_unsafe\Tomcat_FuzzDriver.java, DSR.authenticate_unsafe)" classname="TestDifFuzzAR" time="0.002"/>
+  <testcase name="testDiscoverMethod[56](themis_tourplanner_safe\Driver.java, ts.doGet)" classname="TestDifFuzzAR" time="0.002">
+    <failure message="java.lang.AssertionError: null" type="java.lang.AssertionError">java.lang.AssertionError: null
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.fail(Assert.java:102)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:83)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <testcase name="testDiscoverMethod[57](themis_tourplanner_unsafe\Driver.java, ts.doGet)" classname="TestDifFuzzAR" time="0.003">
+    <failure message="java.lang.AssertionError: null" type="java.lang.AssertionError">java.lang.AssertionError: null
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.fail(Assert.java:102)
+	at TestDifFuzzAR.testDiscoverMethod(TestDifFuzzAR.java:83)
+	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:134)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:597)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:173)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:816)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:146)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1540)
+	at org.testng.TestRunner.privateRun(TestRunner.java:766)
+	at org.testng.TestRunner.run(TestRunner.java:587)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:384)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:378)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:337)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:286)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1187)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1109)
+	at org.testng.TestNG.runSuites(TestNG.java:1039)
+	at org.testng.TestNG.run(TestNG.java:1007)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.runTests(TestNGTestClassProcessor.java:141)
+	at org.gradle.api.internal.tasks.testing.testng.TestNGTestClassProcessor.stop(TestNGTestClassProcessor.java:90)
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:32)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:93)
+	at com.sun.proxy.$Proxy2.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.stop(TestWorker.java:132)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:35)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:175)
+	at org.gradle.internal.remote.internal.hub.MessageHubBackedObjectConnection$DispatchWrapper.dispatch(MessageHubBackedObjectConnection.java:157)
+	at org.gradle.internal.remote.internal.hub.MessageHub$Handler.run(MessageHub.java:404)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:63)
+	at org.gradle.internal.concurrent.ManagedExecutorImpl$1.run(ManagedExecutorImpl.java:46)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at org.gradle.internal.concurrent.ThreadFactoryImpl$ManagedThreadRunnable.run(ThreadFactoryImpl.java:55)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 94
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 94
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 94
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 94
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 78
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 100
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 100
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 65
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 65
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 66
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 66
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 117
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 118
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 113
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 113
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 62
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 62
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 122
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 122
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 113
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 113
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 81
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 85
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 63
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 63
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 63
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 63
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 104
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 104
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 75
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 79
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 88
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 88
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 152
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 90
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named SAFE_MODE with the value false.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 90
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 60
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 58
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 72
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 72
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 66
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 66
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 86
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 81
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 69
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 69
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named RUN_UNSAFE_VERSION with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 129
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named RUN_UNSAFE_VERSION with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 129
+[Test worker] INFO DifFuzzAR - This driver contains a safeMode variable named RUN_UNSAFE_VERSION with the value true.
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 129
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 75
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 75
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 74
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 74
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 129
+[Test worker] INFO DifFuzzAR - The instruction Mem.clear() is in line 129
+]]></system-err>
+</testsuite>
