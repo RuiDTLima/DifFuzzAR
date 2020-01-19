@@ -4,6 +4,7 @@ import java.io.*;
 
 public class DifFuzzAR {
     private static Logger logger = LoggerFactory.getLogger(DifFuzzAR.class);
+    private static boolean afterMemClear = false;
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -29,11 +30,11 @@ public class DifFuzzAR {
     }
 
     static String discoverMethod(Reader fileReader) {//String driverPath) {
+        afterMemClear = false;
         try(BufferedReader reader = new BufferedReader(fileReader)) {//new FileReader(driverPath))) {
             int lines = 0;
             String line = "";
             String safeModeVariable = "";
-            boolean afterMemClear = false;
             boolean safeMode = true;
             while (true) {
                 line = reader.readLine();
@@ -43,7 +44,7 @@ public class DifFuzzAR {
                 if (line.contains("boolean") && line.contains("final")) {
                     String beforeName = "boolean ";
                     safeModeVariable = line.substring(line.indexOf(beforeName) + beforeName.length(), line.indexOf(" ="));
-                    safeMode = line.toLowerCase().contains("true");
+                    safeMode = line.toLowerCase().split(";")[0].contains("true");
                     logger.info(String.format("This driver contains a safeMode variable named %s with the value %b.", safeModeVariable, safeMode));
                 } else if (line.contains(String.format("if (%s)", safeModeVariable))) {
                     if (!safeMode) {
@@ -58,10 +59,8 @@ public class DifFuzzAR {
                             if (line.contains("Mem.clear()")) {
                                 afterMemClear = true;
                                 logger.info(String.format("The instruction Mem.clear() is in line %d", lines));
-                            } else if (afterMemClear) {
-                                // String method = line.subSequence(line.indexOf("= ") + 2, line.indexOf("(")).toString();
+                            } else if (validAfterMemClear(line)) {
                                 return line;
-                                // logger.info(String.format("The vulnerable method is %s", line));
                             }
                         }
                         lines++;
@@ -74,9 +73,7 @@ public class DifFuzzAR {
                 }else if (line.contains("Mem.clear()")) {
                     afterMemClear = true;
                     logger.info(String.format("The instruction Mem.clear() is in line %d", lines));
-                } else if (!line.equals("") && !line.contains("try") && afterMemClear) {
-                    // String method = line.subSequence(line.indexOf("= ") + 2, line.indexOf("(")).toString();
-                    // logger.info(String.format("The vulnerable method is %s", method));
+                } else if (validAfterMemClear(line)) {
                     return line;
                 }
             }
@@ -85,4 +82,24 @@ public class DifFuzzAR {
         }
         return null;
     }
+
+    private static boolean validAfterMemClear(String line) {
+        return afterMemClear && !line.equals("") && !line.contains("try") && !(
+                line.contains("=") && (!line.contains("(") ||
+                (line.contains("(") && line.contains("new"))));
+    }
+
+    /*private static boolean valueAssignment(String line) {
+        return line.contains("=") && (!line.contains("(") || (line.contains("(") && line.contains("new")));
+        /*if (line.contains("=")) {
+            if (line.contains("(")) {
+                if (line.contains("new")) {
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }*/
 }
