@@ -57,6 +57,7 @@ public class Driver {
         long cost1 = 0L;
         Mem.clear();
         try {
+            // cost1 = Mem.instrCost;
             String[][] res1 = ser1.getRows(startRow, rowsCount, null, null, true);
             // cost1 = Mem.instrCost;
             cost1 = res1.length;

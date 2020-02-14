@@ -21,4 +21,5 @@ dependencies {
     testCompile group: 'org.testng', name: 'testng', version: '7.1.0'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation 'fr.inria.gforge.spoon:spoon-core:8.0.0'
 }
