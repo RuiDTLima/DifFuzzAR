@@ -8,7 +8,10 @@ import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtLiteralImpl;
+import utils.VulnerableMethodUses;
+
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -123,18 +126,21 @@ public class TestDifFuzzAR {
 
         Iterator<CtElement> iterator = mainMethod.getBody().iterator();
 
-        String methodLineFound = DifFuzzAR.discoverMethod(iterator, safeMode, safeModeVariable);
+        VulnerableMethodUses vulnerableMethodUseCases = DifFuzzAR.discoverMethod(iterator, safeMode, safeModeVariable);
 
-        if (methodLineFound == null)
+        if (!vulnerableMethodUseCases.isValid())
             Assert.fail();
 
-        String methodName;
-        if (methodLineFound.contains("="))
-            methodName = methodLineFound.subSequence(methodLineFound.indexOf("= ") + 2, methodLineFound.indexOf("(")).toString();
-        else {
-            methodLineFound = methodLineFound.replace(" ", "").replace("\t", "");
-            methodName = methodLineFound.substring(0, methodLineFound.indexOf("("));
-        }
-        Assert.assertEquals(methodName, expectedName);
+        // First Vulnerable method use case
+        String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
+        String[] firstVulnerableMethodArguments = vulnerableMethodUseCases.getFirstUseCaseArgumentsNames();
+
+        // Second Vulnerable method use case
+        String secondVulnerableMethodName = vulnerableMethodUseCases.getSecondUseCaseMethodName();
+        String[] secondVulnerableMethodArguments = vulnerableMethodUseCases.getSecondUseCaseArgumentsNames();
+
+        Assert.assertEquals(firstVulnerableMethodName, secondVulnerableMethodName);
+        Assert.assertEquals(firstVulnerableMethodName, expectedName);
+        Assert.assertEquals(firstVulnerableMethodArguments.length, secondVulnerableMethodArguments.length);
     }
 }

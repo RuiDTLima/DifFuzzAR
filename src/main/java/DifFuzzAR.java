@@ -8,10 +8,13 @@ import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtLiteralImpl;
+import utils.VulnerableMethodUses;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+// TODO code simplification and beautification.
 public class DifFuzzAR {
     private static Logger logger = LoggerFactory.getLogger(DifFuzzAR.class);
     private static boolean afterMemClear = false;
@@ -26,7 +29,7 @@ public class DifFuzzAR {
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(driverPath);
-        launcher.getEnvironment().setCommentEnabled(false);
+        launcher.getEnvironment().setCommentEnabled(false); // Para que os comentários no código da Driver sejam ignorados
         CtModel model = launcher.buildModel();
         List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
 
@@ -65,17 +68,52 @@ public class DifFuzzAR {
 
         Iterator<CtElement> iterator = mainMethod.getBody().iterator();
 
-        String vulnerableMethod = discoverMethod(iterator, safeMode, safeModeVariable);
+        VulnerableMethodUses vulnerableMethodUseCases = discoverMethod(iterator, safeMode, safeModeVariable);
 
-        if (vulnerableMethod == null) {
+        if (!vulnerableMethodUseCases.isValid()) {
             logger.warn("The tool could not discover the vulnerable method.");
             return;
         }
-        String methodName = vulnerableMethod.subSequence(vulnerableMethod.indexOf("= ") + 1, vulnerableMethod.indexOf("(")).toString();
-        logger.info(String.format("The vulnerable method is %s", methodName));
+
+        // First Vulnerable method use case
+        String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
+        String[] firstVulnerableMethodArguments = vulnerableMethodUseCases.getFirstUseCaseArgumentsNames();
+
+        logger.info(String.format("The first instance of the vulnerable method %s found had the following arguments %s.",
+                firstVulnerableMethodName, Arrays.toString(firstVulnerableMethodArguments)));
+
+        // Second Vulnerable method use case
+        String secondVulnerableMethodName = vulnerableMethodUseCases.getSecondUseCaseMethodName();
+        String[] secondVulnerableMethodArguments = vulnerableMethodUseCases.getSecondUseCaseArgumentsNames();
+
+        logger.info(String.format("The second instance of the vulnerable method %s found had the following arguments %s.",
+                secondVulnerableMethodName, Arrays.toString(secondVulnerableMethodArguments)));
+
+        int idx = 0;
+        for (; idx < firstVulnerableMethodArguments.length; idx++) {
+            if (!firstVulnerableMethodArguments[idx].equals(secondVulnerableMethodArguments[idx]))
+                break;
+        }
+
+        if (idx == firstVulnerableMethodArguments.length) {
+            logger.warn(String.format("The vulnerable method %s is used in the Driver always with the same parameters.", firstVulnerableMethodName));
+            return;
+        }
+        logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));
     }
 
-    static String discoverMethod(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable) {
+    /**
+     * Travels trough the AST of the main method, trying to find any of the patterns that indicates the presence of the
+     * vulnerable method like it's presented in <a href="https://github.com/RuiDTLima/DifFuzzAR/issues/1">GitHub issue #1</a>.
+     * TODO add the comments of examples where that pattern can be seen.
+     * @param iterator An iterator of AST of the method where the vulnerable method is present.
+     * @param safeMode  Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
+     * @param safeModeVariable  The name of the variable that indicates if the safeMode is in action.
+     * @return The vulnerable method.
+     */
+    static VulnerableMethodUses discoverMethod(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable) {
+        VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
+
         while (iterator.hasNext()) {
             CtElement element = iterator.next();
             String codeLine = element.toString();
@@ -104,7 +142,7 @@ public class DifFuzzAR {
                         afterMemClear = false;
                         String vulnerableMethodLine = statement.prettyprint();
                         logger.info(String.format("The line of code %s appears after the Mem.clear.", vulnerableMethodLine));
-                        return vulnerableMethodLine;
+                        vulnerableMethodUses.setUseCase(vulnerableMethodLine);
                     }
                 }
             } else if (codeLine.contains("Mem.clear()")) {
@@ -112,20 +150,26 @@ public class DifFuzzAR {
             } else if (validAfterMemClear(codeLine)) {
                 if (codeLine.contains("try")) { // Example in themis_pac4j_safe
                     List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
-                    CtBlock ctBlock = elements.get(0);// the code inside try block
+                    CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
                     return discoverMethod(ctBlockIterator, safeMode, safeModeVariable);
                 }
                 afterMemClear = false;
                 logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
-                String pretyElement = element.prettyprint();
-                return pretyElement;
+                String pretyElement = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
+                vulnerableMethodUses.setUseCase(pretyElement);
             }
         }
-        return null;
+        return vulnerableMethodUses;
     }
 
+    /**
+     * Validates the instruction after a MemClear. That instruction can't be an assignment of a value to a variable other
+     * than a method call, except for a object creation.
+     * @param line
+     * @return
+     */
     private static boolean validAfterMemClear(String line) {
         return afterMemClear && !line.equals("") && !(
                 line.contains("=") && (!line.contains("(") ||
