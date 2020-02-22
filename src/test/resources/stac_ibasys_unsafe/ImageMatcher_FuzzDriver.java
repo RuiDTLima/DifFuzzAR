@@ -146,6 +146,7 @@ public class ImageMatcher_FuzzDriver {
         System.out.println("secret2=" + Arrays.toString(secret2_pw));
         System.out.println("public_guess=" + Arrays.toString(public_guess));
 
+		Mem.clear();        // Adicionado
         ImageMatcherWorker.test(public_guess, secret1_pw);
         long cost1 = Mem.instrCost;
         System.out.println("cost1: " + cost1);

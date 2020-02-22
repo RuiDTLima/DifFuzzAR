@@ -133,12 +133,14 @@ public class Driver {
 
         // Call app and measure cost.
         try {
+            Mem.clear();        // Adicionado
             DummyResponse res1 = new DummyResponse();
              ts.doGet(req1, res1);
             int cost1 = res1.getResponseLength();
             System.out.println("length1: " + cost1);
             res1.printConsole();
 
+            Mem.clear();        // Adicionado
             DummyResponse res2 = new DummyResponse();
              ts.doGet(req2, res2);
             int cost2 = res2.getResponseLength();

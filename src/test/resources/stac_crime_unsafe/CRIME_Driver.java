@@ -48,6 +48,7 @@ public class CRIME_Driver {
         final byte[] all1 = Arrays.copyOf(h1_cookie, h1_cookie.length + l_cookie.length);
         System.arraycopy(l_cookie, 0, all1, h1_cookie.length, l_cookie.length);
 
+        Mem.clear();        // Adicionado
         final byte[] compressed1 = LZ77T.compress(all1);
         long cost1 = compressed1.length;
         System.out.println("cost1=" + cost1);
@@ -61,6 +62,7 @@ public class CRIME_Driver {
                 + l_cookie.length);
         System.arraycopy(l_cookie, 0, all2, h2_cookie.length, l_cookie.length);
 
+        Mem.clear();        // Adicionado
         final byte[] compressed2 = LZ77T.compress(all2);
         long cost2 = compressed2.length;
         System.out.println("observable2: "+cost2);

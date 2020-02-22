@@ -116,7 +116,7 @@ public class DifFuzzAR {
 
         while (iterator.hasNext()) {
             CtElement element = iterator.next();
-            String codeLine = element.toString();
+            String codeLine = element.prettyprint();
 
             if (safeModeVariable != null && codeLine.contains("if") && codeLine.contains(safeModeVariable) && !(element instanceof CtTry)) {
                 List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
@@ -147,18 +147,29 @@ public class DifFuzzAR {
                 }
             } else if (codeLine.contains("Mem.clear()")) {
                 afterMemClear = true;
-            } else if (validAfterMemClear(codeLine)) {
-                if (codeLine.contains("try")) { // Example in themis_pac4j_safe
+                if (codeLine.contains("try")) {
                     List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
                     return discoverMethod(ctBlockIterator, safeMode, safeModeVariable);
                 }
-                afterMemClear = false;
-                logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
-                String pretyElement = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
-                vulnerableMethodUses.setUseCase(pretyElement);
+            } else if (validAfterMemClear(codeLine)) {
+                if (codeLine.contains("try")) { // Example in themis_pac4j_safe
+                    List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
+                    CtBlock ctBlock = elements.get(0);  // the code inside try block
+                    Iterator ctBlockIterator = ctBlock.iterator();
+
+                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethod(ctBlockIterator, safeMode, safeModeVariable);
+                    vulnerableMethodUses.addFromOtherVulnerableMethodUses(tempVulnerableMethodUses);
+                    if (vulnerableMethodUses.isValid())
+                        return vulnerableMethodUses;
+                } else {
+                    afterMemClear = false;
+                    logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
+                    String pretyElement = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
+                    vulnerableMethodUses.setUseCase(pretyElement);
+                }
             }
         }
         return vulnerableMethodUses;

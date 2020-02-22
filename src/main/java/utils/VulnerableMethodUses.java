@@ -32,6 +32,16 @@ public class VulnerableMethodUses {
         }
     }
 
+    public void addFromOtherVulnerableMethodUses(VulnerableMethodUses vulnerableMethodUses) {
+        if (this.firstUseCaseMethodName == null) {
+            this.firstUseCaseMethodName = vulnerableMethodUses.firstUseCaseMethodName;
+            this.firstUseCaseArgumentsNames = vulnerableMethodUses.firstUseCaseArgumentsNames;
+        } else if (this.secondUseCaseMethodName == null) {
+            this.secondUseCaseMethodName = vulnerableMethodUses.firstUseCaseMethodName;
+            this.secondUseCaseArgumentsNames = vulnerableMethodUses.firstUseCaseArgumentsNames;
+        }
+    }
+
     public boolean isValid() {
         return firstUseCaseMethodName != null
                 && firstUseCaseMethodName.equals(secondUseCaseMethodName)

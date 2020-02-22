@@ -110,6 +110,7 @@ public class GPT14_FuzzDriver {
         System.out.println("public_p=" + public_p);
         System.out.println("public_p.bitlength=" + public_p.bitLength());
 
+        Mem.clear();        // Adicionado
         BigInteger result1 = GPT14.modular_exponentiation_safe(public_a, secret1_b, public_p);
         System.out.println("Answer1: " + result1);
         long cost1 = Mem.instrCost;

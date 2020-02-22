@@ -55,6 +55,7 @@ public class Sanity_FuzzDriver {
         System.out.println("secret2=" + secret2_a);
         System.out.println("public=" + public_b);
 
+        Mem.clear();        // Adicionado
         boolean answer1 = Sanity.straightline_unsafe(secret1_a, public_b);
         long cost1 = Mem.instrCost;
         System.out.println("Answer1: " + answer1);

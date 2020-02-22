@@ -55,6 +55,7 @@ public class MoreSanity_LoopAndBranch_FuzzDriver {
         System.out.println("secret2=" + secret1_taint);
         System.out.println("public=" + public_a);
 
+        Mem.clear();        // Adicionado
         boolean answer1 = MoreSanity.loopAndbranch_unsafe(public_a, secret1_taint);
         System.out.println("Answer1: " + answer1);
 
