@@ -1,15 +1,20 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
+import spoon.legacy.NameFilter;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtLiteralImpl;
 import utils.VulnerableMethodUses;
-import java.util.Arrays;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +34,14 @@ public class DifFuzzAR {
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(driverPath);
-        launcher.getEnvironment().setCommentEnabled(false); // Para que os comentários no código da Driver sejam ignorados
+        launcher.getEnvironment().setCommentEnabled(true); // Para que os comentários no código da Driver sejam ignorados
+        //launcher.getEnvironment().setCopyResources(true);
+        //launcher.getEnvironment().setAutoImports(true);
         CtModel model = launcher.buildModel();
         List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
+        //List<CtClass> classList = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
+        //List<CtImport> importList = model.filterChildren(new TypeFilter<>(CtImport.class)).list();
+
 
         if (methodList.size() == 0) {
             logger.warn("The file should contain at least the main method, and it contains no methods.");
@@ -79,15 +89,8 @@ public class DifFuzzAR {
         String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
         String[] firstVulnerableMethodArguments = vulnerableMethodUseCases.getFirstUseCaseArgumentsNames();
 
-        logger.info(String.format("The first instance of the vulnerable method %s found had the following arguments %s.",
-                firstVulnerableMethodName, Arrays.toString(firstVulnerableMethodArguments)));
-
         // Second Vulnerable method use case
-        String secondVulnerableMethodName = vulnerableMethodUseCases.getSecondUseCaseMethodName();
         String[] secondVulnerableMethodArguments = vulnerableMethodUseCases.getSecondUseCaseArgumentsNames();
-
-        logger.info(String.format("The second instance of the vulnerable method %s found had the following arguments %s.",
-                secondVulnerableMethodName, Arrays.toString(secondVulnerableMethodArguments)));
 
         int idx = 0;
         for (; idx < firstVulnerableMethodArguments.length; idx++) {
@@ -99,16 +102,80 @@ public class DifFuzzAR {
             logger.warn(String.format("The vulnerable method %s is used in the Driver always with the same parameters.", firstVulnerableMethodName));
             return;
         }
+
         logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));
+
+        // The start of the modification process.
+        String className = firstVulnerableMethodName.split("\\.")[0];
+
+        logger.info(String.format("The class name of the vulnerable method is %s.", className));
+
+        String pathToVulnerableMethod = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\" + className + ".java";
+        String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\" + className + "2.java";
+
+        logger.info(String.format("The path to the vulnerable class is %s.", pathToVulnerableMethod));
+
+        CtMethod vulnerableMethod = getVulnerableMethod(pathToVulnerableMethod, vulnerableMethodUseCases);
+
+        List<CtCFlowBreak> elem = vulnerableMethod.getElements(new ReturnOrThrowFilter());
+
+        if (elem.size() > 1) {
+            logger.info(String.format("The method %s suffers from early-exit timing side-channel vulnerability since it" +
+                    "has %d exit points.", firstVulnerableMethodName, elem.size()));
+        }
+
+        Factory factory = launcher.getFactory();
+        CtClass correctedClass = factory.createClass(pathToCorrectedClass); // Without path it will not write the code in the file. File will be empty
+        //CtType<Object> objectCtType = factory.Type().get("User.java");
+        correctedClass.setSimpleName(className + "2");
+
+        CtMethod newMethod = vulnerableMethod.clone();
+
+        Iterator iterator1 = newMethod.getBody().iterator();
+
+        String variableName = elem.get(elem.size() - 1).toString().replace("return", "");
+
+        int returnReplacements = 0;
+        while (iterator1.hasNext()) {
+            //factory.createLocalVariable(declaringType, "$temp", )
+            CtStatement next = (CtStatement) iterator1.next();
+            String lineString = next.toString();
+
+            if (lineString.contains("return") && returnReplacements != elem.size() - 1) {
+                if (lineString.contains("for")) {
+                    List<CtBlock> elements = next.getElements(new TypeFilter<>(CtBlock.class));
+                    elements.forEach(System.out::println);
+                    elements.forEach(it -> {
+                        if (!it.toString().contains("if") && it.toString().contains("return")) {
+                            String line = it.toString();
+                            String value = line.substring(line.indexOf("return") + "return".length(), line.indexOf(";"));
+                            CtCodeSnippetStatement codeSnippetStatement = factory.Code().createCodeSnippetStatement(variableName + " =" + value);
+                            it.replace(codeSnippetStatement);
+                        }
+                    });
+                }
+                returnReplacements++;
+            }
+        }
+        correctedClass.addMethod(newMethod);
+
+        try {
+            FileWriter fileWriter = new FileWriter(pathToCorrectedClass);
+            fileWriter.write(correctedClass.toStringWithImports());
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Travels trough the AST of the main method, trying to find any of the patterns that indicates the presence of the
      * vulnerable method like it's presented in <a href="https://github.com/RuiDTLima/DifFuzzAR/issues/1">GitHub issue #1</a>.
      * TODO add the comments of examples where that pattern can be seen.
-     * @param iterator An iterator of AST of the method where the vulnerable method is present.
-     * @param safeMode  Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
-     * @param safeModeVariable  The name of the variable that indicates if the safeMode is in action.
+     *
+     * @param iterator         An iterator of AST of the method where the vulnerable method is present.
+     * @param safeMode         Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
+     * @param safeModeVariable The name of the variable that indicates if the safeMode is in action.
      * @return The vulnerable method.
      */
     static VulnerableMethodUses discoverMethod(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable) {
@@ -178,6 +245,7 @@ public class DifFuzzAR {
     /**
      * Validates the instruction after a MemClear. That instruction can't be an assignment of a value to a variable other
      * than a method call, except for a object creation.
+     *
      * @param line
      * @return
      */
@@ -185,5 +253,16 @@ public class DifFuzzAR {
         return afterMemClear && !line.equals("") && !(
                 line.contains("=") && (!line.contains("(") ||
                         (line.contains("(") && line.contains("new"))));
+    }
+
+    private static CtMethod getVulnerableMethod(String pathToVulnerableMethod, VulnerableMethodUses vulnerableMethodUseCases) {
+        String methodName = vulnerableMethodUseCases.getFirstUseCaseMethodName().split("\\.")[1];
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(pathToVulnerableMethod);
+        launcher.getEnvironment().setCommentEnabled(false); // Para que os comentários no código da Driver sejam ignorados
+        CtModel model = launcher.buildModel();
+
+        return model.filterChildren(new TypeFilter<>(CtMethod.class))
+                .select(new NameFilter<CtMethod>(methodName)).first();
     }
 }
