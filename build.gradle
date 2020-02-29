@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id "com.github.johnrengelman.shadow" version "4.0.2"
 }
 
 group 'org.ruidtlima'
@@ -13,7 +14,7 @@ repositories {
 
 test {
     useTestNG()
-    scanForTestClasses = false //this one
+    scanForTestClasses = false
 }
 
 dependencies {
@@ -22,4 +23,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
     compile 'fr.inria.gforge.spoon:spoon-core:8.0.0'
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "DifFuzzAR"
+    }
 }
