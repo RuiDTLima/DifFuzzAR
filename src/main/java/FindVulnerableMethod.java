@@ -4,13 +4,12 @@ import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtField;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.*;
 import spoon.reflect.visitor.filter.TypeFilter;
+import spoon.support.reflect.code.CtAssignmentImpl;
+import spoon.support.reflect.code.CtInvocationImpl;
 import spoon.support.reflect.code.CtLiteralImpl;
-
+import spoon.support.reflect.code.CtLocalVariableImpl;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -22,14 +21,11 @@ public class FindVulnerableMethod {
     public static VulnerableMethodUses processDriver(String path) {
         Launcher launcher = new Launcher();
         launcher.addInputResource(path);
-        launcher.getEnvironment().setCommentEnabled(true); // Para que os comentários no código da Driver sejam ignorados
-        launcher.getEnvironment().setAutoImports(false);
+        launcher.getEnvironment().setCommentEnabled(false); // Para que os comentários no código da Driver sejam ignorados
         CtModel model = launcher.buildModel();
+
         List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
-        List<CtVariable> variableList = model.filterChildren(new TypeFilter<>(CtVariable.class)).list();
-        //List<CtAssignment> assignmentList = model.filterChildren(new TypeFilter<>(CtAssignment.class)).list();
-        //List<CtLocalVariable> localVariableList = model.filterChildren(new TypeFilter<>(CtLocalVariable.class)).list();
-        //List<CtExpression> expressionList = model.filterChildren(new TypeFilter<>(Ct.class)).list();
+        List<CtTypedElement> typedElementList = model.filterChildren(new TypeFilter<>(CtTypedElement.class)).list();
 
         if (methodList.size() == 0) {
             logger.warn("The file should contain at least the main method, and it contains no methods.");
@@ -66,7 +62,7 @@ public class FindVulnerableMethod {
 
         Iterator<CtElement> iterator = mainMethod.getBody().iterator();
 
-        VulnerableMethodUses vulnerableMethodUseCases = discoverMethod(iterator, safeMode, safeModeVariable, variableList);
+        VulnerableMethodUses vulnerableMethodUseCases = discoverMethod(iterator, safeMode, safeModeVariable, typedElementList);
 
         if (!vulnerableMethodUseCases.isValid()) {
             logger.warn("The tool could not discover the vulnerable method.");
@@ -80,7 +76,8 @@ public class FindVulnerableMethod {
         // Second Vulnerable method use case
         String[] secondVulnerableMethodArguments = vulnerableMethodUseCases.getSecondUseCaseArgumentsNames();
 
-        int idx = 0;
+        // TODO
+        /*int idx = 0;
         for (; idx < firstVulnerableMethodArguments.length; idx++) {
             if (!firstVulnerableMethodArguments[idx].equals(secondVulnerableMethodArguments[idx]))
                 break;
@@ -91,7 +88,7 @@ public class FindVulnerableMethod {
             return null;
         }
 
-        logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));
+        logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));*/
         return  vulnerableMethodUseCases;
     }
 
@@ -103,10 +100,10 @@ public class FindVulnerableMethod {
      * @param iterator         An iterator of AST of the method where the vulnerable method is present.
      * @param safeMode         Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
      * @param safeModeVariable The name of the variable that indicates if the safeMode is in action.
-     * @param variableList
+     * @param typedElementList
      * @return The vulnerable method.
      */
-    private static VulnerableMethodUses discoverMethod(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtVariable> variableList) {
+    private static VulnerableMethodUses discoverMethod(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement> typedElementList) {
         VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
 
         while (iterator.hasNext()) {
@@ -119,43 +116,19 @@ public class FindVulnerableMethod {
                 if (codeLine.contains("if(!")) {
                     if (safeMode)
                         idx = 1;
-                    else idx = 0;
                 } else {
-                    if (safeMode)
-                        idx = 0;
-                    else idx = 1;
+                    if (!safeMode)
+                        idx = 1;
                 }
-                CtBlock ctBlock = elements.get(idx);
+                CtBlock<CtStatement> ctBlock = elements.get(idx);
 
-
-                Iterator ctBlockIterator = ctBlock.iterator();
-                while (ctBlockIterator.hasNext()) {
-                    CtStatement statement = (CtStatement) ctBlockIterator.next();
+                for (CtStatement statement : ctBlock) {
                     if (statement.toString().contains("Mem.clear()"))
                         afterMemClear = true;
                     else if (afterMemClear) {
                         afterMemClear = false;
-                        String vulnerableMethodLine = statement.prettyprint();
-                        logger.info(String.format("The line of code %s appears after the Mem.clear.", vulnerableMethodLine));
-                        String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
-                                .replace(" ", "");
 
-                        String[] arguments = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("(") + 1, vulnerableMethodLine.indexOf(")"))
-                                .split(",");
-
-                        String[] invocationParts = invocation.split("\\.");
-                        String sourceOfMethod = invocationParts[0];
-                        String methodName = invocationParts[1];
-                        String className = "";
-                        if (!Character.isUpperCase(sourceOfMethod.codePointAt(0))) {
-                            Optional<CtVariable> objectCreation = variableList.stream().filter(it -> it.getSimpleName().equals(sourceOfMethod)).findAny();
-                            CtVariable ctVariable = objectCreation.get();
-                            CtExpression defaultExpression = ctVariable.getDefaultExpression();
-                            className = defaultExpression.getType().getSimpleName();
-
-                        } else
-                            className = sourceOfMethod;
-                        vulnerableMethodUses.setUseCase(className, methodName, arguments);
+                        setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, statement, statement.prettyprint());
                     }
                 }
             } else if (codeLine.contains("Mem.clear()")) {
@@ -165,7 +138,7 @@ public class FindVulnerableMethod {
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
-                    return discoverMethod(ctBlockIterator, safeMode, safeModeVariable, variableList);
+                    return discoverMethod(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
                 }
             } else if (validAfterMemClear(codeLine)) {
                 if (codeLine.contains("try")) { // Example in themis_pac4j_safe
@@ -173,34 +146,13 @@ public class FindVulnerableMethod {
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
-                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethod(ctBlockIterator, safeMode, safeModeVariable, variableList);
+                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethod(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
                     vulnerableMethodUses.addFromOtherVulnerableMethodUses(tempVulnerableMethodUses);
                     if (vulnerableMethodUses.isValid())
                         return vulnerableMethodUses;
                 } else {
                     afterMemClear = false;
-                    logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
-                    String pretyElement = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
-                    String invocation = pretyElement.substring(pretyElement.indexOf("= ") + 1, pretyElement.indexOf("("))
-                            .replace(" ", "");
-
-                    String[] arguments = pretyElement.substring(pretyElement.indexOf("(") + 1, pretyElement.indexOf(")"))
-                            .split(",");
-
-                    String[] invocationParts = invocation.split("\\.");
-                    String sourceOfMethod = invocationParts[0];
-                    String methodName = invocationParts[1];
-                    String className = "";
-                    if (!Character.isUpperCase(sourceOfMethod.codePointAt(0))) {
-                        Optional<CtVariable> objectCreation = variableList.stream().filter(it -> it.getSimpleName().equals(sourceOfMethod)).findAny();
-                        CtVariable ctVariable = objectCreation.get();
-                        CtExpression defaultExpression = ctVariable.getDefaultExpression();
-                        className = defaultExpression.getType().getSimpleName();
-
-                    } else
-                        className = sourceOfMethod;
-
-                    vulnerableMethodUses.setUseCase(className, methodName, arguments);
+                    setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, codeLine);
                 }
             }
         }
@@ -218,5 +170,40 @@ public class FindVulnerableMethod {
         return afterMemClear && !line.equals("") && !(
                 line.contains("=") && (!line.contains("(") ||
                         (line.contains("(") && line.contains("new"))));
+    }
+
+    private static void setVulnerableMethodUsesCase(List<CtTypedElement> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine) {
+        logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
+        String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
+        String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
+                .replace(" ", "");
+
+        String[] arguments = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("(") + 1, vulnerableMethodLine.indexOf(")"))
+                .split(",");
+
+        String[] invocationParts = invocation.split("\\.");
+        String sourceOfMethod = invocationParts[0];
+        String methodName = invocationParts[1];
+        String className = getClassName(typedElementList, sourceOfMethod);
+        vulnerableMethodUses.setUseCase(className, methodName, arguments);
+    }
+
+    private static String getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod) {
+        if (Character.isLowerCase(sourceOfMethod.codePointAt(0))) {
+            Optional<CtTypedElement> objectCreation = typedElementList.stream().
+                    filter(it -> !it.toString().contains("main") &&
+                            it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*") &&
+                            it.toString().contains("="))
+                    .findAny();
+
+            if (objectCreation.get() instanceof CtAssignmentImpl) { // themis oacc unsafe
+                CtAssignment ctLocalVariable = (CtAssignment) objectCreation.get();
+                return ((CtInvocationImpl) ctLocalVariable.getAssignment()).getTarget().prettyprint();
+            } else {
+                CtLocalVariableImpl ctLocalVariable = (CtLocalVariableImpl) objectCreation.get();
+                return ctLocalVariable.getAssignment().getType().getSimpleName();
+            }
+        }
+        return sourceOfMethod;
     }
 }
