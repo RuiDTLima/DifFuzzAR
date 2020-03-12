@@ -69,15 +69,15 @@ public class FindVulnerableMethod {
             return null;
         }
 
+        // TODO
         // First Vulnerable method use case
-        String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
+        /*String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
         String[] firstVulnerableMethodArguments = vulnerableMethodUseCases.getFirstUseCaseArgumentsNames();
 
         // Second Vulnerable method use case
         String[] secondVulnerableMethodArguments = vulnerableMethodUseCases.getSecondUseCaseArgumentsNames();
 
-        // TODO
-        /*int idx = 0;
+        int idx = 0;
         for (; idx < firstVulnerableMethodArguments.length; idx++) {
             if (!firstVulnerableMethodArguments[idx].equals(secondVulnerableMethodArguments[idx]))
                 break;
@@ -172,6 +172,14 @@ public class FindVulnerableMethod {
                         (line.contains("(") && line.contains("new"))));
     }
 
+    /**
+     * Retrieves from the CtElement all the relevant information regarding the found vulnerable method. Retrieves the
+     * vulnerable method's name, class name, and the arguments list.
+     * @param typedElementList
+     * @param vulnerableMethodUses
+     * @param element
+     * @param codeLine
+     */
     private static void setVulnerableMethodUsesCase(List<CtTypedElement> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine) {
         logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
         String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
@@ -188,6 +196,12 @@ public class FindVulnerableMethod {
         vulnerableMethodUses.setUseCase(className, methodName, arguments);
     }
 
+    /**
+     * Obtains the name of the class where the vulnerable method is defined.
+     * @param typedElementList
+     * @param sourceOfMethod
+     * @return
+     */
     private static String getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod) {
         if (Character.isLowerCase(sourceOfMethod.codePointAt(0))) {
             Optional<CtTypedElement> objectCreation = typedElementList.stream().

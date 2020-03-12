@@ -7,12 +7,10 @@ import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtTypedElement;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtBlockImpl;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,98 +24,85 @@ public class ModificationOfCode {
 
         logger.info(String.format("The class name of the vulnerable method is %s.", className));
 
-        String pathToCorrectedClass1 = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\";
-        String pathToVulnerableMethod = pathToCorrectedClass1+ className + ".java";
+        String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\";
+        String pathToVulnerableMethod = pathToCorrectedClass + className + ".java";
 
         logger.info(String.format("The path to the vulnerable class is %s.", pathToVulnerableMethod));
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(pathToVulnerableMethod);
-        launcher.setSourceOutputDirectory(pathToCorrectedClass1);
+        launcher.setSourceOutputDirectory(pathToCorrectedClass);
         launcher.getEnvironment().setCommentEnabled(false);
         launcher.getEnvironment().setAutoImports(true);
 
         CtModel model = launcher.buildModel();
         Factory factory = launcher.getFactory();
-        List<CtClass> ctQuery = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
+        List<CtClass<?>> ctQuery = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
         ctQuery.get(0).setSimpleName(className + "$Modification");
 
-        CtMethod vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<CtMethod>(methodName)).first();
-        List<CtTypedElement> typedElementList = model.filterChildren(new TypeFilter<>(CtTypedElement.class)).list();
+        CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
 
-        CtMethod modifiedMethod = vulnerableMethod.copyMethod();
+        CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
         modifiedMethod.setSimpleName(vulnerableMethod.getSimpleName() + "$Modification");
-        List<CtCFlowBreak> elem = vulnerableMethod.getElements(new ReturnOrThrowFilter());
-        List<CtAssignment> elements1 = vulnerableMethod.getElements(new TypeFilter<>(CtAssignment.class));
+        List<CtCFlowBreak> returnList = vulnerableMethod.getElements(new ReturnOrThrowFilter());
+        List<CtAssignment<?, ?>> assignmentList = vulnerableMethod.getElements(new TypeFilter<>(CtAssignment.class));
 
-        if (elem.size() > 1) {
+        if (returnList.size() > 1) {
             logger.info(String.format("The method %s suffers from early-exit timing side-channel vulnerability since it" +
-                    "has %d exit points.", methodName, elem.size()));
+                    "has %d exit points.", methodName, returnList.size()));
         }
 
-        String returnElement = elem.get(elem.size() - 1).toString().replace("return", "").replace(" ", "");
+        modifyCode(methodName, factory, modifiedMethod, returnList, assignmentList);
+        launcher.prettyprint();
+    }
 
-
-        //CtLocalVariable $1 = factory.createLocalVariable(modifiedMethod.getType(), "$1", factory.createLiteral(returnElement));
+    private static void modifyCode(String methodName, Factory factory, CtMethod<?> modifiedMethod, List<CtCFlowBreak> returnList, List<CtAssignment<?, ?>> assignmentList) {
+        String returnElement = returnList.get(returnList.size() - 1).toString().replace("return", "").replace(" ", "");
         CtCodeSnippetStatement $1  = factory.createCodeSnippetStatement(modifiedMethod.getType() + " $1 = " + returnElement);
 
         String variableName;
-        if (elements1.stream().noneMatch(it -> it.getAssigned().toString().matches(".*\\b" + returnElement + "\\b.*"))) {
+        if (assignmentList.stream().noneMatch(it -> it.getAssigned().toString().matches(".*\\b" + returnElement + "\\b.*"))) {
             logger.info(String.format("Added to the method %s, the instruction %s", methodName, $1));
             modifiedMethod.getBody().addStatement(0, $1);
             variableName = "$1";
         } else
             variableName = returnElement;
 
-        Iterator iterator = modifiedMethod.getBody().iterator();
+        Iterator<?> iterator = modifiedMethod.getBody().iterator();
         AtomicInteger returnReplacements = new AtomicInteger(0);
+        iterateCode(factory, returnList, variableName, iterator, returnReplacements);
+    }
+
+    private static void iterateCode(Factory factory, List<CtCFlowBreak> returnList, String variableName, Iterator<?> iterator, AtomicInteger returnReplacements) {
         while (iterator.hasNext()) {
-            CtStatement next = (CtStatement) iterator.next();
-            String lineString = next.toString();
+            CtStatement currentStatement = (CtStatement) iterator.next();
+            String lineString = currentStatement.toString();
 
-            if (lineString.contains("return") && returnReplacements.get() == elem.size() - 1) {
-                CtReturn<Object> objectCtReturn = factory.createReturn().setReturnedExpression(factory.createCodeSnippetExpression(variableName));
-                next.replace(objectCtReturn);
-            }
-
-            if (lineString.contains("return") && returnReplacements.get() != elem.size() - 1) {
+            if (lineString.contains("return") && returnReplacements.get() < returnList.size()) {
                 if (lineString.contains("for") || lineString.contains("if")) {
-                    List<CtBlockImpl> elements = next.getElements(new TypeFilter<>(CtBlockImpl.class));
-                    elements.forEach(it -> {
-                        if (!it.toString().contains("if") && it.toString().contains("return")) {
-                            String line = it.toString();
-                            String value = line.substring(line.indexOf("return") + "return".length(), line.indexOf(";"));
-                            CtCodeSnippetStatement codeSnippetStatement = factory.Code().createCodeSnippetStatement(variableName + " =" + value);
-                            it.replace(codeSnippetStatement);
-                            returnReplacements.incrementAndGet();
-                        }
-                        else if (it.toString().contains("return") && (it.toString().contains("while") || it.toString().contains("for") || it.toString().contains("if"))) {
-                            List<CtBlock> innerElements = it.getElements(new TypeFilter<>(CtBlock.class));
-                            for (CtBlock innerElement : innerElements) {
-                                if (!innerElement.toString().contains("if") && innerElement.toString().contains("return")) {
-                                    String line = innerElement.toString();
-                                    String value = line.substring(line.indexOf("return") + "return".length(), line.indexOf(";"));
-                                    CtCodeSnippetStatement codeSnippetStatement = factory.Code().createCodeSnippetStatement(variableName + " =" + value);
-                                    innerElement.replace(codeSnippetStatement);
-                                    returnReplacements.incrementAndGet();
-                                } else {
-                                    List<CtBlock> innerElements1 = innerElement.getElements(new TypeFilter<>(CtBlock.class));
-                                    innerElements1.forEach(it1 -> {
-                                        if (!it1.toString().contains("if") && it1.toString().contains("return")) {
-                                            String line = it1.toString();
-                                            String value = line.substring(line.indexOf("return") + "return".length(), line.indexOf(";"));
-                                            CtCodeSnippetStatement codeSnippetStatement = factory.Code().createCodeSnippetStatement(variableName + " =" + value);
-                                            it1.replace(codeSnippetStatement);
-                                            returnReplacements.incrementAndGet();
-                                        }
-                                    });
-                                }
+                    List<CtBlockImpl<CtStatement>> elements = currentStatement.getElements(new TypeFilter<>(CtBlockImpl.class));
+                    for (CtBlockImpl<CtStatement> blockElement : elements) {
+                        for (CtStatement blockStatement : blockElement) {
+                            if (!blockStatement.toString().contains("if") && blockStatement.toString().contains("return")) {
+                                String line = blockStatement.toString();
+                                returnReplacement(factory, variableName, returnReplacements, blockStatement, line);
                             }
                         }
-                    });
+                    }
+                } else if (returnReplacements.get() != returnList.size() - 1) {
+                    returnReplacement(factory, variableName, returnReplacements, currentStatement, lineString);
+                } else {
+                    CtReturn<Object> objectCtReturn = factory.createReturn().setReturnedExpression(factory.createCodeSnippetExpression(variableName));
+                    currentStatement.replace(objectCtReturn);
                 }
             }
         }
-        launcher.prettyprint();
+    }
+
+    private static void returnReplacement(Factory factory, String variableName, AtomicInteger returnReplacements, CtStatement blockStatement, String line) {
+        String value = line.substring(line.indexOf("return") + "return".length());
+        CtCodeSnippetStatement codeSnippetStatement = factory.Code().createCodeSnippetStatement(variableName + " =" + value);
+        blockStatement.replace(codeSnippetStatement);
+        returnReplacements.incrementAndGet();
     }
 }
