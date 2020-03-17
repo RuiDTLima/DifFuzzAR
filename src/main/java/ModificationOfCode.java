@@ -17,33 +17,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModificationOfCode {
     private static Logger logger = LoggerFactory.getLogger(ModificationOfCode.class);
+    private static final String CLASS_NAME_ADDITION = "$Modification";
 
     public static void processVulnerableClass(String driverPath, VulnerableMethodUses vulnerableMethodUsesCases) {
+        String packageName = vulnerableMethodUsesCases.getFirstUseCasePackageName();
         String className = vulnerableMethodUsesCases.getFirstUseCaseClassName();
         String methodName = vulnerableMethodUsesCases.getFirstUseCaseMethodName();
 
         logger.info(String.format("The class name of the vulnerable method is %s.", className));
 
         String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\";
-        String pathToVulnerableMethod = pathToCorrectedClass + className + ".java";
+        String pathToVulnerableMethod = pathToCorrectedClass + packageName + "\\" + className + ".java";
 
         logger.info(String.format("The path to the vulnerable class is %s.", pathToVulnerableMethod));
 
-        Launcher launcher = new Launcher();
-        launcher.addInputResource(pathToVulnerableMethod);
-        launcher.setSourceOutputDirectory(pathToCorrectedClass);
-        launcher.getEnvironment().setCommentEnabled(false);
-        launcher.getEnvironment().setAutoImports(true);
+        Launcher launcher = Setup.setupLauncher(pathToVulnerableMethod, pathToCorrectedClass);
 
         CtModel model = launcher.buildModel();
         Factory factory = launcher.getFactory();
         List<CtClass<?>> ctQuery = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
-        ctQuery.get(0).setSimpleName(className + "$Modification");
+        ctQuery.get(0).setSimpleName(className + CLASS_NAME_ADDITION);  // TODO remove zero
+        // TODO Add method from superClass.
+        modifyCode(methodName, factory, model);
+        launcher.prettyprint();
+    }
 
+    private static void modifyCode(String methodName, Factory factory, CtModel model) {
         CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
 
         CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
-        modifiedMethod.setSimpleName(vulnerableMethod.getSimpleName() + "$Modification");
+        modifiedMethod.setSimpleName(vulnerableMethod.getSimpleName() + CLASS_NAME_ADDITION);
         List<CtCFlowBreak> returnList = vulnerableMethod.getElements(new ReturnOrThrowFilter());
         List<CtAssignment<?, ?>> assignmentList = vulnerableMethod.getElements(new TypeFilter<>(CtAssignment.class));
 
@@ -52,11 +55,6 @@ public class ModificationOfCode {
                     "has %d exit points.", methodName, returnList.size()));
         }
 
-        modifyCode(methodName, factory, modifiedMethod, returnList, assignmentList);
-        launcher.prettyprint();
-    }
-
-    private static void modifyCode(String methodName, Factory factory, CtMethod<?> modifiedMethod, List<CtCFlowBreak> returnList, List<CtAssignment<?, ?>> assignmentList) {
         String returnElement = returnList.get(returnList.size() - 1).toString().replace("return", "").replace(" ", "");
         CtCodeSnippetStatement $1  = factory.createCodeSnippetStatement(modifiedMethod.getType() + " $1 = " + returnElement);
 
@@ -71,6 +69,12 @@ public class ModificationOfCode {
         Iterator<?> iterator = modifiedMethod.getBody().iterator();
         AtomicInteger returnReplacements = new AtomicInteger(0);
         iterateCode(factory, returnList, variableName, iterator, returnReplacements);
+        List<CtCFlowBreak> modifiedReturnList = modifiedMethod.getElements(new ReturnOrThrowFilter());
+
+        if (modifiedReturnList.stream().noneMatch(it -> it.toString().matches(".*\\breturn\\b.*"))) {
+            CtCodeSnippetStatement returnStatement = factory.createCodeSnippetStatement("return " + variableName);
+            modifiedMethod.getBody().addStatement(returnStatement);
+        }
     }
 
     private static void iterateCode(Factory factory, List<CtCFlowBreak> returnList, String variableName, Iterator<?> iterator, AtomicInteger returnReplacements) {

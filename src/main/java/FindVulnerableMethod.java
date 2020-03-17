@@ -5,11 +5,10 @@ import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
-import spoon.support.reflect.code.CtAssignmentImpl;
-import spoon.support.reflect.code.CtInvocationImpl;
-import spoon.support.reflect.code.CtLiteralImpl;
-import spoon.support.reflect.code.CtLocalVariableImpl;
+import spoon.support.reflect.code.*;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +18,7 @@ public class FindVulnerableMethod {
     private static boolean afterMemClear = false;
 
     public static VulnerableMethodUses processDriver(String path) {
-        Launcher launcher = new Launcher();
-        launcher.addInputResource(path);
-        launcher.getEnvironment().setCommentEnabled(false); // Para que os comentários no código da Driver sejam ignorados
+        Launcher launcher = Setup.setupLauncher(path, "");
         CtModel model = launcher.buildModel();
 
         List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
@@ -192,8 +189,12 @@ public class FindVulnerableMethod {
         String[] invocationParts = invocation.split("\\.");
         String sourceOfMethod = invocationParts[0];
         String methodName = invocationParts[1];
-        String className = getClassName(typedElementList, sourceOfMethod);
-        vulnerableMethodUses.setUseCase(className, methodName, arguments);
+        String[] className = getClassName(typedElementList, sourceOfMethod);
+        String packageName = className[0];
+        if (packageName.equals("") && element instanceof CtInvocationImpl) {
+            packageName = ((CtTypeAccessImpl)((CtInvocationImpl) element).getTarget()).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+        }
+        vulnerableMethodUses.setUseCase(packageName, className[1], methodName, arguments);
     }
 
     /**
@@ -202,7 +203,7 @@ public class FindVulnerableMethod {
      * @param sourceOfMethod
      * @return
      */
-    private static String getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod) {
+    private static String[] getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod) {
         if (Character.isLowerCase(sourceOfMethod.codePointAt(0))) {
             Optional<CtTypedElement> objectCreation = typedElementList.stream().
                     filter(it -> !it.toString().contains("main") &&
@@ -212,12 +213,13 @@ public class FindVulnerableMethod {
 
             if (objectCreation.get() instanceof CtAssignmentImpl) { // themis oacc unsafe
                 CtAssignment ctLocalVariable = (CtAssignment) objectCreation.get();
-                return ((CtInvocationImpl) ctLocalVariable.getAssignment()).getTarget().prettyprint();
+                return new String[] {"", ((CtInvocationImpl) ctLocalVariable.getAssignment()).getTarget().prettyprint()};
             } else {
                 CtLocalVariableImpl ctLocalVariable = (CtLocalVariableImpl) objectCreation.get();
-                return ctLocalVariable.getAssignment().getType().getSimpleName();
+                CtTypeReference assignmentType = ctLocalVariable.getAssignment().getType();
+                return new String[] {assignmentType.getPackage().getQualifiedName().replace(".", "\\"), assignmentType.getSimpleName()};
             }
         }
-        return sourceOfMethod;
+        return new String[] {"", sourceOfMethod};
     }
 }
