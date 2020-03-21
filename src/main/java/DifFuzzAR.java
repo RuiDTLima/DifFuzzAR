@@ -12,15 +12,16 @@ public class DifFuzzAR {
             return;
         }
         String driverPath = args[0];
-        logger.info(String.format("The passed path was %s.", driverPath));
+        logger.info("The passed path was {}.", driverPath);
 
         VulnerableMethodUses vulnerableMethodUsesCases = FindVulnerableMethod.processDriver(driverPath);
 
         if (vulnerableMethodUsesCases == null) {
-            logger.warn(String.format("DifFuzzAR could not find the vulnerable method indicated in the Driver %s", driverPath));
+            logger.warn("DifFuzzAR could not find the vulnerable method indicated in the Driver {}.", driverPath);
             return;
         }
 
         ModificationOfCode.processVulnerableClass(driverPath, vulnerableMethodUsesCases);
+        logger.info("Finish the automatic repair.\n BE ADVISED: The corrected code may be logical flawed. Use the modified code as a template.");
     }
 }

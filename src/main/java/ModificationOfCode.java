@@ -3,11 +3,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.legacy.NameFilter;
+import spoon.refactoring.Refactoring;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtBlockImpl;
@@ -24,47 +26,75 @@ public class ModificationOfCode {
         String className = vulnerableMethodUsesCases.getFirstUseCaseClassName();
         String methodName = vulnerableMethodUsesCases.getFirstUseCaseMethodName();
 
-        logger.info(String.format("The class name of the vulnerable method is %s.", className));
+        logger.info("The class name of the vulnerable method is {}.", className);
 
         String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\";
         String pathToVulnerableMethod = pathToCorrectedClass + packageName + "\\" + className + ".java";
 
-        logger.info(String.format("The path to the vulnerable class is %s.", pathToVulnerableMethod));
+        logger.info("The path to the vulnerable class is {}.", pathToVulnerableMethod);
 
         Launcher launcher = Setup.setupLauncher(pathToVulnerableMethod, pathToCorrectedClass);
 
         CtModel model = launcher.buildModel();
         Factory factory = launcher.getFactory();
-        List<CtClass<?>> ctQuery = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
-        ctQuery.get(0).setSimpleName(className + CLASS_NAME_ADDITION);  // TODO remove zero
-        // TODO Add method from superClass.
-        modifyCode(methodName, factory, model);
-        launcher.prettyprint();
-    }
 
-    private static void modifyCode(String methodName, Factory factory, CtModel model) {
+        List<CtClass<?>> classList = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
         CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
 
+        CtClass<?> vulnerableClass;
+        if (classList.size() == 1) {
+            vulnerableClass = classList.get(0);
+
+            if (vulnerableMethod == null) {
+                CtTypeReference<?> superClass = vulnerableClass.getSuperclass();
+                String superclass = superClass.getQualifiedName().replace(".", "\\");
+                className = superClass.getSimpleName();
+                pathToVulnerableMethod = pathToCorrectedClass + superclass + ".java";
+                launcher.addInputResource(pathToVulnerableMethod);
+                launcher = Setup.setupLauncher(pathToVulnerableMethod, pathToCorrectedClass);
+                model = launcher.buildModel();
+                factory = launcher.getFactory();
+                vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
+                classList = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
+                if (classList.size() == 1)
+                    vulnerableClass = classList.get(0);
+            }
+            vulnerableClass.setSimpleName(className + CLASS_NAME_ADDITION);
+
+            modifyCode(methodName, factory, vulnerableMethod);
+            launcher.prettyprint();
+        } else
+            logger.warn("The inspected file contains {} classes, can't detect the vulnerable one.", classList.size());
+    }
+
+    private static void modifyCode(String methodName, Factory factory, CtMethod<?> vulnerableMethod) {
         CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
-        modifiedMethod.setSimpleName(vulnerableMethod.getSimpleName() + CLASS_NAME_ADDITION);
+        Refactoring.changeMethodName(modifiedMethod, vulnerableMethod.getSimpleName() + CLASS_NAME_ADDITION);
         List<CtCFlowBreak> returnList = vulnerableMethod.getElements(new ReturnOrThrowFilter());
         List<CtAssignment<?, ?>> assignmentList = vulnerableMethod.getElements(new TypeFilter<>(CtAssignment.class));
-
+        // TODO go to vulnerable method when only one instruction in code, e.g., themis_dynatable_unsafe
         if (returnList.size() > 1) {
-            logger.info(String.format("The method %s suffers from early-exit timing side-channel vulnerability since it" +
-                    "has %d exit points.", methodName, returnList.size()));
+            logger.info("The method {} suffers from early-exit timing side-channel vulnerability since it " +
+                    "has {} exit points.", methodName, returnList.size());
         }
 
-        String returnElement = returnList.get(returnList.size() - 1).toString().replace("return", "").replace(" ", "");
-        CtCodeSnippetStatement $1  = factory.createCodeSnippetStatement(modifiedMethod.getType() + " $1 = " + returnElement);
+        String temp = returnList.get(returnList.size() - 1).toString()
+                .replace("return", "").replace(" ", "");
+
+        String returnElement;
+        if (temp.contains("(")) {   // to avoid the wrong invocation of a method.
+            returnElement = "";
+        } else returnElement = " = " + temp;
+
+        CtCodeSnippetStatement $1  = factory.createCodeSnippetStatement(modifiedMethod.getType() + " $1" + returnElement);
 
         String variableName;
-        if (assignmentList.stream().noneMatch(it -> it.getAssigned().toString().matches(".*\\b" + returnElement + "\\b.*"))) {
-            logger.info(String.format("Added to the method %s, the instruction %s", methodName, $1));
+        if (assignmentList.stream().noneMatch(it -> it.getAssigned().toString().matches(".*\\b" + temp + "\\b.*"))) {
+            logger.info("Added to the method {}, the instruction {}.", methodName, $1);
             modifiedMethod.getBody().addStatement(0, $1);
             variableName = "$1";
         } else
-            variableName = returnElement;
+            variableName = temp;
 
         Iterator<?> iterator = modifiedMethod.getBody().iterator();
         AtomicInteger returnReplacements = new AtomicInteger(0);

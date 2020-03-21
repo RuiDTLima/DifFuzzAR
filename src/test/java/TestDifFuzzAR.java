@@ -2,7 +2,6 @@ import model.VulnerableMethodUses;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
 import java.net.URL;
 
 public class TestDifFuzzAR {

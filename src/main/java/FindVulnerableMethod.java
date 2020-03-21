@@ -8,7 +8,6 @@ import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +58,7 @@ public class FindVulnerableMethod {
 
         Iterator<CtElement> iterator = mainMethod.getBody().iterator();
 
-        VulnerableMethodUses vulnerableMethodUseCases = discoverMethod(iterator, safeMode, safeModeVariable, typedElementList);
+        VulnerableMethodUses vulnerableMethodUseCases = discoverMethodIdentification(iterator, safeMode, safeModeVariable, typedElementList);
 
         if (!vulnerableMethodUseCases.isValid()) {
             logger.warn("The tool could not discover the vulnerable method.");
@@ -100,7 +99,7 @@ public class FindVulnerableMethod {
      * @param typedElementList
      * @return The vulnerable method.
      */
-    private static VulnerableMethodUses discoverMethod(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement> typedElementList) {
+    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement> typedElementList) {
         VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
 
         while (iterator.hasNext()) {
@@ -135,7 +134,7 @@ public class FindVulnerableMethod {
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
-                    return discoverMethod(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
+                    return discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
                 }
             } else if (validAfterMemClear(codeLine)) {
                 if (codeLine.contains("try")) { // Example in themis_pac4j_safe
@@ -143,7 +142,7 @@ public class FindVulnerableMethod {
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
-                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethod(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
+                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
                     vulnerableMethodUses.addFromOtherVulnerableMethodUses(tempVulnerableMethodUses);
                     if (vulnerableMethodUses.isValid())
                         return vulnerableMethodUses;
@@ -178,7 +177,7 @@ public class FindVulnerableMethod {
      * @param codeLine
      */
     private static void setVulnerableMethodUsesCase(List<CtTypedElement> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine) {
-        logger.info(String.format("The line of code %s appears after the Mem.clear.", codeLine));
+        logger.info("The line of code {} appears after the Mem.clear.", codeLine);
         String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
         String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
                 .replace(" ", "");

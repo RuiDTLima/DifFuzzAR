@@ -42,29 +42,6 @@ public class VulnerableMethodUses {
         return secondUseCaseArgumentsNames;
     }
 
-/*    public void setUseCase(String className, String methodName, String[] arguments) {
-        if (firstUseCaseMethodName == null) {
-            firstUseCaseClassName = className;
-            firstUseCaseMethodName = methodName;
-            firstUseCaseArgumentsNames = arguments;
-        } else if (secondUseCaseMethodName == null) {
-            secondUseCaseClassName = className;
-            secondUseCaseMethodName = methodName;
-            secondUseCaseArgumentsNames = arguments;
-        }
-    }
-
-    public void addFromOtherVulnerableMethodUses(VulnerableMethodUses vulnerableMethodUses) {
-        if (this.firstUseCaseMethodName == null) {
-            this.firstUseCaseClassName = vulnerableMethodUses.firstUseCaseClassName;
-            this.firstUseCaseMethodName = vulnerableMethodUses.firstUseCaseMethodName;
-            this.firstUseCaseArgumentsNames = vulnerableMethodUses.firstUseCaseArgumentsNames;
-        } else if (this.secondUseCaseMethodName == null) {
-            this.secondUseCaseClassName = vulnerableMethodUses.firstUseCaseClassName;
-            this.secondUseCaseMethodName = vulnerableMethodUses.firstUseCaseMethodName;
-            this.secondUseCaseArgumentsNames = vulnerableMethodUses.firstUseCaseArgumentsNames;
-        }
-    }*/
     public void setUseCase(String packageName, String className, String methodName, String[] arguments) {
         if (firstUseCaseMethodName == null) {
             firstUseCasePackageName = packageName;
