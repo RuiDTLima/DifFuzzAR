@@ -5,6 +5,7 @@ import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
+import spoon.reflect.reference.CtPackageReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
@@ -190,8 +191,17 @@ public class FindVulnerableMethod {
         String methodName = invocationParts[1];
         String[] className = getClassName(typedElementList, sourceOfMethod);
         String packageName = className[0];
-        if (packageName.equals("") && element instanceof CtInvocationImpl) {
-            packageName = ((CtTypeAccessImpl)((CtInvocationImpl) element).getTarget()).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+        if (packageName.equals("")) {
+            if (element instanceof CtInvocationImpl) {
+                packageName = ((CtTypeAccessImpl)((CtInvocationImpl) element).getTarget()).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+            } else if (element instanceof CtLocalVariableImpl) {
+                CtExpression defaultExpression = ((CtLocalVariableImpl) element).getDefaultExpression();
+                if (defaultExpression instanceof  CtInvocationImpl) {
+                    CtPackageReference packageReference = ((CtInvocationImpl) defaultExpression).getTarget().getType().getPackage();
+                    if (packageReference != null)
+                        packageName = packageReference.getSimpleName().replace(".", "\\");
+                }
+            }
         }
         vulnerableMethodUses.setUseCase(packageName, className[1], methodName, arguments);
     }
