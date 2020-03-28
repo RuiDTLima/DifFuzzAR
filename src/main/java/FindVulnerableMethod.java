@@ -193,7 +193,13 @@ public class FindVulnerableMethod {
         String packageName = className[0];
         if (packageName.equals("")) {
             if (element instanceof CtInvocationImpl) {
-                packageName = ((CtTypeAccessImpl)((CtInvocationImpl) element).getTarget()).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+                CtExpression elementTarget = ((CtInvocationImpl) element).getTarget();
+                if (elementTarget instanceof CtTypeAccessImpl) {
+                    packageName = ((CtTypeAccessImpl)elementTarget).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+                } else {
+                    packageName = elementTarget.getType().getPackage().getSimpleName().replace(".", "\\");
+                }
+
             } else if (element instanceof CtLocalVariableImpl) {
                 CtExpression defaultExpression = ((CtLocalVariableImpl) element).getDefaultExpression();
                 if (defaultExpression instanceof  CtInvocationImpl) {
