@@ -204,7 +204,7 @@ public class FindVulnerableMethod {
                 CtExpression defaultExpression = ((CtLocalVariableImpl) element).getDefaultExpression();
                 if (defaultExpression instanceof  CtInvocationImpl) {
                     CtPackageReference packageReference = ((CtInvocationImpl) defaultExpression).getTarget().getType().getPackage();
-                    if (packageReference != null)
+                    if (packageReference != null && packageReference.getParent().toString().equals(className[1]))
                         packageName = packageReference.getSimpleName().replace(".", "\\");
                 }
             }

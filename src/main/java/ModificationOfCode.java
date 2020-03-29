@@ -12,10 +12,8 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
-import spoon.support.reflect.code.CtIfImpl;
-import spoon.support.reflect.code.CtInvocationImpl;
-import spoon.support.reflect.code.CtReturnImpl;
-import java.util.ArrayList;
+import spoon.support.reflect.code.*;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -113,7 +111,7 @@ public class ModificationOfCode {
         else
             returnElement = finalReturn;
 
-        String variableName;
+        String variableName = "";
 
         // Create a variable to hold the return value.
         Optional<CtLocalVariable<?>> optionalReturnAssignment = variableList.stream().filter(it -> it.getReference().toString().matches(".*\\b" + finalReturn + "\\b.*")).findFirst();
@@ -126,11 +124,29 @@ public class ModificationOfCode {
         } else {
             CtLocalVariable<?> returnAssignmentToRemove = optionalReturnAssignment.get();
             CtLocalVariable<?> returnAssignmentToAdd = returnAssignmentToRemove.clone();
-            modifiedMethodBody.removeStatement(returnAssignmentToRemove);
-            modifiedMethodBody.addStatement(0, returnAssignmentToAdd);
-            variableName = returnElement;
-            logger.info("Change the position of the definition of the variable to be returned to the beginning of the method." +
-                    "\n BE ADVISED: This can lead to problems since, the definition might require variable not defined.");
+            if (returnAssignmentToRemove.getDefaultExpression() instanceof CtNewArrayImpl) {    // In response to themis_dynatable_unsafe
+                List<CtExpression<Integer>> dimensionExpressions = ((CtNewArrayImpl<?>) returnAssignmentToRemove.getDefaultExpression()).getDimensionExpressions();
+
+                for (CtLocalVariable<?> variable : variableList) {
+                    if (dimensionExpressions.stream().anyMatch(arraySize -> variable.getSimpleName().equals(arraySize.toString()))) {
+                        String returnName = returnAssignmentToRemove.getSimpleName();
+                        CtExpression<?> assignment = returnAssignmentToRemove.getAssignment();
+                        CtTypeReference<?> returnType = returnAssignmentToRemove.getType();
+                        CtCodeSnippetStatement assignmentModification  = factory.createCodeSnippetStatement(returnName + " = " + assignment);
+                        returnAssignmentToRemove.replace(assignmentModification);
+                        CtCodeSnippetStatement returnVariableDefinition = factory.createCodeSnippetStatement(returnType + " " + returnName);
+                        modifiedMethodBody.addStatement(0, returnVariableDefinition);
+                        variableName = returnElement;
+                    }
+                }
+            } else {
+                //returnAssignmentToRemove.
+                modifiedMethodBody.removeStatement(returnAssignmentToRemove);
+                modifiedMethodBody.addStatement(0, returnAssignmentToAdd);
+                variableName = returnElement;
+               /* logger.info("Change the position of the definition of the variable to be returned to the beginning of the method." +
+                        "\n BE ADVISED: This can lead to problems since, the definition might require variable not defined.");*/
+            }
         }
 
         Iterator<CtCFlowBreak> returnsIterator = returnList.iterator();
