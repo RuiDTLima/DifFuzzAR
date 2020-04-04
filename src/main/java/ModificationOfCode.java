@@ -7,6 +7,7 @@ import spoon.refactoring.Refactoring;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
@@ -14,9 +15,11 @@ import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class ModificationOfCode {
     private static Logger logger = LoggerFactory.getLogger(ModificationOfCode.class);
@@ -72,7 +75,7 @@ public class ModificationOfCode {
         List<CtStatement> statementList = vulnerableMethod.getBody().getStatements();
 
         if (statementList.size() == 1 && !(statementList.get(0) instanceof CtIfImpl)) {
-            String methodInvocation = ((CtReturnImpl) statementList.get(0)).getReturnedExpression().prettyprint();
+            String methodInvocation = ((CtReturnImpl<?>) statementList.get(0)).getReturnedExpression().prettyprint();
             String calledMethodName = methodInvocation.substring(0, methodInvocation.indexOf("("));
             vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(calledMethodName)).first();
             modifyCode(calledMethodName, factory, vulnerableMethod, model);
@@ -99,10 +102,13 @@ public class ModificationOfCode {
 
         // to avoid the wrong invocation of a method.
         if (finalReturn.contains("(") && !finalReturn.contains("+")) {
-            List lastReturnInvocationArguments = ((CtInvocationImpl) ((CtReturnImpl) returnList.get(returnList.size() - 1))
+            Stream<?> lastReturnInvocationArguments = ((CtInvocationImpl<?>) ((CtReturnImpl<?>) returnList.get(returnList.size() - 1))
                     .getReturnedExpression())
-                    .getArguments();
-            if (lastReturnInvocationArguments.stream().noneMatch(argument -> variableList.stream().anyMatch(variable -> variable.getReference().getDeclaration().getSimpleName().equals(argument)))) {
+                    .getArguments()
+                    .stream()
+                    .flatMap(elem -> Arrays.stream(elem.toString().split("\\.")).limit(1));
+
+            if (lastReturnInvocationArguments.noneMatch(argument ->  variableList.stream().anyMatch(variable -> variable.getReference().getDeclaration().getSimpleName().equals(argument)))) {
                 returnElement = finalReturn;
             } else
                 returnElement = "";
@@ -140,18 +146,40 @@ public class ModificationOfCode {
                     }
                 }
             } else {
-                //returnAssignmentToRemove.
                 modifiedMethodBody.removeStatement(returnAssignmentToRemove);
                 modifiedMethodBody.addStatement(0, returnAssignmentToAdd);
                 variableName = returnElement;
-               /* logger.info("Change the position of the definition of the variable to be returned to the beginning of the method." +
-                        "\n BE ADVISED: This can lead to problems since, the definition might require variable not defined.");*/
             }
         }
 
         Iterator<CtCFlowBreak> returnsIterator = returnList.iterator();
         while (returnsIterator.hasNext()) {
-            CtReturnImpl returnImpl = (CtReturnImpl) returnsIterator.next();
+            CtReturnImpl<?> returnImpl = (CtReturnImpl<?>) returnsIterator.next();
+            CtElement parentElement = returnImpl.getParent().getParent();
+            if (parentElement instanceof CtIfImpl) {
+                CtIfImpl parentIfStatement = (CtIfImpl) parentElement;
+                if (parentIfStatement.getCondition() instanceof CtBinaryOperator) {
+                    CtBinaryOperator<Boolean> condition = (CtBinaryOperator<Boolean>) parentIfStatement.getCondition();
+                    CtElement leftHandOperator = condition.getLeftHandOperand();
+                    CtElement rightHandOperator = condition.getRightHandOperand();
+
+                    if (leftHandOperator instanceof CtArrayReadImpl || rightHandOperator instanceof CtArrayReadImpl) {
+                        String newCondition = "";
+                        if (leftHandOperator instanceof CtArrayReadImpl) {
+                            CtArrayReadImpl<?> arrayRead = ((CtArrayReadImpl<?>) leftHandOperator);
+                            newCondition += String.format("%s < %s.length && ", arrayRead.getIndexExpression(), arrayRead.getTarget());
+                        }
+
+                        if (rightHandOperator instanceof CtArrayReadImpl) {
+                            CtArrayReadImpl<?> arrayRead = (CtArrayReadImpl<?>) rightHandOperator;
+                            newCondition += String.format("%s < %s.length && ", arrayRead.getIndexExpression(), arrayRead.getTarget());
+                        }
+
+                        newCondition += condition;
+                        parentIfStatement.setCondition(factory.createCodeSnippetExpression(newCondition));
+                    }
+                }
+            }
             String returnedValue = returnImpl.getReturnedExpression().toString();
             if (!returnsIterator.hasNext()) {
                 if (!returnElement.contains(returnedValue)) {
