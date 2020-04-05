@@ -23,6 +23,7 @@ public class FindVulnerableMethod {
 
         List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
         List<CtTypedElement> typedElementList = model.filterChildren(new TypeFilter<>(CtTypedElement.class)).list();
+        //model.getElements(new TypeFilter<>(CtVariable.class));
 
         if (methodList.size() == 0) {
             logger.warn("The file should contain at least the main method, and it contains no methods.");

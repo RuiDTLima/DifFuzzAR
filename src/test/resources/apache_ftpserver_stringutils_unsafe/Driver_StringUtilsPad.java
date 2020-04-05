@@ -63,12 +63,12 @@ public class Driver_StringUtilsPad {
         StringUtils.safeMode = SAFE_MODE;
 
         Mem.clear();
-        StringUtils.pad(userName1, ' ', true, MAX_USERNAME_LENGTH);
+        StringUtils.pad_unsafe(userName1, ' ', true, MAX_USERNAME_LENGTH);
         long cost1 = Mem.instrCost;
         System.out.println("cost1=" + cost1);
 
         Mem.clear();
-        StringUtils.pad(userName2, ' ', true, MAX_USERNAME_LENGTH);
+        StringUtils.pad_unsafe(userName2, ' ', true, MAX_USERNAME_LENGTH);
         long cost2 = Mem.instrCost;
         System.out.println("cost2=" + cost2);
 

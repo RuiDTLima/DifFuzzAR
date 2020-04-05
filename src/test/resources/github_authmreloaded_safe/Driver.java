@@ -86,13 +86,13 @@ public class Driver {
         System.out.println("storedPassword_invalid_secret2=" + storedPassword_invalid_secret2.getHash());
 
         Mem.clear();
-        boolean valid1 = encrMethod.comparePassword(password_public, storedPassword_valid_secret1, username_public);
+        boolean valid1 = encrMethod.isEqual_unsafe(storedPassword_valid_secret1.getHash(), encrMethod.computeHash(password_public));
         long cost1 = Mem.instrCost;
         System.out.println("valid1=" + valid1);
         System.out.println("cost1=" + cost1);
 
         Mem.clear();
-        boolean valid2 = encrMethod.comparePassword(password_public, storedPassword_invalid_secret2, username_public);
+        boolean valid2 = encrMethod.isEqual_unsafe(storedPassword_invalid_secret2.getHash(), encrMethod.computeHash(password_public));
         long cost2 = Mem.instrCost;
         System.out.println("valid2=" + valid2);
         System.out.println("cost2=" + cost2);

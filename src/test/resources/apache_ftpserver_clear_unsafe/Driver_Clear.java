@@ -92,13 +92,13 @@ public class Driver_Clear {
         System.out.println("secret2 (invalid stored password): " + storedPassword_invalid_secret2);
 
         Mem.clear();
-        boolean valid1 = pe.matches(validPassword_public, storedPassword_valid_secret1);
+        boolean valid1 = pe.isEqual_unsafe(validPassword_public, storedPassword_valid_secret1);
         long cost1 = Mem.instrCost;
         System.out.println("valid1=" + valid1);
         System.out.println("cost1=" + cost1);
 
         Mem.clear();
-        boolean valid2 = pe.matches(validPassword_public, storedPassword_invalid_secret2);
+        boolean valid2 = pe.isEqual_unsafe(validPassword_public, storedPassword_invalid_secret2);
         long cost2 = Mem.instrCost;
         System.out.println("valid2=" + valid2);
         System.out.println("cost2=" + cost2);

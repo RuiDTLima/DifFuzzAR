@@ -14,7 +14,6 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +70,8 @@ public class ModificationOfCode {
             logger.warn("The inspected file contains {} classes, can't detect the vulnerable one.", classList.size());*/
     }
 
-    private static void modifyCode(String methodName, Factory factory, CtMethod<?> vulnerableMethod, CtModel model) {
+    // TODO make private
+    protected static void modifyCode(String methodName, Factory factory, CtMethod<?> vulnerableMethod, CtModel model) {
         List<CtStatement> statementList = vulnerableMethod.getBody().getStatements();
 
         if (statementList.size() == 1 && !(statementList.get(0) instanceof CtIfImpl)) {
@@ -95,7 +95,8 @@ public class ModificationOfCode {
         }
 
         int lastIndex = returnList.size() - 1;
-        String finalReturn = returnList.get(lastIndex).toString()
+        CtReturnImpl finalReturnElement = (CtReturnImpl) returnList.get(lastIndex);
+        String finalReturn = finalReturnElement.toString()
                 .replace("return ", "");
 
         String returnElement;
@@ -112,7 +113,7 @@ public class ModificationOfCode {
                 returnElement = finalReturn;
             } else
                 returnElement = "";
-        } else if (finalReturn.contains("+"))
+        } else if (finalReturnElement.getReturnedExpression() instanceof CtBinaryOperator)//if (finalReturn.contains("+"))
             returnElement = "";
         else
             returnElement = finalReturn;

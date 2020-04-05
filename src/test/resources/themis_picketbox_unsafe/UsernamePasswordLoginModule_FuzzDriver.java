@@ -73,13 +73,13 @@ public class UsernamePasswordLoginModule_FuzzDriver {
 
 
         Mem.clear();
-        boolean result1 = UsernamePasswordLoginModule.validatePassword_unsafe(secret1_expected, public_actual);
+        boolean result1 = UsernamePasswordLoginModule.equals(secret1_expected, public_actual);
         System.out.println("Answer1: " + result1);
         long cost1 = Mem.instrCost;
         System.out.println("cost1=" + cost1);
         Mem.clear();
 
-        boolean result2 = UsernamePasswordLoginModule.validatePassword_unsafe(secret2_expected, public_actual);
+        boolean result2 = UsernamePasswordLoginModule.equals(secret2_expected, public_actual);
         System.out.println("Answer2: " + result2);
         long cost2 = Mem.instrCost;
         System.out.println("cost2=" + cost2);
