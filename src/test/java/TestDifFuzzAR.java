@@ -75,8 +75,8 @@ public class TestDifFuzzAR {
                 {"themis_picketbox_unsafe/UsernamePasswordLoginModule_FuzzDriver.java", "UsernamePasswordLoginModule", "equals"},
                 {"themis_spring-security_safe/PasswordEncoderUtils_FuzzDriver.java", "PasswordEncoderUtils", "equals_safe"},
                 {"themis_spring-security_unsafe/PasswordEncoderUtils_FuzzDriver.java", "PasswordEncoderUtils", "equals_unsafe"},
-                {"themis_tomcat_safe/Tomcat_FuzzDriver.java", "DSR", "authenticate_safe"},
-                {"themis_tomcat_unsafe/Tomcat_FuzzDriver.java", "DSR", "authenticate_unsafe"},
+                {"themis_tomcat_safe/Tomcat_FuzzDriver.java", "DataSourceRealm", "authenticate_safe"},
+                {"themis_tomcat_unsafe/Tomcat_FuzzDriver.java", "DataSourceRealm", "authenticate_unsafe"},
                 {"themis_tourplanner_safe/Driver.java", "TourServlet", "doGet"},
                 {"themis_tourplanner_unsafe/Driver.java", "TourServlet", "doGet"}
         };

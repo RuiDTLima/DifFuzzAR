@@ -31,7 +31,7 @@ public class ModificationOfCode {
 
         logger.info("The class name of the vulnerable method is {}.", className);
 
-        String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\";
+        String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\"; // The new class will add the necessary package
         String pathToVulnerableMethod = pathToCorrectedClass + packageName + "\\" + className + ".java";
 
         logger.info("The path to the vulnerable class is {}.", pathToVulnerableMethod);

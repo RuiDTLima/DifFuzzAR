@@ -23,7 +23,7 @@ public class FindVulnerableMethod {
 
         List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
         List<CtTypedElement> typedElementList = model.filterChildren(new TypeFilter<>(CtTypedElement.class)).list();
-        //model.getElements(new TypeFilter<>(CtVariable.class));
+        List<CtVariable> variables = model.getElements(new TypeFilter<>(CtVariable.class));
 
         if (methodList.size() == 0) {
             logger.warn("The file should contain at least the main method, and it contains no methods.");
@@ -60,7 +60,7 @@ public class FindVulnerableMethod {
 
         Iterator<CtElement> iterator = mainMethod.getBody().iterator();
 
-        VulnerableMethodUses vulnerableMethodUseCases = discoverMethodIdentification(iterator, safeMode, safeModeVariable, typedElementList);
+        VulnerableMethodUses vulnerableMethodUseCases = discoverMethodIdentification(iterator, safeMode, safeModeVariable, typedElementList, variables);
 
         if (!vulnerableMethodUseCases.isValid()) {
             logger.warn("The tool could not discover the vulnerable method.");
@@ -99,9 +99,10 @@ public class FindVulnerableMethod {
      * @param safeMode         Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
      * @param safeModeVariable The name of the variable that indicates if the safeMode is in action.
      * @param typedElementList
+     * @param variables
      * @return The vulnerable method.
      */
-    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement> typedElementList) {
+    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement> typedElementList, List<CtVariable> variables) {
         VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
 
         while (iterator.hasNext()) {
@@ -126,7 +127,7 @@ public class FindVulnerableMethod {
                     else if (afterMemClear) {
                         afterMemClear = false;
 
-                        setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, statement, statement.prettyprint());
+                        setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, statement, statement.prettyprint(), variables);
                     }
                 }
             } else if (codeLine.contains("Mem.clear()")) {
@@ -136,7 +137,7 @@ public class FindVulnerableMethod {
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
-                    return discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
+                    return discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList, variables);
                 }
             } else if (validAfterMemClear(codeLine)) {
                 if (codeLine.contains("try")) { // Example in themis_pac4j_safe
@@ -144,13 +145,13 @@ public class FindVulnerableMethod {
                     CtBlock ctBlock = elements.get(0);  // the code inside try block
                     Iterator ctBlockIterator = ctBlock.iterator();
 
-                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList);
+                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList, variables);
                     vulnerableMethodUses.addFromOtherVulnerableMethodUses(tempVulnerableMethodUses);
                     if (vulnerableMethodUses.isValid())
                         return vulnerableMethodUses;
                 } else {
                     afterMemClear = false;
-                    setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, codeLine);
+                    setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, codeLine, variables);
                 }
             }
         }
@@ -177,8 +178,9 @@ public class FindVulnerableMethod {
      * @param vulnerableMethodUses
      * @param element
      * @param codeLine
+     * @param variables
      */
-    private static void setVulnerableMethodUsesCase(List<CtTypedElement> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine) {
+    private static void setVulnerableMethodUsesCase(List<CtTypedElement> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine, List<CtVariable> variables) {
         logger.info("The line of code {} appears after the Mem.clear.", codeLine);
         String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
         String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
@@ -190,7 +192,7 @@ public class FindVulnerableMethod {
         String[] invocationParts = invocation.split("\\.");
         String sourceOfMethod = invocationParts[0];
         String methodName = invocationParts[1];
-        String[] className = getClassName(typedElementList, sourceOfMethod);
+        String[] className = getClassName(typedElementList, sourceOfMethod, variables);
         String packageName = className[0];
         if (packageName.equals("")) {
             if (element instanceof CtInvocationImpl) {
@@ -217,10 +219,11 @@ public class FindVulnerableMethod {
      * Obtains the name of the class where the vulnerable method is defined.
      * @param typedElementList
      * @param sourceOfMethod
+     * @param variables
      * @return
      */
-    private static String[] getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod) {
-        if (Character.isLowerCase(sourceOfMethod.codePointAt(0))) {
+    private static String[] getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod, List<CtVariable> variables) {
+        if (variables.stream().anyMatch(variable -> variable.getSimpleName().equals(sourceOfMethod))) {
             Optional<CtTypedElement> objectCreation = typedElementList.stream().
                     filter(it -> !it.toString().contains("main") &&
                             it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*") &&
