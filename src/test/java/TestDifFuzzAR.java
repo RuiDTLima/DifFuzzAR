@@ -3,10 +3,13 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import spoon.Launcher;
+import spoon.SpoonAPI;
 import spoon.legacy.NameFilter;
 import spoon.reflect.CtModel;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class TestDifFuzzAR {
+    private static final String CLASS_NAME_ADDITION = "$Modification";
     @DataProvider
     private Object[][] findVulnerableMethodAndClass() {
         return new Object[][] {
@@ -85,22 +89,22 @@ public class TestDifFuzzAR {
     @DataProvider
     private Object[][] correctVulnerableMethod() {
         return new Object[][] {
-                {"", "apache_ftpserver_clear_unsafe/ClearTextPasswordEncryptor.java", "isEqual_unsafe", "apache_ftpserver_clear_unsafe/CorrectedMethod.java"},
-                {"", "apache_ftpserver_md5_unsafe/Md5PasswordEncryptor.java", "regionMatches", "apache_ftpserver_md5_unsafe/CorrectedMethod.java"},
-                {"", "apache_ftpserver_stringutils_unsafe/StringUtils.java", "pad_unsafe", "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java"},
-                {"", "blazer_passwordEq_unsafe/User.java", "passwordsEqual_unsafe", "blazer_passwordEq_unsafe/CorrectedMethod.java"},
-                {"", "blazer_sanity_unsafe/Sanity.java", "sanity_unsafe", "blazer_sanity_unsafe/CorrectedMethod.java"},
-                {"", "example_PWCheck_unsafe/PWCheck.java", "pwcheck1_unsafe", "example_PWCheck_unsafe/CorrectedMethod.java"},
-                {"", "github_authmreloaded_unsafe/UnsaltedMethod.java", "isEqual_unsafe", "github_authmreloaded_unsafe/CorrectedMethod.java"},
-                {"", "themis_boot-stateless-auth_unsafe/TokenHandler.java", "parseUserFromToken_unsafe", "themis_boot-stateless-auth_unsafe/CorrectedMethod.java"},
-                {"", "themis_dynatable_unsafe/SchoolCalendarServiceImpl.java", "getPeople_unsafe", "themis_dynatable_unsafe/CorrectedMethod.java"},
-                {"", "themis_jdk_unsafe/MessageDigest.java", "isEqual_unsafe", "themis_jdk_unsafe/CorrectedMethod.java"},
-                {"", "themis_jetty_unsafe/Credential.java", "stringEquals_original", "themis_jetty_unsafe/CorrectedMethod.java"},
-                {"", "themis_oacc_unsafe/PasswordCredentials.java", "equals", "themis_oacc_unsafe/CorrectedMethod.java"},
-                {"", "themis_orientdb_unsafe/OSecurityManager.java", "checkPassword_unsafe", "themis_orientdb_unsafe/CorrectedMethod.java"},
-                {"", "themis_picketbox_unsafe/UsernamePasswordLoginModule.java", "equals", "themis_picketbox_unsafe/CorrectedMethod.java"},
-                {"", "themis_spring-security_unsafe/PasswordEncoderUtils.java", "equals_unsafe", "themis_spring-security_unsafe/CorrectedMethod.java"},
-                {"", "themis_tomcat_unsafe/DataSourceRealm.java", "authenticate_unsafe", "themis_tomcat_unsafe/CorrectedMethod.java"}
+                {"apache_ftpserver_clear_unsafe/ClearTextPasswordEncryptor.java", "ClearTextPasswordEncryptor$Modification", "isEqual_unsafe", "apache_ftpserver_clear_unsafe/CorrectedMethod.java"},
+                {"apache_ftpserver_md5_unsafe/Md5PasswordEncryptor.java", "Md5PasswordEncryptor$Modification", "regionMatches", "apache_ftpserver_md5_unsafe/CorrectedMethod.java"},
+                {"apache_ftpserver_stringutils_unsafe/StringUtils.java", "StringUtils$Modification", "pad_unsafe", "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java"},
+                {"blazer_passwordEq_unsafe/User.java", "User$Modification", "passwordsEqual_unsafe", "blazer_passwordEq_unsafe/CorrectedMethod.java"},
+                {"blazer_sanity_unsafe/Sanity.java", "Sanity$Modification", "sanity_unsafe", "blazer_sanity_unsafe/CorrectedMethod.java"},
+                {"example_PWCheck_unsafe/PWCheck.java", "PWCheck$Modification", "pwcheck1_unsafe", "example_PWCheck_unsafe/CorrectedMethod.java"},
+                {"github_authmreloaded_unsafe/UnsaltedMethod.java", "UnsaltedMethod$Modification", "isEqual_unsafe", "github_authmreloaded_unsafe/CorrectedMethod.java"},
+                {"themis_boot-stateless-auth_unsafe/TokenHandler.java", "TokenHandler$Modification", "parseUserFromToken_unsafe", "themis_boot-stateless-auth_unsafe/CorrectedMethod.java"},
+                {"themis_dynatable_unsafe/SchoolCalendarServiceImpl.java", "SchoolCalendarServiceImpl$Modification", "getPeople_unsafe", "themis_dynatable_unsafe/CorrectedMethod.java"},
+                {"themis_jdk_unsafe/MessageDigest.java", "MessageDigest$Modification", "isEqual_unsafe", "themis_jdk_unsafe/CorrectedMethod.java"},
+                {"themis_jetty_unsafe/Credential.java", "Credential$Modification", "stringEquals_original", "themis_jetty_unsafe/CorrectedMethod.java"},
+                {"themis_oacc_unsafe/PasswordCredentials.java", "PasswordCredentials$Modification", "equals", "themis_oacc_unsafe/CorrectedMethod.java"},
+                {"themis_orientdb_unsafe/OSecurityManager.java", "OSecurityManager$Modification", "checkPassword_unsafe", "themis_orientdb_unsafe/CorrectedMethod.java"},
+                {"themis_picketbox_unsafe/UsernamePasswordLoginModule.java", "UsernamePasswordLoginModule$Modification", "equals", "themis_picketbox_unsafe/CorrectedMethod.java"},
+                {"themis_spring-security_unsafe/PasswordEncoderUtils.java", "PasswordEncoderUtils$Modification", "equals_unsafe", "themis_spring-security_unsafe/CorrectedMethod.java"},
+                {"themis_tomcat_unsafe/DataSourceRealm.java", "DataSourceRealm$Modification", "authenticate_unsafe", "themis_tomcat_unsafe/CorrectedMethod.java"}
         };
     }
 
@@ -132,18 +136,21 @@ public class TestDifFuzzAR {
     }
 
     @Test(dataProvider = "correctVulnerableMethod")
-    public void testCorrectMethodWithEarlyExit(String pathToCorrectedClass, String pathToVulnerableMethod, String methodName, String correctedMethodPath) throws URISyntaxException, IOException {
+    public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod, String correctedClassName, String methodName, String correctedMethodPath) throws URISyntaxException, IOException {
+        // Setup
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
         Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");
-
         CtModel model = launcher.buildModel();
         Factory factory = launcher.getFactory();
-
+        CtClass<?> vulnerableClass = model.filterChildren(new TypeFilter<>(CtClass.class)).first();
         CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
+        vulnerableClass.setSimpleName(correctedClassName);
 
+        // Act
         ModificationOfCode.modifyCode(methodName, factory, vulnerableMethod, model);
 
+        // Assert
         URL resource = classLoader.getResource(correctedMethodPath);
         List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
 

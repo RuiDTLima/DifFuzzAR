@@ -84,6 +84,7 @@ public class ModificationOfCode {
 
         CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
         Refactoring.changeMethodName(modifiedMethod, vulnerableMethod.getSimpleName() + CLASS_NAME_ADDITION);
+
         List<CtCFlowBreak> returnList = modifiedMethod.getElements(new ReturnOrThrowFilter());
         returnList.removeIf(returnOrThrow -> !(returnOrThrow instanceof CtReturnImpl));
         List<CtLocalVariable<?>> variableList = modifiedMethod.getElements(new TypeFilter<>(CtLocalVariable.class));
