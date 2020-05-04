@@ -14,7 +14,7 @@ public static boolean equals$Modification(String a, String b) {
                 $1 = false;
             }
         }
-        $1 = true;
+        return $1;//$1 = true;
     }
     return $1;
 }

@@ -1,5 +1,4 @@
 import model.VulnerableMethodUses;
-import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -151,8 +150,7 @@ public class TestDifFuzzAR {
 
         // Assert
         URL resource = classLoader.getResource(correctedMethodPath);
-        List<String> strings = IOUtils.readLines(classLoader.getResourceAsStream(correctedMethodPath), "UTF-8");
-        //List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
+        List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
 
         CtMethod correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
         List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));

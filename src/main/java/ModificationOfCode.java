@@ -14,15 +14,15 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import spoon.support.reflect.declaration.CtMethodImpl;
+
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ModificationOfCode {
     private static Logger logger = LoggerFactory.getLogger(ModificationOfCode.class);
     private static final String CLASS_NAME_ADDITION = "$Modification";
+    private static CtElement cycleElement = null;
 
     public static void processVulnerableClass(String driverPath, VulnerableMethodUses vulnerableMethodUsesCases) {
         String packageName = vulnerableMethodUsesCases.getFirstUseCasePackageName();
@@ -133,7 +133,8 @@ public class ModificationOfCode {
             CtLocalVariable<?> returnAssignmentToRemove = optionalReturnAssignment.get();
             CtLocalVariable<?> returnAssignmentToAdd = returnAssignmentToRemove.clone();
             if (returnAssignmentToRemove.getDefaultExpression() instanceof CtNewArrayImpl) {    // In response to themis_dynatable_unsafe
-                List<CtExpression<Integer>> dimensionExpressions = ((CtNewArrayImpl<?>) returnAssignmentToRemove.getDefaultExpression()).getDimensionExpressions();
+                List<CtExpression<Integer>> dimensionExpressions = ((CtNewArrayImpl<?>) returnAssignmentToRemove.getDefaultExpression())
+                                                                                                                .getDimensionExpressions();
 
                 for (CtLocalVariable<?> variable : variableList) {
                     if (dimensionExpressions.stream().anyMatch(arraySize -> variable.getSimpleName().equals(arraySize.toString()))) {
@@ -154,10 +155,32 @@ public class ModificationOfCode {
             }
         }
 
+        CtElement parentOfCycleReturn = null;
+        boolean afterCycleReturn = false;
         Iterator<CtCFlowBreak> returnsIterator = returnList.iterator();
         while (returnsIterator.hasNext()) {
             CtReturnImpl<?> returnImpl = (CtReturnImpl<?>) returnsIterator.next();
             CtElement parentElement = returnImpl.getParent().getParent();
+            if (afterCycleReturn && !(parentElement instanceof CtMethodImpl)) {
+                String returnedExpression = returnImpl.getReturnedExpression().toString();
+                CtCodeSnippetStatement toReplace = factory.createCodeSnippetStatement("$1 = " + returnedExpression);
+                ArrayList arrayList = new ArrayList();
+                arrayList.add(toReplace);
+                arrayList.add(cycleElement);
+                cycleElement.replace(arrayList);    //  To avoid a semicolon after the cycle. As a response of test 26 of example github_authmereloaded.
+                while (!(parentElement instanceof CtMethodImpl) && !(parentOfCycleReturn instanceof CtMethodImpl)) {
+                    if (parentElement == parentOfCycleReturn) {
+                        CtReturn<Object> objectCtReturn = factory.createReturn().setReturnedExpression(factory.createCodeSnippetExpression(variableName));
+                        returnImpl.replace(objectCtReturn);
+                        break;
+                    }
+                    parentOfCycleReturn = parentOfCycleReturn.getParent();
+                }
+            }
+            if (!(parentElement instanceof CtMethodImpl) && isInsideCycle(returnImpl)) {    // If the return is inside a cycle
+                afterCycleReturn = true;
+                parentOfCycleReturn = parentElement;
+            }
             if (parentElement instanceof CtIfImpl) {
                 CtIfImpl parentIfStatement = (CtIfImpl) parentElement;
                 if (parentIfStatement.getCondition() instanceof CtBinaryOperator) {
@@ -198,5 +221,17 @@ public class ModificationOfCode {
             CtCodeSnippetStatement codeSnippetStatement = factory.Code().createCodeSnippetStatement(variableName + " = " + returnedValue);
             returnImpl.replace(codeSnippetStatement);
         }
+    }
+
+    private static boolean isInsideCycle(CtReturnImpl<?> returnImpl) {
+        CtElement parent = returnImpl.getParent();
+        while (!(parent instanceof CtMethodImpl)) {
+            if (parent instanceof CtLoop) {
+                cycleElement = parent;
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
     }
 }

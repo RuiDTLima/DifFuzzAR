@@ -16,7 +16,7 @@ public boolean isEqual_unsafe$Modification(String thisObject, Object otherObject
                 }
                 i++;
             }
-            $1 = true;
+            return $1;
         }
     }
     return $1;
