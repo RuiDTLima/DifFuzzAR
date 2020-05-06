@@ -10,13 +10,14 @@ public boolean isEqual_unsafe$Modification(String thisObject, Object otherObject
             char[] v1 = thisObject.toCharArray();
             char[] v2 = anotherString.toCharArray();
             int i = 0;
+            $1 = true;
             while ((n--) != 0) {
                 if (i < v1.length && i < v2.length && v1[i] != v2[i]) {
                     $1 = false;
                 }
                 i++;
             }
-            $1 = true;
+            return $1;
         }
     }
     return $1;

@@ -9,12 +9,13 @@ public static boolean equals$Modification(String a, String b) {
         char[] v2 = b.toCharArray();
         int i = 0;
         int j = 0;
+        $1 = true;
         while ((n--) != 0) {
             if (i++ < v1.length && j++ < v2.length && v1[i++] != v2[j++]) {
                 $1 = false;
             }
         }
-        return $1;//$1 = true;
+        return $1;
     }
     return $1;
 }

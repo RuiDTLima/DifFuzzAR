@@ -14,25 +14,25 @@ import java.util.List;
 import java.util.Optional;
 
 public class FindVulnerableMethod {
-    private static Logger logger = LoggerFactory.getLogger(FindVulnerableMethod.class);
+    private static final Logger logger = LoggerFactory.getLogger(FindVulnerableMethod.class);
     private static boolean afterMemClear = false;
 
     public static VulnerableMethodUses processDriver(String path) {
         Launcher launcher = Setup.setupLauncher(path, "");
         CtModel model = launcher.buildModel();
 
-        List<CtMethod> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
-        List<CtTypedElement> typedElementList = model.filterChildren(new TypeFilter<>(CtTypedElement.class)).list();
-        List<CtVariable> variables = model.getElements(new TypeFilter<>(CtVariable.class));
+        List<CtMethod<?>> methodList = model.filterChildren(new TypeFilter<>(CtMethod.class)).list();
+        List<CtTypedElement<?>> typedElementList = model.filterChildren(new TypeFilter<>(CtTypedElement.class)).list();
+        List<CtVariable<?>> variables = model.getElements(new TypeFilter<>(CtVariable.class));
 
-        if (methodList.size() == 0) {
+        if (methodList.isEmpty()) {
             logger.warn("The file should contain at least the main method, and it contains no methods.");
             return null;
         }
 
-        CtMethod mainMethod = null;
+        CtMethod<?> mainMethod = null;
 
-        for (CtMethod method : methodList) {
+        for (CtMethod<?> method : methodList) {
             if (method.getSimpleName().equals("main")) {
                 mainMethod = method;
                 break;
@@ -47,18 +47,19 @@ public class FindVulnerableMethod {
         String safeModeVariable = null;
         boolean safeMode = false;
 
-        List<CtField> fieldList = model.filterChildren(new TypeFilter<>(CtField.class)).list();
-        Optional<CtField> optionalSafeModeField = fieldList.stream()
+        List<CtField<?>> fieldList = model.filterChildren(new TypeFilter<>(CtField.class)).list();
+        Optional<CtField<Boolean>> optionalSafeModeField = fieldList.stream()
                 .filter(field -> field.isFinal() && field.getType().getSimpleName().equals("boolean"))
-                .findAny();
+                .findAny()
+                .map(ctField -> (CtField<Boolean>) ctField);
 
         if (optionalSafeModeField.isPresent()) {
-            CtField safeModeField = optionalSafeModeField.get();
+            CtField<Boolean> safeModeField = optionalSafeModeField.get();
             safeModeVariable = safeModeField.getSimpleName();
-            safeMode = (boolean) ((CtLiteralImpl) safeModeField.getAssignment()).getValue();
+            safeMode = ((CtLiteralImpl<Boolean>) safeModeField.getAssignment()).getValue();
         }
 
-        Iterator<CtElement> iterator = mainMethod.getBody().iterator();
+        Iterator<CtStatement> iterator = mainMethod.getBody().iterator();
 
         VulnerableMethodUses vulnerableMethodUseCases = discoverMethodIdentification(iterator, safeMode, safeModeVariable, typedElementList, variables);
 
@@ -102,7 +103,7 @@ public class FindVulnerableMethod {
      * @param variables
      * @return The vulnerable method.
      */
-    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtElement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement> typedElementList, List<CtVariable> variables) {
+    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtStatement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement<?>> typedElementList, List<CtVariable<?>> variables) {
         VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
 
         while (iterator.hasNext()) {
@@ -110,7 +111,7 @@ public class FindVulnerableMethod {
             String codeLine = element.prettyprint();
 
             if (safeModeVariable != null && codeLine.contains("if") && codeLine.contains(safeModeVariable) && !(element instanceof CtTry)) {
-                List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
+                List<CtBlock<CtStatement>> elements = element.getElements(new TypeFilter<>(CtBlock.class));
                 int idx = 0;
                 if (codeLine.contains("if(!")) {
                     if (safeMode)
@@ -133,17 +134,17 @@ public class FindVulnerableMethod {
             } else if (codeLine.contains("Mem.clear()")) {
                 afterMemClear = true;
                 if (codeLine.contains("try")) {
-                    List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
-                    CtBlock ctBlock = elements.get(0);  // the code inside try block
-                    Iterator ctBlockIterator = ctBlock.iterator();
+                    List<CtBlock<CtTry>> elements = element.getElements(new TypeFilter<>(CtBlock.class));
+                    CtBlock<CtTry> ctBlock = elements.get(0);  // the code inside try block
+                    Iterator<CtStatement> ctBlockIterator = ctBlock.iterator();
 
                     return discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList, variables);
                 }
             } else if (validAfterMemClear(codeLine)) {
                 if (codeLine.contains("try")) { // Example in themis_pac4j_safe
-                    List<CtBlock> elements = element.getElements(new TypeFilter<>(CtBlock.class));
-                    CtBlock ctBlock = elements.get(0);  // the code inside try block
-                    Iterator ctBlockIterator = ctBlock.iterator();
+                    List<CtBlock<CtTry>> elements = element.getElements(new TypeFilter<>(CtBlock.class));
+                    CtBlock<CtTry> ctBlock = elements.get(0);  // the code inside try block
+                    Iterator<CtStatement> ctBlockIterator = ctBlock.iterator();
 
                     VulnerableMethodUses tempVulnerableMethodUses = discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList, variables);
                     vulnerableMethodUses.addFromOtherVulnerableMethodUses(tempVulnerableMethodUses);
@@ -180,7 +181,7 @@ public class FindVulnerableMethod {
      * @param codeLine
      * @param variables
      */
-    private static void setVulnerableMethodUsesCase(List<CtTypedElement> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine, List<CtVariable> variables) {
+    private static void setVulnerableMethodUsesCase(List<CtTypedElement<?>> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine, List<CtVariable<?>> variables) {
         logger.info("The line of code {} appears after the Mem.clear.", codeLine);
         String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
         String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
@@ -196,17 +197,17 @@ public class FindVulnerableMethod {
         String packageName = className[0];
         if (packageName.equals("")) {
             if (element instanceof CtInvocationImpl) {
-                CtExpression elementTarget = ((CtInvocationImpl) element).getTarget();
+                CtExpression<?> elementTarget = ((CtInvocationImpl<?>) element).getTarget();
                 if (elementTarget instanceof CtTypeAccessImpl) {
-                    packageName = ((CtTypeAccessImpl)elementTarget).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+                    packageName = ((CtTypeAccessImpl<?>)elementTarget).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
                 } else {
                     packageName = elementTarget.getType().getPackage().getSimpleName().replace(".", "\\");
                 }
 
             } else if (element instanceof CtLocalVariableImpl) {
-                CtExpression defaultExpression = ((CtLocalVariableImpl) element).getDefaultExpression();
+                CtExpression<?> defaultExpression = ((CtLocalVariableImpl<?>) element).getDefaultExpression();
                 if (defaultExpression instanceof  CtInvocationImpl) {
-                    CtPackageReference packageReference = ((CtInvocationImpl) defaultExpression).getTarget().getType().getPackage();
+                    CtPackageReference packageReference = ((CtInvocationImpl<?>) defaultExpression).getTarget().getType().getPackage();
                     if (packageReference != null && packageReference.getParent().toString().equals(className[1]))
                         packageName = packageReference.getSimpleName().replace(".", "\\");
                 }
@@ -222,20 +223,21 @@ public class FindVulnerableMethod {
      * @param variables
      * @return
      */
-    private static String[] getClassName(List<CtTypedElement> typedElementList, String sourceOfMethod, List<CtVariable> variables) {
+    private static String[] getClassName(List<CtTypedElement<?>> typedElementList, String sourceOfMethod, List<CtVariable<?>> variables) {
         if (variables.stream().anyMatch(variable -> variable.getSimpleName().equals(sourceOfMethod))) {
-            Optional<CtTypedElement> objectCreation = typedElementList.stream().
+            Optional<CtTypedElement<?>> objectCreation = typedElementList.stream().
                     filter(it -> !it.toString().contains("main") &&
                             it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*") &&
                             it.toString().contains("="))
                     .findAny();
 
-            if (objectCreation.get() instanceof CtAssignmentImpl) { // themis oacc unsafe
-                CtAssignment ctLocalVariable = (CtAssignment) objectCreation.get();
-                return new String[] {"", ((CtInvocationImpl) ctLocalVariable.getAssignment()).getTarget().prettyprint()};
+            CtTypedElement<?> ctTypedElement = objectCreation.get();
+            if (ctTypedElement instanceof CtAssignmentImpl) { // themis oacc unsafe
+                CtAssignment<?, ?> ctLocalVariable = (CtAssignment<?, ?>) ctTypedElement;
+                return new String[] {"", ((CtInvocationImpl<?>) ctLocalVariable.getAssignment()).getTarget().prettyprint()};
             } else {
-                CtLocalVariableImpl ctLocalVariable = (CtLocalVariableImpl) objectCreation.get();
-                CtTypeReference assignmentType = ctLocalVariable.getAssignment().getType();
+                CtLocalVariableImpl<?> ctLocalVariable = (CtLocalVariableImpl<?>) ctTypedElement;
+                CtTypeReference<?> assignmentType = ctLocalVariable.getAssignment().getType();
                 return new String[] {assignmentType.getPackage().getQualifiedName().replace(".", "\\"), assignmentType.getSimpleName()};
             }
         }

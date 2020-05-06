@@ -2,9 +2,8 @@ import model.VulnerableMethodUses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO code simplification and beautification.
 public class DifFuzzAR {
-    private static Logger logger = LoggerFactory.getLogger(DifFuzzAR.class);
+    private static final Logger logger = LoggerFactory.getLogger(DifFuzzAR.class);
 
     public static void main(String[] args) {
         if (args.length != 1) {

@@ -10,6 +10,8 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.TypeFilter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -133,8 +135,9 @@ public class TestDifFuzzAR {
         Assert.assertEquals(firstVulnerableMethodArguments.length, secondVulnerableMethodArguments.length);
     }
 
-    @Test(dataProvider = "correctVulnerableMethod")
-    public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod, String correctedClassName, String methodName, String correctedMethodPath) throws URISyntaxException, IOException {
+    @Test(dataProvider = "correctVulnerableMethod") //  TODO remove exceptions
+    public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod, String correctedClassName, String methodName,
+                                               String correctedMethodPath) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // Setup
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
@@ -146,7 +149,10 @@ public class TestDifFuzzAR {
         vulnerableClass.setSimpleName(correctedClassName);
 
         // Act
-        ModificationOfCode.modifyCode(methodName, factory, vulnerableMethod, model);
+        final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class);
+        modifyCode.setAccessible(true);
+        modifyCode.invoke(null, factory, vulnerableMethod, model);
+        //ModificationOfCode.modifyCode(factory, vulnerableMethod, model);
 
         // Assert
         URL resource = classLoader.getResource(correctedMethodPath);
