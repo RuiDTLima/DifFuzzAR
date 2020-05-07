@@ -99,11 +99,16 @@ public class FindVulnerableMethod {
      * @param iterator         An iterator of AST of the method where the vulnerable method is present.
      * @param safeMode         Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
      * @param safeModeVariable The name of the variable that indicates if the safeMode is in action.
-     * @param typedElementList
-     * @param variables
+     * @param typedElementList All the typed elements in the class, here will be the initialization of the variable
+     *                         that represents the method.
+     * @param variables All the variables in the method
      * @return The vulnerable method.
      */
-    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtStatement> iterator, boolean safeMode, String safeModeVariable, List<CtTypedElement<?>> typedElementList, List<CtVariable<?>> variables) {
+    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtStatement> iterator, boolean safeMode,
+                                                                     String safeModeVariable,
+                                                                     List<CtTypedElement<?>> typedElementList,
+                                                                     List<CtVariable<?>> variables) {
+
         VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
 
         while (iterator.hasNext()) {
@@ -128,7 +133,7 @@ public class FindVulnerableMethod {
                     else if (afterMemClear) {
                         afterMemClear = false;
 
-                        setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, statement, statement.prettyprint(), variables);
+                        setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, statement, variables);
                     }
                 }
             } else if (codeLine.contains("Mem.clear()")) {
@@ -152,7 +157,7 @@ public class FindVulnerableMethod {
                         return vulnerableMethodUses;
                 } else {
                     afterMemClear = false;
-                    setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, codeLine, variables);
+                    setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, variables);
                 }
             }
         }
@@ -163,8 +168,8 @@ public class FindVulnerableMethod {
      * Validates the instruction after a MemClear. That instruction can't be an assignment of a value to a variable other
      * than a method call, except for a object creation.
      *
-     * @param line
-     * @return
+     * @param line  The line believed to contain the invocation of the vulnerable method
+     * @return  true if the line represents the invocation of the vulnerable method, false otherwise.
      */
     private static boolean validAfterMemClear(String line) {
         return afterMemClear && !line.equals("") && !(
@@ -175,15 +180,21 @@ public class FindVulnerableMethod {
     /**
      * Retrieves from the CtElement all the relevant information regarding the found vulnerable method. Retrieves the
      * vulnerable method's name, class name, and the arguments list.
-     * @param typedElementList
-     * @param vulnerableMethodUses
-     * @param element
-     * @param codeLine
-     * @param variables
+     * @param typedElementList  All the typed elements in the class, here will be the initialization of the variable
+     *                          that represents the method.
+     * @param vulnerableMethodUses  The object that contains all necessary information about the two invocations of the
+     *                              vulnerable method.
+     * @param element   The element that represents the invocation of the vulnerable method.
+     * @param variables All the variables in the method
      */
-    private static void setVulnerableMethodUsesCase(List<CtTypedElement<?>> typedElementList, VulnerableMethodUses vulnerableMethodUses, CtElement element, String codeLine, List<CtVariable<?>> variables) {
-        logger.info("The line of code {} appears after the Mem.clear.", codeLine);
+    private static void setVulnerableMethodUsesCase(List<CtTypedElement<?>> typedElementList, VulnerableMethodUses vulnerableMethodUses,
+                                                    CtElement element,
+                                                    List<CtVariable<?>> variables) {
+
         String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
+
+        logger.info("The line of code {} appears after the Mem.clear.", vulnerableMethodLine);
+
         String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
                 .replace(" ", "");
 
@@ -218,10 +229,13 @@ public class FindVulnerableMethod {
 
     /**
      * Obtains the name of the class where the vulnerable method is defined.
-     * @param typedElementList
-     * @param sourceOfMethod
-     * @param variables
-     * @return
+     * @param typedElementList  All the typed elements in the class, here will be the initialization of the variable
+     *                          that represents the method.
+     * @param sourceOfMethod    The name of the element used to invoke the method, if it's an instance that element will
+     *                          be a variable
+     * @param variables All the variables in the method
+     * @return An array with two elements where the first element is the package name where the class with the vulnerable
+     * method is, and the second element the name of the class
      */
     private static String[] getClassName(List<CtTypedElement<?>> typedElementList, String sourceOfMethod, List<CtVariable<?>> variables) {
         if (variables.stream().anyMatch(variable -> variable.getSimpleName().equals(sourceOfMethod))) {
@@ -233,8 +247,8 @@ public class FindVulnerableMethod {
 
             CtTypedElement<?> ctTypedElement = objectCreation.get();
             if (ctTypedElement instanceof CtAssignmentImpl) { // themis oacc unsafe
-                CtAssignment<?, ?> ctLocalVariable = (CtAssignment<?, ?>) ctTypedElement;
-                return new String[] {"", ((CtInvocationImpl<?>) ctLocalVariable.getAssignment()).getTarget().prettyprint()};
+                CtAssignment<?, ?> ctAssignment = (CtAssignment<?, ?>) ctTypedElement;
+                return new String[] {"", ((CtInvocationImpl<?>) ctAssignment.getAssignment()).getTarget().prettyprint()};
             } else {
                 CtLocalVariableImpl<?> ctLocalVariable = (CtLocalVariableImpl<?>) ctTypedElement;
                 CtTypeReference<?> assignmentType = ctLocalVariable.getAssignment().getType();
