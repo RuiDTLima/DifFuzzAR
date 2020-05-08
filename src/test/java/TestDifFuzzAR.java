@@ -149,9 +149,9 @@ public class TestDifFuzzAR {
         vulnerableClass.setSimpleName(correctedClassName);
 
         // Act
-        final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class);
+        final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
         modifyCode.setAccessible(true);
-        modifyCode.invoke(null, factory, vulnerableMethod, model);
+        modifyCode.invoke(null, factory, vulnerableMethod, model, null);
         //ModificationOfCode.modifyCode(factory, vulnerableMethod, model);
 
         // Assert

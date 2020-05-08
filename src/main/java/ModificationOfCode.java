@@ -7,16 +7,14 @@ import spoon.refactoring.Refactoring;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
-import spoon.support.reflect.declaration.CtMethodImpl;
+
 import java.util.*;
-import java.util.stream.Stream;
 
 public class ModificationOfCode {
     private static final Logger logger = LoggerFactory.getLogger(ModificationOfCode.class);
@@ -62,7 +60,7 @@ public class ModificationOfCode {
             }
             vulnerableClass.setSimpleName(className + CLASS_NAME_ADDITION);
 
-            modifyCode(factory, vulnerableMethod, model);
+            modifyCode(factory, vulnerableMethod, model, vulnerableMethodUsesCases);
             launcher.prettyprint();
        /* } else
             logger.warn("The inspected file contains {} classes, can't detect the vulnerable one.", classList.size());*/
@@ -74,15 +72,16 @@ public class ModificationOfCode {
      * @param factory   The factory used to create code snippets to add.
      * @param vulnerableMethod  The method with the vulnerability that will be modified.
      * @param model The model of the code. Represents the file with the code to be modified.
+     * @param vulnerableMethodUsesCases
      */
-    private static void modifyCode(Factory factory, CtMethod<?> vulnerableMethod, CtModel model) {
+    private static void modifyCode(Factory factory, CtMethod<?> vulnerableMethod, CtModel model, VulnerableMethodUses vulnerableMethodUsesCases) {
         List<CtStatement> statementList = vulnerableMethod.getBody().getStatements();
 
         if (statementList.size() == 1 && !(statementList.get(0) instanceof CtIfImpl)) {
             String methodInvocation = ((CtReturnImpl<?>) statementList.get(0)).getReturnedExpression().prettyprint();
             String calledMethodName = methodInvocation.substring(0, methodInvocation.indexOf("("));
             vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(calledMethodName)).first();
-            modifyCode(factory, vulnerableMethod, model);
+            modifyCode(factory, vulnerableMethod, model, vulnerableMethodUsesCases);
             return;
         }
 
@@ -98,7 +97,7 @@ public class ModificationOfCode {
             EarlyExitVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, returnList);
         } else {
             logger.info("The method suffers from control-flow-based timing side-channel vulnerability.");
-            ControlFlowBasedVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod);
+            ControlFlowBasedVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, vulnerableMethodUsesCases);
         }
     }
 }
