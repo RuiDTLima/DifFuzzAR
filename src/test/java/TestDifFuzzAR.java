@@ -87,7 +87,7 @@ public class TestDifFuzzAR {
     }
 
     @DataProvider
-    private Object[][] correctVulnerableMethod() {
+    private Object[][] correctVulnerableMethodWithEarlyExit() {
         return new Object[][] {
                 {"apache_ftpserver_clear_unsafe/ClearTextPasswordEncryptor.java", "ClearTextPasswordEncryptor$Modification", "isEqual_unsafe", "apache_ftpserver_clear_unsafe/CorrectedMethod.java"},
                 {"apache_ftpserver_md5_unsafe/Md5PasswordEncryptor.java", "Md5PasswordEncryptor$Modification", "regionMatches", "apache_ftpserver_md5_unsafe/CorrectedMethod.java"},
@@ -105,6 +105,30 @@ public class TestDifFuzzAR {
                 {"themis_picketbox_unsafe/UsernamePasswordLoginModule.java", "UsernamePasswordLoginModule$Modification", "equals", "themis_picketbox_unsafe/CorrectedMethod.java"},
                 {"themis_spring-security_unsafe/PasswordEncoderUtils.java", "PasswordEncoderUtils$Modification", "equals_unsafe", "themis_spring-security_unsafe/CorrectedMethod.java"},
                 {"themis_tomcat_unsafe/DataSourceRealm.java", "DataSourceRealm$Modification", "authenticate_unsafe", "themis_tomcat_unsafe/CorrectedMethod.java"}
+        };
+    }
+
+    @DataProvider
+    private Object[][] correctVulnerableMethodWithControlFlow() {
+        return new Object[][] {
+                //{"apache_ftpserver_salted_encrypt_unsafe/SaltedPasswordEncryptor.java", "SaltedPasswordEncryptor$Modification", "encrypt", "apache_ftpserver_salted_encrypt/CorrectedMethod.java"},
+                //{"blazzer_array_unsafe/MoreSanity.java", "MoreSanity$Modification", "array_unsafe", "blazzer_array_unsafe/CorrectedMethod.java"},
+                {
+                    "blazer_modpow1_unsafe/ModPow1.java",
+                    "ModPow1$Modification",
+                    "modPow1_unsafe",
+                    "blazer_modpow1_unsafe/CorrectedMethod.java",
+                    new String[] {"public_base", "secret1_exponent", "public_modulus", "bitLength1"},
+                    new String[] {"public_base", "secret2_exponent", "public_modulus", "bitLength2"}
+                },
+                {
+                    "blazer_straightline_unsafe/Sanity.java",
+                    "Sanity$Modification",
+                    "straightline_unsafe",
+                    "blazer_straightline_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_a", "public_b"},
+                    new String[] {"secret2_a", "public_b"}
+                }
         };
     }
 
@@ -135,7 +159,7 @@ public class TestDifFuzzAR {
         Assert.assertEquals(firstVulnerableMethodArguments.length, secondVulnerableMethodArguments.length);
     }
 
-    @Test(dataProvider = "correctVulnerableMethod") //  TODO remove exceptions
+    @Test(dataProvider = "correctVulnerableMethodWithEarlyExit") //  TODO remove exceptions
     public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod, String correctedClassName, String methodName,
                                                String correctedMethodPath) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // Setup
@@ -152,7 +176,49 @@ public class TestDifFuzzAR {
         final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
         modifyCode.setAccessible(true);
         modifyCode.invoke(null, factory, vulnerableMethod, model, null);
-        //ModificationOfCode.modifyCode(factory, vulnerableMethod, model);
+
+        // Assert
+        URL resource = classLoader.getResource(correctedMethodPath);
+        List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
+
+        CtMethod correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
+        List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));
+
+        Iterator<String> expectedCorrectionIterator = strings.iterator();
+        Iterator<String> actualCorrectionIterator = correctedMethodList.iterator();
+
+        while (expectedCorrectionIterator.hasNext() && actualCorrectionIterator.hasNext()) {
+            String expectedCorrectionLine = expectedCorrectionIterator.next().replace(" ", "");
+            String actualCorrectionLine = actualCorrectionIterator.next().replace(" ", "");
+            Assert.assertEquals(actualCorrectionLine, expectedCorrectionLine);
+        }
+
+        Assert.assertFalse(expectedCorrectionIterator.hasNext());
+        Assert.assertFalse(actualCorrectionIterator.hasNext());
+    }
+
+    @Test(dataProvider = "correctVulnerableMethodWithControlFlow") //  TODO remove exceptions
+    public void testCorrectMethodWithControlFlow(String pathToVulnerableMethod, String correctedClassName, String methodName,
+                                                 String correctedMethodPath,
+                                                 String[] firstUseCaseArgumentsNames,
+                                                 String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // Setup
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
+        Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");
+        CtModel model = launcher.buildModel();
+        Factory factory = launcher.getFactory();
+        CtClass<?> vulnerableClass = model.filterChildren(new TypeFilter<>(CtClass.class)).first();
+        CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
+        vulnerableClass.setSimpleName(correctedClassName);
+        VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
+        vulnerableMethodUses.setUseCase("", "", "", firstUseCaseArgumentsNames);
+        vulnerableMethodUses.setUseCase("", "", "", secondUseCaseArgumentsNames);
+
+        // Act
+        final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
+        modifyCode.setAccessible(true);
+        modifyCode.invoke(null, factory, vulnerableMethod, model, vulnerableMethodUses);
 
         // Assert
         URL resource = classLoader.getResource(correctedMethodPath);
