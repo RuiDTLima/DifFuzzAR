@@ -112,7 +112,14 @@ public class TestDifFuzzAR {
     private Object[][] correctVulnerableMethodWithControlFlow() {
         return new Object[][] {
                 //{"apache_ftpserver_salted_encrypt_unsafe/SaltedPasswordEncryptor.java", "SaltedPasswordEncryptor$Modification", "encrypt", "apache_ftpserver_salted_encrypt/CorrectedMethod.java"},
-                //{"blazzer_array_unsafe/MoreSanity.java", "MoreSanity$Modification", "array_unsafe", "blazzer_array_unsafe/CorrectedMethod.java"},
+                {
+                    "blazer_array_unsafe/MoreSanity.java",
+                    "MoreSanity$Modification",
+                    "array_unsafe",
+                    "blazer_array_unsafe/CorrectedMethod.java",
+                    new String[] {"public_a", "secret1_taint"},
+                    new String[] {"public_a", "secret2_taint"}
+                },
                 {
                     "blazer_modpow1_unsafe/ModPow1.java",
                     "ModPow1$Modification",
@@ -197,7 +204,7 @@ public class TestDifFuzzAR {
         Assert.assertFalse(actualCorrectionIterator.hasNext());
     }
 
-    @Test(dataProvider = "correctVulnerableMethodWithControlFlow") //  TODO remove exceptions
+    @Test(dataProvider = "correctVulnerableMethodWithControlFlow", singleThreaded = true) //  TODO remove exceptions
     public void testCorrectMethodWithControlFlow(String pathToVulnerableMethod, String correctedClassName, String methodName,
                                                  String correctedMethodPath,
                                                  String[] firstUseCaseArgumentsNames,
