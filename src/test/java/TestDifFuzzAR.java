@@ -188,7 +188,7 @@ public class TestDifFuzzAR {
         URL resource = classLoader.getResource(correctedMethodPath);
         List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
 
-        CtMethod correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
+        CtMethod<?> correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
         List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));
 
         Iterator<String> expectedCorrectionIterator = strings.iterator();
@@ -204,7 +204,7 @@ public class TestDifFuzzAR {
         Assert.assertFalse(actualCorrectionIterator.hasNext());
     }
 
-    @Test(dataProvider = "correctVulnerableMethodWithControlFlow", singleThreaded = true) //  TODO remove exceptions
+    @Test(dataProvider = "correctVulnerableMethodWithControlFlow") //  TODO remove exceptions
     public void testCorrectMethodWithControlFlow(String pathToVulnerableMethod, String correctedClassName, String methodName,
                                                  String correctedMethodPath,
                                                  String[] firstUseCaseArgumentsNames,
@@ -231,7 +231,7 @@ public class TestDifFuzzAR {
         URL resource = classLoader.getResource(correctedMethodPath);
         List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
 
-        CtMethod correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
+        CtMethod<?> correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
         List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));
 
         Iterator<String> expectedCorrectionIterator = strings.iterator();

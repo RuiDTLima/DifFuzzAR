@@ -44,15 +44,15 @@ public class VulnerableMethodUses {
 
     public void setUseCase(String packageName, String className, String methodName, String[] arguments) {
         if (firstUseCaseMethodName == null) {
-            firstUseCasePackageName = packageName;
-            firstUseCaseClassName = className;
-            firstUseCaseMethodName = methodName;
-            firstUseCaseArgumentsNames = arguments;
+            this.firstUseCasePackageName = packageName;
+            this.firstUseCaseClassName = className;
+            this.firstUseCaseMethodName = methodName;
+            this.firstUseCaseArgumentsNames = arguments;
         } else if (secondUseCaseMethodName == null) {
-            secondUseCasePackageName = packageName;
-            secondUseCaseClassName = className;
-            secondUseCaseMethodName = methodName;
-            secondUseCaseArgumentsNames = arguments;
+            this.secondUseCasePackageName = packageName;
+            this.secondUseCaseClassName = className;
+            this.secondUseCaseMethodName = methodName;
+            this.secondUseCaseArgumentsNames = arguments;
         }
     }
 
