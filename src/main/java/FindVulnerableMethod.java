@@ -254,6 +254,14 @@ public class FindVulnerableMethod {
                 CtTypeReference<?> assignmentType = ctLocalVariable.getAssignment().getType();
                 return new String[] {assignmentType.getPackage().getQualifiedName().replace(".", "\\"), assignmentType.getSimpleName()};
             }
+        } else if (variables.stream().anyMatch(variable -> variable.getType().getSimpleName().equals(sourceOfMethod))) {
+            Optional<CtVariable<?>> first = variables.stream().filter(variable -> variable.getType().getSimpleName().equals(sourceOfMethod)).findFirst();
+            if (first.isPresent()) {
+                CtTypeReference<?> variableType = first.get().getType();
+                String packageName = variableType.getPackage().getSimpleName();
+                String className = variableType.getSimpleName();
+                return new String[] {packageName.replace(".", "\\"), className};
+            }
         }
         return new String[] {"", sourceOfMethod};
     }
