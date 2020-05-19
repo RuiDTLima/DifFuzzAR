@@ -71,7 +71,7 @@ public class TestDifFuzzAR {
                 {"themis_oacc_unsafe/Driver.java", "PasswordCredentials", "equals"},
                 {"themis_openmrs-core_unsafe/Driver.java", "Security", "hashMatches"},
                 {"themis_orientdb_safe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "checkPassword_safe"},
-                {"themis_orientdb_unsafe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "checkPassword_unsafe"},
+                {"themis_orientdb_unsafe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "equals_inline"},
                 {"themis_pac4j_safe/Driver.java", "DbAuthenticator", "validate_safe"},
                 {"themis_pac4j_unsafe/Driver.java", "DbAuthenticator", "validate_unsafe"},
                 {"themis_pac4j_unsafe_ext/Driver.java", "DbAuthenticator", "validate_unsafe"},
@@ -101,7 +101,7 @@ public class TestDifFuzzAR {
                 {"themis_jdk_unsafe/MessageDigest.java", "MessageDigest$Modification", "isEqual_unsafe", "themis_jdk_unsafe/CorrectedMethod.java"},
                 {"themis_jetty_unsafe/Credential.java", "Credential$Modification", "stringEquals_original", "themis_jetty_unsafe/CorrectedMethod.java"},
                 {"themis_oacc_unsafe/PasswordCredentials.java", "PasswordCredentials$Modification", "equals", "themis_oacc_unsafe/CorrectedMethod.java"},
-                {"themis_orientdb_unsafe/OSecurityManager.java", "OSecurityManager$Modification", "checkPassword_unsafe", "themis_orientdb_unsafe/CorrectedMethod.java"},
+                {"themis_orientdb_unsafe/OSecurityManager.java", "OSecurityManager$Modification", "equals_inline", "themis_orientdb_unsafe/CorrectedMethod.java"},
                 {"themis_picketbox_unsafe/UsernamePasswordLoginModule.java", "UsernamePasswordLoginModule$Modification", "equals", "themis_picketbox_unsafe/CorrectedMethod.java"},
                 {"themis_spring-security_unsafe/PasswordEncoderUtils.java", "PasswordEncoderUtils$Modification", "equals_unsafe", "themis_spring-security_unsafe/CorrectedMethod.java"},
                 {"themis_tomcat_unsafe/DataSourceRealm.java", "DataSourceRealm$Modification", "authenticate_unsafe", "themis_tomcat_unsafe/CorrectedMethod.java"}

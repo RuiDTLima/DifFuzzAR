@@ -8,7 +8,7 @@ public static boolean array_unsafe$Modification(int[] a, int taint) {
             i--;
         }
         int $3 = 0;
-        $3 = a[i] / 2;
+        t = a[i] / 2;
         $3 = a.length;
     } else {
         int i = 0;
@@ -16,7 +16,7 @@ public static boolean array_unsafe$Modification(int[] a, int taint) {
         i = a.length;
         int $2 = a.length - 1;
         while ($2 >= 0) {
-            $2 = a[i];
+            t = a[$2];
             $2--;
         }
     }
