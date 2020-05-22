@@ -1,5 +1,5 @@
 public static BigInteger modPow1_unsafe$Modification(BigInteger base, BigInteger exponent, BigInteger modulus, int width) {
-    BigInteger $1;
+    BigInteger $1 = BigInteger.valueOf(1);
     BigInteger s = BigInteger.valueOf(1);
     for (int i = 0; i < width; i++) {
         s = s.multiply(s).mod(modulus);
