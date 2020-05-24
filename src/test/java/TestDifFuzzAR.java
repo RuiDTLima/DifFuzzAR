@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class TestDifFuzzAR {
-    private static final String CLASS_NAME_ADDITION = "$Modification";
     @DataProvider
     private Object[][] findVulnerableMethodAndClass() {
         return new Object[][] {
@@ -109,6 +108,13 @@ public class TestDifFuzzAR {
     }
 
     @DataProvider
+    /**
+     * String pathToVulnerableMethod,
+     * String correctedClassName, String methodName,
+     * String correctedMethodPath,
+     * String[] firstUseCaseArgumentsNames,
+     * String[] secondUseCaseArgumentsNames
+     */
     private Object[][] correctVulnerableMethodWithControlFlow() {
         return new Object[][] {
                 //{"apache_ftpserver_salted_encrypt_unsafe/SaltedPasswordEncryptor.java", "SaltedPasswordEncryptor$Modification", "encrypt", "apache_ftpserver_salted_encrypt/CorrectedMethod.java"},
@@ -119,6 +125,22 @@ public class TestDifFuzzAR {
                     "blazer_array_unsafe/CorrectedMethod.java",
                     new String[] {"public_a", "secret1_taint"},
                     new String[] {"public_a", "secret2_taint"}
+                },
+                {
+                    "blazer_gpt14_unsafe/GPT14.java",
+                    "GPT14$Modification",
+                    "modular_exponentiation_inline_unsafe",
+                    "blazer_gpt14_unsafe/CorrectedMethod.java",
+                    new String[] {"public_a", "secret1_b", "public_p"},
+                    new String[] {"public_a", "secret2_b", "public_p"}
+                },
+                {
+                    "blazer_k96_unsafe/K96.java",
+                    "K96$Modification",
+                    "modular_exponentiation_unsafe",
+                    "blazer_k96_unsafe/CorrectedMethod.java",
+                    new String[] {"public_y", "secret1_x", "public_n", "bitLength1"},
+                    new String[] {"public_y", "secret2_x", "public_n", "bitLength2"}
                 },
                 {
                     "blazer_modpow1_unsafe/ModPow1.java",
