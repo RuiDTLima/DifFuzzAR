@@ -157,6 +157,14 @@ public class TestDifFuzzAR {
                     "blazer_straightline_unsafe/CorrectedMethod.java",
                     new String[] {"secret1_a", "public_b"},
                     new String[] {"secret2_a", "public_b"}
+                },
+                {
+                    "blazer_unixlogin_unsafe/Timing.java",
+                    "Timing$Modification",
+                    "login_unsafe",
+                    "blazer_unixlogin_unsafe/CorrectedMethod.java",
+                    new String[] {"username_secret1", "password_secret1"},
+                    new String[] {"username_secret2", "password_secret2"}
                 }
         };
     }
