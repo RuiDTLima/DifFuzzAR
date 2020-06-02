@@ -165,6 +165,14 @@ public class TestDifFuzzAR {
                     "blazer_unixlogin_unsafe/CorrectedMethod.java",
                     new String[] {"username_secret1", "password_secret1"},
                     new String[] {"username_secret2", "password_secret2"}
+                },
+                {
+                    "stac_ibasys_unsafe/ImageMatcherWorker.java",
+                    "ImageMatcherWorker$Modification",
+                    "test",
+                    "stac_ibasys_unsafe/CorrectedMethod.java",
+                    new String[] {"public_guess", "secret1_pw"},
+                    new String[] {"public_guess", "secret2_pw"}
                 }
         };
     }
