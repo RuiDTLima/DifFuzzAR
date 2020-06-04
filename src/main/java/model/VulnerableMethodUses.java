@@ -1,5 +1,7 @@
 package model;
 
+import java.util.List;
+
 public class VulnerableMethodUses {
     private String firstUseCasePackageName;
     private String firstUseCaseClassName;

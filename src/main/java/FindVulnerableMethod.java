@@ -5,7 +5,6 @@ import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.*;
-import spoon.reflect.reference.CtPackageReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
@@ -115,50 +114,46 @@ public class FindVulnerableMethod {
             CtElement element = iterator.next();
             String codeLine = element.prettyprint();
 
-            if (safeModeVariable != null && codeLine.contains("if") && codeLine.contains(safeModeVariable) && !(element instanceof CtTry)) {
+            if (safeModeVariable != null && (element instanceof CtIf) && codeLine.contains(safeModeVariable)) {
                 List<CtBlock<CtStatement>> elements = element.getElements(new TypeFilter<>(CtBlock.class));
                 int idx = 0;
-                if (codeLine.contains("if(!")) {
-                    if (safeMode)
+                if (codeLine.contains("!")) {
+                    if (safeMode) {
                         idx = 1;
+                    }
                 } else {
-                    if (!safeMode)
+                    if (!safeMode) {
                         idx = 1;
+                    }
                 }
                 CtBlock<CtStatement> ctBlock = elements.get(idx);
 
                 for (CtStatement statement : ctBlock) {
-                    if (statement.toString().contains("Mem.clear()"))
+                    if (statement.toString().contains("Mem.clear()")) {
                         afterMemClear = true;
-                    else if (afterMemClear) {
+                    } else if (afterMemClear) {
                         afterMemClear = false;
-
                         setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, statement, variables);
                     }
                 }
             } else if (codeLine.contains("Mem.clear()")) {
                 afterMemClear = true;
-                if (codeLine.contains("try")) {
-                    List<CtBlock<CtTry>> elements = element.getElements(new TypeFilter<>(CtBlock.class));
-                    CtBlock<CtTry> ctBlock = elements.get(0);  // the code inside try block
-                    Iterator<CtStatement> ctBlockIterator = ctBlock.iterator();
-
-                    return discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList, variables);
+                if (element instanceof CtTry) {
+                    CtTry tryElement = (CtTry) element;
+                    Iterator<CtStatement> statementsIterator = tryElement.getBody().getStatements().iterator();
+                    return discoverMethodIdentification(statementsIterator, safeMode, safeModeVariable, typedElementList, variables);
                 }
-            } else if (validAfterMemClear(codeLine)) {
-                if (codeLine.contains("try")) { // Example in themis_pac4j_safe
-                    List<CtBlock<CtTry>> elements = element.getElements(new TypeFilter<>(CtBlock.class));
-                    CtBlock<CtTry> ctBlock = elements.get(0);  // the code inside try block
-                    Iterator<CtStatement> ctBlockIterator = ctBlock.iterator();
-
-                    VulnerableMethodUses tempVulnerableMethodUses = discoverMethodIdentification(ctBlockIterator, safeMode, safeModeVariable, typedElementList, variables);
-                    vulnerableMethodUses.addFromOtherVulnerableMethodUses(tempVulnerableMethodUses);
-                    if (vulnerableMethodUses.isValid())
-                        return vulnerableMethodUses;
-                } else {
-                    afterMemClear = false;
-                    setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, variables);
+            } else if (element instanceof CtTry) {
+                CtTry tryElement = (CtTry) element;
+                List<CtStatement> statements = tryElement.getBody().getStatements();
+                VulnerableMethodUses returnedVulnerableMethodUses = discoverMethodIdentification(statements.iterator(), safeMode, safeModeVariable, typedElementList, variables);
+                vulnerableMethodUses.addFromOtherVulnerableMethodUses(returnedVulnerableMethodUses);
+                if (vulnerableMethodUses.isValid()) {
+                    return vulnerableMethodUses;
                 }
+            } else if (validate(element)) {
+                afterMemClear = false;
+                setVulnerableMethodUsesCase(typedElementList, vulnerableMethodUses, element, variables);
             }
         }
         return vulnerableMethodUses;
@@ -168,13 +163,19 @@ public class FindVulnerableMethod {
      * Validates the instruction after a MemClear. That instruction can't be an assignment of a value to a variable other
      * than a method call, except for a object creation.
      *
-     * @param line  The line believed to contain the invocation of the vulnerable method
+     * @param element  The element believed to be the invocation of the vulnerable method.
      * @return  true if the line represents the invocation of the vulnerable method, false otherwise.
      */
-    private static boolean validAfterMemClear(String line) {
-        return afterMemClear && !line.equals("") && !(
-                line.contains("=") && (!line.contains("(") ||
-                        (line.contains("(") && line.contains("new"))));
+    private static boolean validate(CtElement element) {
+        if (!afterMemClear) {
+            return false;
+        }
+        if (element instanceof CtLocalVariable) {
+            CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
+            CtExpression<?> defaultExpression = localVariable.getDefaultExpression();
+            return defaultExpression instanceof CtInvocation;
+        } else
+            return element instanceof CtInvocation;
     }
 
     /**
@@ -190,79 +191,88 @@ public class FindVulnerableMethod {
     private static void setVulnerableMethodUsesCase(List<CtTypedElement<?>> typedElementList, VulnerableMethodUses vulnerableMethodUses,
                                                     CtElement element,
                                                     List<CtVariable<?>> variables) {
+        CtInvocation<?> invocation;
+        if (element instanceof CtLocalVariable) {
+            logger.info("Vulnerable method invocation creates a variable.");
+            CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
+            CtExpression<?> defaultExpression = localVariable.getDefaultExpression();
+            invocation = (CtInvocation<?>) defaultExpression;
+        } else if (element instanceof CtAssignment) {
+            logger.info("Vulnerable method invocation saves the result in a variable.");
+            CtAssignment<?, ?> assignment = (CtAssignment<?, ?>) element;
+            CtExpression<?> defaultExpression = assignment.getAssignment();
+            invocation = (CtInvocation<?>) defaultExpression;
 
-        String vulnerableMethodLine = element.prettyprint();    // To remove the full name of the case in use, so that it contains only the class and method names.
-
-        logger.info("The line of code {} appears after the Mem.clear.", vulnerableMethodLine);
-
-        String invocation = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("= ") + 1, vulnerableMethodLine.indexOf("("))
-                .replace(" ", "");
-
-        String[] arguments = vulnerableMethodLine.substring(vulnerableMethodLine.indexOf("(") + 1, vulnerableMethodLine.indexOf(")"))
-                .split(",");
-
-        String[] invocationParts = invocation.split("\\.");
-        String sourceOfMethod = invocationParts[0];
-        String methodName = invocationParts[1];
-        String[] className = getClassName(typedElementList, sourceOfMethod, variables);
-        String packageName = className[0];
-        if (packageName.equals("")) {
-            if (element instanceof CtInvocationImpl) {
-                CtExpression<?> elementTarget = ((CtInvocationImpl<?>) element).getTarget();
-                if (elementTarget instanceof CtTypeAccessImpl) {
-                    packageName = ((CtTypeAccessImpl<?>)elementTarget).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
-                } else {
-                    packageName = elementTarget.getType().getPackage().getSimpleName().replace(".", "\\");
-                }
-
-            } else if (element instanceof CtLocalVariableImpl) {
-                CtExpression<?> defaultExpression = ((CtLocalVariableImpl<?>) element).getDefaultExpression();
-                if (defaultExpression instanceof  CtInvocationImpl) {
-                    CtPackageReference packageReference = ((CtInvocationImpl<?>) defaultExpression).getTarget().getType().getPackage();
-                    if (packageReference != null && packageReference.getParent().toString().equals(className[1]))
-                        packageName = packageReference.getSimpleName().replace(".", "\\");
-                }
-            }
+        } else {
+            logger.info("Vulnerable method invocation does not save the result.");
+            invocation = (CtInvocation<?>) element;
         }
-        vulnerableMethodUses.setUseCase(packageName, className[1], methodName, arguments);
+
+        List<CtExpression<?>> invocationArguments = invocation.getArguments();
+        logger.info("Obtained the arguments.");
+        String methodName = invocation.getExecutable().getSimpleName();
+
+        String[] fullClassName = getFullClassName(typedElementList, variables, invocation);
+        String packageName = fullClassName[0];
+        String className = fullClassName[1];
+        String[] arguments = invocationArguments.stream().map(Object::toString).toArray(String[]::new);
+        vulnerableMethodUses.setUseCase(packageName, className, methodName, arguments);
     }
 
     /**
      * Obtains the name of the class where the vulnerable method is defined.
      * @param typedElementList  All the typed elements in the class, here will be the initialization of the variable
      *                          that represents the method.
-     * @param sourceOfMethod    The name of the element used to invoke the method, if it's an instance that element will
-     *                          be a variable
      * @param variables All the variables in the method
+     * @param invocation    The variable containing the invocation of the vulnerable method.
      * @return An array with two elements where the first element is the package name where the class with the vulnerable
      * method is, and the second element the name of the class
      */
-    private static String[] getClassName(List<CtTypedElement<?>> typedElementList, String sourceOfMethod, List<CtVariable<?>> variables) {
+    private static String[] getFullClassName(List<CtTypedElement<?>> typedElementList, List<CtVariable<?>> variables,
+                                             CtInvocation<?> invocation) {
+
+        String sourceOfMethod = invocation.getTarget().toString();
+        String packageName = "";
+        String className = sourceOfMethod;
         if (variables.stream().anyMatch(variable -> variable.getSimpleName().equals(sourceOfMethod))) {
             Optional<CtTypedElement<?>> objectCreation = typedElementList.stream().
                     filter(it -> !it.toString().contains("main") &&
                             it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*") &&
                             it.toString().contains("="))
-                    .findAny();
+                    .findFirst();
 
             CtTypedElement<?> ctTypedElement = objectCreation.get();
             if (ctTypedElement instanceof CtAssignmentImpl) { // themis oacc unsafe
                 CtAssignment<?, ?> ctAssignment = (CtAssignment<?, ?>) ctTypedElement;
-                return new String[] {"", ((CtInvocationImpl<?>) ctAssignment.getAssignment()).getTarget().prettyprint()};
+                CtExpression<?> target = ((CtInvocationImpl<?>) ctAssignment.getAssignment()).getTarget();
+                if (target instanceof CtTypeReference) {
+                    CtTypeReference<?> targetType = (CtTypeReference<?>) target;
+                    packageName = targetType.getPackage().getSimpleName();
+                    className = targetType.getSimpleName();
+                } else {
+                    className = target.prettyprint();
+                }
             } else {
                 CtLocalVariableImpl<?> ctLocalVariable = (CtLocalVariableImpl<?>) ctTypedElement;
                 CtTypeReference<?> assignmentType = ctLocalVariable.getAssignment().getType();
-                return new String[] {assignmentType.getPackage().getQualifiedName().replace(".", "\\"), assignmentType.getSimpleName()};
+                packageName = assignmentType.getPackage().getQualifiedName().replace(".", "\\");
+                className = assignmentType.getSimpleName();
             }
         } else if (variables.stream().anyMatch(variable -> variable.getType().getSimpleName().equals(sourceOfMethod))) {
             Optional<CtVariable<?>> first = variables.stream().filter(variable -> variable.getType().getSimpleName().equals(sourceOfMethod)).findFirst();
             if (first.isPresent()) {
                 CtTypeReference<?> variableType = first.get().getType();
-                String packageName = variableType.getPackage().getSimpleName();
-                String className = variableType.getSimpleName();
-                return new String[] {packageName.replace(".", "\\"), className};
+                packageName = variableType.getPackage().getSimpleName().replace(".", "\\");
+                className = variableType.getSimpleName();
+            }
+        } else {
+            CtExpression<?> elementTarget = invocation.getTarget();
+            if (elementTarget instanceof CtTypeAccessImpl) {
+                packageName = ((CtTypeAccessImpl<?>)elementTarget).getAccessedType().getPackage().getSimpleName().replace(".", "\\");
+            } else {
+                packageName = elementTarget.getType().getPackage().getSimpleName().replace(".", "\\");
             }
         }
-        return new String[] {"", sourceOfMethod};
+        return new String[] {packageName, className};
     }
 }
