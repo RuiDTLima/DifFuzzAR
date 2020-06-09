@@ -108,16 +108,16 @@ public class TestDifFuzzAR {
     }
 
     @DataProvider
-    /**
-     * String pathToVulnerableMethod,
-     * String correctedClassName, String methodName,
-     * String correctedMethodPath,
-     * String[] firstUseCaseArgumentsNames,
-     * String[] secondUseCaseArgumentsNames
+    /*
+      String pathToVulnerableMethod,
+      String correctedClassName,
+      String methodName,
+      String correctedMethodPath,
+      String[] firstUseCaseArgumentsNames,
+      String[] secondUseCaseArgumentsNames
      */
     private Object[][] correctVulnerableMethodWithControlFlow() {
         return new Object[][] {
-                //{"apache_ftpserver_salted_encrypt_unsafe/SaltedPasswordEncryptor.java", "SaltedPasswordEncryptor$Modification", "encrypt", "apache_ftpserver_salted_encrypt/CorrectedMethod.java"},
                 {
                     "blazer_array_unsafe/MoreSanity.java",
                     "MoreSanity$Modification",
@@ -173,6 +173,14 @@ public class TestDifFuzzAR {
                     "stac_ibasys_unsafe/CorrectedMethod.java",
                     new String[] {"public_guess", "secret1_pw"},
                     new String[] {"public_guess", "secret2_pw"}
+                },
+                {
+                    "themis_pac4j_unsafe/DbAuthenticator.java",
+                    "DbAuthenticator$Modification",
+                    "validate_unsafe",
+                    "themis_pac4j_unsafe/CorrectedMethod.java",
+                    new String[] {"cred"},
+                    new String[] {"cred2"}
                 }
         };
     }

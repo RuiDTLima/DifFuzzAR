@@ -26,7 +26,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to tes
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
  | Apache FtpServer Salted | Yes | Mixed | No | - | - |
  | Apache FtpServer StringUtils | Yes | Mixed | Yes | No | No |
- | Blazer Array | Yes | Control-Flow | Yes | Yes | - |
+ | Blazer Array | Yes | Control-Flow | Yes | Yes | No |
  | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | - |
  | Blazer K96 | Yes | Control-Flow | Yes | Yes | - |
  | Blazer LoopAndBranch | Yes | Unknown | No | - | - |
@@ -34,12 +34,12 @@ The tool contains a set of tests that use the examples taken from DifFuzz to tes
  | Blazer Modpow2 | Yes | Unknown | No | - | - |
  | Blazer PasswordEq | Yes | Early-Exit | Yes | Yes | Yes |
  | Blazer Sanity | Yes | Mixed | Yes | - | - |
- | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | - |
+ | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | No |
  | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | - |
  | Example PWCheck | Yes | Possibly Mixed | Yes | Yes | No |
  | GitHub AuthmReloaded | Yes | Possibly Mixed | Yes | Yes | No |
  | STAC Crime | No | Unknown | No | - | - |
- | STAC Ibasys | No | Control-Flow | Yes | Yes | - |
+ | STAC Ibasys | No | Control-Flow | Yes | Yes | No |
  | Themis Boot-Stateless-Auth | Yes | Possibly Mixed | Yes | Yes | No |
  | Themis Dynatable | No | Early-Exit | Yes | No | No |
  | Themis GWT Advanced Table | No | Unknown | No | - | - |
