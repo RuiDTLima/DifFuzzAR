@@ -35,7 +35,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to tes
  | Blazer PasswordEq | Yes | Early-Exit | Yes | Yes | Yes |
  | Blazer Sanity | Yes | Mixed | Yes | - | - |
  | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | No |
- | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | - |
+ | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | No |
  | Example PWCheck | Yes | Possibly Mixed | Yes | Yes | No |
  | GitHub AuthmReloaded | Yes | Possibly Mixed | Yes | Yes | No |
  | STAC Crime | No | Unknown | No | - | - |
@@ -48,7 +48,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to tes
  | Themis OACC | No | Possibly Mixed | Yes | Yes | No |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
  | Themis OrientDb | Yes | Possibly Mixed | Yes | Yes | No |
- | Themis Pac4j | Yes | Control-Flow | No | - | - |
+ | Themis Pac4j | Yes | Control-Flow | Yes | Yes | - |
  | Themis PicketBox | Yes | Possibly Mixed | Yes | Yes | No |
  | Themis Spring-Security | Yes | Early-Exit | Yes | No | - |
  | Themis Tomcat | Yes | Possibly Mixed | Yes | Yes | No |

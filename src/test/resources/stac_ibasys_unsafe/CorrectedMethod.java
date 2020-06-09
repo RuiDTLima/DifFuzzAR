@@ -1,4 +1,5 @@
 public static void test$Modification(byte[] i, byte[] pcode) {
+    boolean $1 = false;
     byte[] imagedata = null;
     boolean success = false;
     boolean state = false;
@@ -40,6 +41,8 @@ public static void test$Modification(byte[] i, byte[] pcode) {
             if (!var19) {
                 success = false;
                 break;
+            } else {
+                $1 = false;
             }
             imagedata[var16] = ((byte) ((var19) ? 1 : 0));
         }
