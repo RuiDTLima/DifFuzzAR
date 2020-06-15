@@ -14,6 +14,7 @@ public class CtTryModification {
     private static final Logger logger = LoggerFactory.getLogger(CtTryModification.class);
 
     public static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
+        logger.info("Found a 'try' statement while traversing the method.");
         CtTry tryStatement = (CtTry) statement;
         CtBlock<?> tryStatementBody = tryStatement.getBody();
         ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, tryStatementBody, secretVariables, publicArguments);
