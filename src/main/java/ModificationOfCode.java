@@ -1,3 +1,4 @@
+import controlflowcorrection.ControlFlowBasedVulnerabilityCorrection;
 import model.VulnerableMethodUses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +35,8 @@ public class ModificationOfCode {
 
         Launcher launcher = Setup.setupLauncher(pathToVulnerableMethod, pathToCorrectedClass);
 
-        CtModel model = launcher.buildModel();
         Factory factory = launcher.getFactory();
+        CtModel model = launcher.buildModel();
 
         List<CtClass<?>> classList = model.filterChildren(new TypeFilter<>(CtClass.class)).list();
         CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();

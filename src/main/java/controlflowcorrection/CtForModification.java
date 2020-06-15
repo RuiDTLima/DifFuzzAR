@@ -1,0 +1,73 @@
+package controlflowcorrection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import spoon.reflect.code.*;
+import spoon.reflect.declaration.CtParameter;
+import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+class CtForModification {
+    private static final Logger logger = LoggerFactory.getLogger(CtForModification.class);
+
+    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
+        CtFor forStatement = (CtFor) statement;
+        CtExpression<Boolean> forExpression = forStatement.getExpression();
+        if (ControlFlowBasedVulnerabilityCorrection.usesSecret(forExpression.toString(), secretVariables)) {
+            logger.info("Cycle stopping condition depends on the secret.");
+            if (forExpression instanceof CtBinaryOperator) {    // TODO needs to be here??
+                CtBinaryOperator<Boolean> binaryOperator = modifyStoppingCondition(factory, secretVariables, publicArguments, (CtBinaryOperator<Boolean>) forExpression);
+                forStatement.setExpression(binaryOperator);
+            }
+        }
+        ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, ((CtBlock<?>)forStatement.getBody()), secretVariables, publicArguments);
+    }
+
+    private static CtBinaryOperator<Boolean> modifyStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,
+                                                                     List<CtParameter<?>> publicArguments,
+                                                                     CtBinaryOperator<Boolean> forExpression) {
+
+        CtExpression<?> leftHandOperand = forExpression.getLeftHandOperand();
+        CtExpression<?> rightHandOperand = forExpression.getRightHandOperand();
+        String leftHandOperandString = leftHandOperand.toString();
+        String rightHandOperandString = rightHandOperand.toString();
+        for (CtVariable<?> secretArgument : secretVariables) {
+            String secretArgumentSimpleName = secretArgument.getSimpleName();
+            if (Arrays.stream(leftHandOperandString.split("\\."))
+                    .anyMatch(word -> word.matches(".*\\b" + secretArgumentSimpleName + "\\b.*"))) {
+
+                leftHandOperand = modifyOperand(factory, publicArguments, leftHandOperand, secretArgument);
+
+            } else if (Arrays.stream(rightHandOperandString.split("\\."))
+                    .anyMatch(word -> word.matches(".*\\b" + secretArgumentSimpleName + "\\b.*"))) {
+
+                rightHandOperand = modifyOperand(factory, publicArguments, rightHandOperand, secretArgument);
+            }
+        }
+        forExpression.setLeftHandOperand(leftHandOperand);
+        forExpression.setRightHandOperand(rightHandOperand);
+        return forExpression;
+    }
+
+    private static CtExpression<?> modifyOperand(Factory factory, List<CtParameter<?>> publicArguments, CtExpression<?> handOperand, CtVariable<?> secretArgument) {
+        String handOperandString = handOperand.toString();
+        String secretArgumentSimpleName = secretArgument.getSimpleName();
+        CtTypeReference<?> secretArgumentType = secretArgument.getType();
+
+        Optional<CtParameter<?>> optionalPublicArgument = publicArguments.stream()
+                .filter(publicArgument -> publicArgument.getType().equals(secretArgumentType))
+                .findFirst();
+
+        String newHandOperand;
+        if (optionalPublicArgument.isPresent()) {
+            String publicArgumentSimpleName = optionalPublicArgument.get().getSimpleName();
+            newHandOperand = handOperandString.replace(secretArgumentSimpleName, publicArgumentSimpleName);
+            handOperand = factory.createCodeSnippetExpression(newHandOperand);
+        }
+        return handOperand;
+    }
+}

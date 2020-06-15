@@ -12,7 +12,7 @@ To run in the terminal simply run the command **gradle shadowJar** to create a J
 Once in the correct location simply run the command **java -jar .\DifFuzzAR-1.0-SNAPSHOT.jar** indicating the location of the Driver to be used.
 
 ### Tests
-The tool contains a set of tests that use the examples taken from DifFuzz to test the development process. To test it, simply run **gradle build**. Once the build process is completed a report of the tests is available in the directory **build\reports\tests\test\index.html**.  
+The tool contains a set of tests that use the examples taken from DifFuzz to modifications the development process. To modifications it, simply run **gradle build**. Once the build process is completed a report of the tests is available in the directory **build\reports\tests\modifications\index.html**.  
 ### Notes
 * As it stands to use the tool correctly the Driver must be in the same directory as the vulnerable code to be corrected.
 * As it stands the tool is only capable of correcting very specific instances of early-exit timing side-channel vulnerabilities, where the correction of the vulnerability is when there is an early return that can be replaced for an assignment to the variable returned in the final **return**.
@@ -27,10 +27,10 @@ The tool contains a set of tests that use the examples taken from DifFuzz to tes
  | Apache FtpServer Salted | Yes | Mixed | No | - | - |
  | Apache FtpServer StringUtils | Yes | Mixed | Yes | No | No |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | No |
- | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | - |
- | Blazer K96 | Yes | Control-Flow | Yes | Yes | - |
+ | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | No |
+ | Blazer K96 | Yes | Control-Flow | Yes | Yes | No |
  | Blazer LoopAndBranch | Yes | Unknown | No | - | - |
- | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | - |
+ | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Modpow2 | Yes | Unknown | No | - | - |
  | Blazer PasswordEq | Yes | Early-Exit | Yes | Yes | Yes |
  | Blazer Sanity | Yes | Mixed | Yes | - | - |
@@ -61,7 +61,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to tes
  
  **Correction attempted** indicates if the tool was executed on the dataset at least once. 
  
- **Symbolically Correct** indicates if the correction of the tool passed the test produced by the tool **EvoSuite** for the save version of the dataset.
+ **Symbolically Correct** indicates if the correction of the tool passed the modifications produced by the tool **EvoSuite** for the save version of the dataset.
  
  **Correct Vulnerability** indicates if after executing DifFuzz in the corrected version of the dataset it found a vulnerability.
  
