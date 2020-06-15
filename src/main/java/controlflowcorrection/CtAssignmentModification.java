@@ -14,7 +14,7 @@ import java.util.List;
 class CtAssignmentModification {
     private static final Logger logger = LoggerFactory.getLogger(CtAssignmentModification.class);
 
-    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables) {
+    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         CtAssignment<?, ?> assignmentStatement = (CtAssignment<?, ?>) statement;
         CtExpression<?> assignment = assignmentStatement.getAssignment();
         boolean usesSecret = ControlFlowBasedVulnerabilityCorrection.usesSecret(assignment.toString(), secretVariables);

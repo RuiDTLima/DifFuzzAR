@@ -7,7 +7,10 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtNamedElement;
+import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.factory.Factory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +18,7 @@ import java.util.List;
 class CtLocalVariableModification {
     private static final Logger logger = LoggerFactory.getLogger(CtLocalVariableModification.class);
 
-    static void traverseStatement(CtStatement statement, List<CtVariable<?>> secretVariables) {
+    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) statement;
         CtExpression<?> assignment = localVariable.getAssignment();
         if (assignment == null)
