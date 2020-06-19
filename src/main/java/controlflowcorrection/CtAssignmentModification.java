@@ -11,6 +11,8 @@ import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.CtAssignmentImpl;
 import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtVariableReadImpl;
+import util.NamingConvention;
+
 import java.util.List;
 
 class CtAssignmentModification {
@@ -57,8 +59,8 @@ class CtAssignmentModification {
             logger.info("The assigned is a variable already replaced.");
         } else {
             String type = assignmentImpl.getType().getSimpleName();
-            int counter = ControlFlowBasedVulnerabilityCorrection.increaseCounter();
-            newAssigned = ControlFlowBasedVulnerabilityCorrection.getNameForVariable() + counter;
+            //int counter = NamingConvention.increaseCounter();
+            newAssigned = NamingConvention.produceNewVariableName();
             ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(assigned.toString(), newAssigned);
             ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type);
             logger.info("The assigned is a variable to be replaced.");
@@ -74,5 +76,12 @@ class CtAssignmentModification {
         }
 
         return factory.createCodeSnippetStatement(newAssigned + " = " + newAssignment);
+    }
+
+    public static boolean equalAssignments(CtStatement firstStatement, CtStatement secondStatement) {
+        CtAssignment<?, ?> firstAssignment = (CtAssignment<?, ?>) firstStatement;
+        CtAssignment<?, ?> secondAssignment = (CtAssignment<?, ?>) secondStatement;
+
+        return firstAssignment.getAssignment().equals(secondAssignment.getAssignment());
     }
 }

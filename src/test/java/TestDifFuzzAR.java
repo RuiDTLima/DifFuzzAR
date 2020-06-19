@@ -9,6 +9,8 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.TypeFilter;
+import util.Setup;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -86,24 +88,167 @@ public class TestDifFuzzAR {
     }
 
     @DataProvider
+    /*
+      String pathToVulnerableMethod,
+      String correctedClassName,
+      String methodName,
+      String correctedMethodPath,
+      String[] firstUseCaseArgumentsNames,
+      String[] secondUseCaseArgumentsNames
+     */
     private Object[][] correctVulnerableMethodWithEarlyExit() {
         return new Object[][] {
-                {"apache_ftpserver_clear_unsafe/ClearTextPasswordEncryptor.java", "ClearTextPasswordEncryptor$Modification", "isEqual_unsafe", "apache_ftpserver_clear_unsafe/CorrectedMethod.java"},
-                {"apache_ftpserver_md5_unsafe/Md5PasswordEncryptor.java", "Md5PasswordEncryptor$Modification", "regionMatches", "apache_ftpserver_md5_unsafe/CorrectedMethod.java"},
-                {"apache_ftpserver_stringutils_unsafe/StringUtils.java", "StringUtils$Modification", "pad_unsafe", "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java"},
-                {"blazer_passwordEq_unsafe/User.java", "User$Modification", "passwordsEqual_unsafe", "blazer_passwordEq_unsafe/CorrectedMethod.java"},
-                {"blazer_sanity_unsafe/Sanity.java", "Sanity$Modification", "sanity_unsafe", "blazer_sanity_unsafe/CorrectedMethod.java"},
-                {"example_PWCheck_unsafe/PWCheck.java", "PWCheck$Modification", "pwcheck1_unsafe", "example_PWCheck_unsafe/CorrectedMethod.java"},
-                {"github_authmreloaded_unsafe/UnsaltedMethod.java", "UnsaltedMethod$Modification", "isEqual_unsafe", "github_authmreloaded_unsafe/CorrectedMethod.java"},
-                {"themis_boot-stateless-auth_unsafe/TokenHandler.java", "TokenHandler$Modification", "parseUserFromToken_unsafe", "themis_boot-stateless-auth_unsafe/CorrectedMethod.java"},
-                {"themis_dynatable_unsafe/SchoolCalendarServiceImpl.java", "SchoolCalendarServiceImpl$Modification", "getPeople_unsafe", "themis_dynatable_unsafe/CorrectedMethod.java"},
-                {"themis_jdk_unsafe/MessageDigest.java", "MessageDigest$Modification", "isEqual_unsafe", "themis_jdk_unsafe/CorrectedMethod.java"},
-                {"themis_jetty_unsafe/Credential.java", "Credential$Modification", "stringEquals_original", "themis_jetty_unsafe/CorrectedMethod.java"},
-                {"themis_oacc_unsafe/PasswordCredentials.java", "PasswordCredentials$Modification", "equals", "themis_oacc_unsafe/CorrectedMethod.java"},
-                {"themis_orientdb_unsafe/OSecurityManager.java", "OSecurityManager$Modification", "equals_inline", "themis_orientdb_unsafe/CorrectedMethod.java"},
-                {"themis_picketbox_unsafe/UsernamePasswordLoginModule.java", "UsernamePasswordLoginModule$Modification", "equals", "themis_picketbox_unsafe/CorrectedMethod.java"},
-                {"themis_spring-security_unsafe/PasswordEncoderUtils.java", "PasswordEncoderUtils$Modification", "equals_unsafe", "themis_spring-security_unsafe/CorrectedMethod.java"},
-                {"themis_tomcat_unsafe/DataSourceRealm.java", "DataSourceRealm$Modification", "authenticate_unsafe", "themis_tomcat_unsafe/CorrectedMethod.java"}
+                {
+                    "apache_ftpserver_clear_unsafe/ClearTextPasswordEncryptor.java",
+                    "ClearTextPasswordEncryptor$Modification", "isEqual_unsafe",
+                    "apache_ftpserver_clear_unsafe/CorrectedMethod.java",
+                    new String[] {"validPassword_public", "storedPassword_valid_secret1"},
+                    new String[] {"validPassword_public", "storedPassword_invalid_secret2"}
+                 },
+                {
+                    "apache_ftpserver_md5_unsafe/Md5PasswordEncryptor.java",
+                    "Md5PasswordEncryptor$Modification",
+                    "regionMatches",
+                    "apache_ftpserver_md5_unsafe/CorrectedMethod.java",
+                    new String[] {"firstEncryption", "true", "0", "storedPassword_valid_secret1", "0", "firstEncryption.length()"},
+                    new String[] {"firstEncryption", "true", "0", "storedPassword_invalid_secret2", "0", "firstEncryption.length()"}
+                },
+                {
+                    "apache_ftpserver_stringutils_unsafe/StringUtils.java",
+                    "StringUtils$Modification",
+                    "pad_unsafe",
+                    "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java",
+                    new String[] {"userName1", "' '", "true", "MAX_USERNAME_LENGTH"},
+                    new String[] {"userName2", "' '", "true", "MAX_USERNAME_LENGTH"}
+                },
+                {
+                    "blazer_passwordEq_unsafe/User.java",
+                    "User$Modification",
+                    "passwordsEqual_unsafe",
+                    "blazer_passwordEq_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1", "publicVal"},
+                    new String[] {"secret2", "publicVal"}
+                },
+                {
+                    "blazer_sanity_unsafe/Sanity.java",
+                    "Sanity$Modification",
+                    "sanity_unsafe",
+                    "blazer_sanity_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_a", "public_b"},
+                    new String[] {"secret2_a", "public_b"}
+                },
+                {
+                    "example_PWCheck_unsafe/PWCheck.java",
+                    "PWCheck$Modification",
+                    "pwcheck1_unsafe",
+                    "example_PWCheck_unsafe/CorrectedMethod.java",
+                    new String[] {"public_guess", "secret1_pw"},
+                    new String[] {"public_guess", "secret2_pw"}
+                },
+                {
+                    "github_authmreloaded_unsafe/UnsaltedMethod.java",
+                    "UnsaltedMethod$Modification",
+                    "isEqual_unsafe",
+                    "github_authmreloaded_unsafe/CorrectedMethod.java",
+                    new String[] {"storedPassword_valid_secret1.getHash()", "encrMethod.computeHash(password_public)"},
+                    new String[] {"storedPassword_invalid_secret2.getHash()", "encrMethod.computeHash(password_public)"}
+                },
+                {
+                    "themis_boot-stateless-auth_unsafe/TokenHandler.java",
+                    "TokenHandler$Modification",
+                    "parseUserFromToken_unsafe",
+                    "themis_boot-stateless-auth_unsafe/CorrectedMethod.java",
+                    new String[] {"userTokenValid"},
+                    new String[] {"userTokenInvalid"}
+                },
+                {
+                    "themis_dynatable_unsafe/SchoolCalendarServiceImpl.java",
+                    "SchoolCalendarServiceImpl$Modification",
+                    "getPeople_unsafe",
+                    "themis_dynatable_unsafe/CorrectedMethod.java",
+                    new String[] {"startIndex", "maxCount"},
+                    new String[] {"startIndex", "maxCount"}
+                },
+                {
+                    "themis_jdk_unsafe/MessageDigest.java",
+                    "MessageDigest$Modification",
+                    "isEqual_unsafe",
+                    "themis_jdk_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_digesta", "public_digestb"},
+                    new String[] {"secret2_digesta", "public_digestb"}
+                },
+                {
+                    "themis_jetty_unsafe/Credential.java",
+                    "Credential$Modification",
+                    "stringEquals_original",
+                    "themis_jetty_unsafe/CorrectedMethod.java",
+                    new String[] {"publicCred", "secret1"},
+                    new String[] {"publicCred", "secret2"}
+                },
+                {
+                    "themis_oacc_unsafe/PasswordCredentials.java",
+                    "PasswordCredentials$Modification",
+                    "equals",
+                    "themis_oacc_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1"},
+                    new String[] {"secret2"}
+                },
+                {
+                    "themis_oacc_unsafe2/PasswordCredentials.java",
+                    "PasswordCredentials$Modification",
+                    "ArraysIsEquals",
+                    "themis_oacc_unsafe2/CorrectedMethod.java",
+                    new String[] {"public_credentials.getPassword()", "secret1.getPassword()"},
+                    new String[] {"public_credentials.getPassword()", "secret2.getPassword()"}
+                },
+                {
+                    "themis_orientdb_unsafe/OSecurityManager.java",
+                    "OSecurityManager$Modification",
+                    "checkPassword_unsafe",
+                    "themis_orientdb_unsafe/CorrectedMethod.java",
+                    new String[] {"secret_iPassword1", "public_ihash"},
+                    new String[] {"secret_iPassword2", "public_ihash"}
+                },
+                {
+                    "themis_orientdb_unsafe2/OSecurityManager.java",
+                    "OSecurityManager$Modification",
+                    "equals_inline",
+                    "themis_orientdb_unsafe2/CorrectedMethod.java",
+                    new String[] {"secret_iPassword1", "public_ihash"},
+                    new String[] {"secret_iPassword2", "public_ihash"}
+                },
+                {
+                    "themis_picketbox_unsafe/UsernamePasswordLoginModule.java",
+                    "UsernamePasswordLoginModule$Modification",
+                    "validatePassword_unsafe",
+                    "themis_picketbox_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_expected", "public_actual"},
+                    new String[] {"secret2_expected", "public_actual"}
+                },
+                {
+                    "themis_picketbox_unsafe2/UsernamePasswordLoginModule.java",
+                    "UsernamePasswordLoginModule$Modification",
+                    "equals",
+                    "themis_picketbox_unsafe2/CorrectedMethod.java",
+                    new String[] {"secret1_expected", "public_actual"},
+                    new String[] {"secret2_expected", "public_actual"}
+                },
+                {
+                    "themis_spring-security_unsafe/PasswordEncoderUtils.java",
+                    "PasswordEncoderUtils$Modification",
+                    "equals_unsafe",
+                    "themis_spring-security_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_expected", "public_actual"},
+                    new String[] {"secret2_expected", "public_actual"}
+                },
+                {
+                    "themis_tomcat_unsafe/DataSourceRealm.java",
+                    "DataSourceRealm$Modification",
+                    "authenticate_unsafe",
+                    "themis_tomcat_unsafe/CorrectedMethod.java",
+                    new String[] {"dbConnection", "secret_user1", "pw"},
+                    new String[] {"dbConnection", "secret_user2", "pw"}
+                }
         };
     }
 
@@ -214,8 +359,10 @@ public class TestDifFuzzAR {
 
     @Test(dataProvider = "correctVulnerableMethodWithEarlyExit") //  TODO remove exceptions
     public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod, String correctedClassName, String methodName,
-                                               String correctedMethodPath) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // Setup
+                                               String correctedMethodPath,
+                                               String[] firstUseCaseArgumentsNames,
+                                               String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // util.Setup
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
         Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");
@@ -224,11 +371,14 @@ public class TestDifFuzzAR {
         CtClass<?> vulnerableClass = model.filterChildren(new TypeFilter<>(CtClass.class)).first();
         CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
         vulnerableClass.setSimpleName(correctedClassName);
+        VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
+        vulnerableMethodUses.setUseCase("", "", "", firstUseCaseArgumentsNames);
+        vulnerableMethodUses.setUseCase("", "", "", secondUseCaseArgumentsNames);
 
         // Act
         final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
         modifyCode.setAccessible(true);
-        modifyCode.invoke(null, factory, vulnerableMethod, model, null);
+        modifyCode.invoke(null, factory, vulnerableMethod, model, vulnerableMethodUses);
 
         // Assert
         URL resource = classLoader.getResource(correctedMethodPath);
@@ -255,7 +405,7 @@ public class TestDifFuzzAR {
                                                  String correctedMethodPath,
                                                  String[] firstUseCaseArgumentsNames,
                                                  String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // Setup
+        // util.Setup
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
         Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");

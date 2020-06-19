@@ -7,6 +7,7 @@ import spoon.reflect.code.CtBinaryOperator;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtVariableRead;
 import spoon.reflect.factory.Factory;
+import util.NamingConvention;
 
 class CtBinaryOperatorModification {
     private static final Logger logger = LoggerFactory.getLogger(CtBinaryOperatorModification.class);
@@ -45,8 +46,8 @@ class CtBinaryOperatorModification {
             logger.info("The hand operand is a variable that already was replaced.");
         } else {
             String type = handOperand.getType().toString();
-            int counter = ControlFlowBasedVulnerabilityCorrection.increaseCounter();
-            newHandOperator = factory.createCodeSnippetExpression(ControlFlowBasedVulnerabilityCorrection.getNameForVariable() + counter);
+            //int counter = NamingConvention.increaseCounter();
+            newHandOperator = factory.createCodeSnippetExpression(NamingConvention.produceNewVariableName());
             ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperator, newHandOperator.toString());
             ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newHandOperator.toString(), type);
             logger.info("The hand operand is to a variable that will now be replaced.");

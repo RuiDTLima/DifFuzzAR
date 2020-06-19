@@ -9,13 +9,28 @@ import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.code.CtAssignmentImpl;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
+import util.EqualStatementsFunction;
+import util.NamingConvention;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 class CtIfModification {
     private static final Logger logger = LoggerFactory.getLogger(CtIfModification.class);
+    private static final HashMap<Class<?>, EqualStatementsFunction<CtStatement, CtStatement>> equalsFunctions = new HashMap<>();
+
+    static {
+        populateFunction();
+    }
+
+    private static void populateFunction() {
+        equalsFunctions.put(CtAssignmentImpl.class, CtAssignmentModification::equalAssignments);
+    }
 
     static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         logger.info("Found an 'if' while traversing the method.");
@@ -62,7 +77,7 @@ class CtIfModification {
                 elseStatement = block.insertEnd(thenStatementsList);
             }
             statement.setElseStatement(elseStatement);
-        } else {
+        } else if (elseStatement.getStatement(0) instanceof CtIf || !equals(thenStatement, elseStatement)) {    // TODO define a new equals, that ignores the variables of assignment.
             logger.info("There is an else statement.");
             List<CtStatement> elseStatements = elseStatement.clone().getStatements();
             CtStatementList elseStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, elseStatements, statement, dependableVariables);
@@ -96,6 +111,30 @@ class CtIfModification {
         } else {
             dependableVariables.add(condition.toString());
         }
+    }
+
+    private static boolean equals(CtBlock<?> thenBlock, CtBlock<?> elseBlock) {
+        List<CtStatement> thenStatements = thenBlock.getStatements();
+        List<CtStatement> elseStatements = elseBlock.getStatements();
+        boolean equals = thenStatements.size() == elseStatements.size();
+
+        Iterator<CtStatement> thenIterator = thenStatements.iterator();
+        Iterator<CtStatement> elseIterator = elseStatements.iterator();
+
+        while (thenIterator.hasNext() && elseIterator.hasNext()) {
+            CtStatement thenStatement = thenIterator.next();
+            CtStatement elseStatement = elseIterator.next();
+
+            Class<?> thenStatementClass = thenStatement.getClass();
+            if (thenStatementClass.equals(elseStatement.getClass())) {
+                EqualStatementsFunction<CtStatement, CtStatement> function = equalsFunctions.get(thenStatementClass);
+                if (function != null) {
+                    equals = function.apply(thenStatement, elseStatement);
+                }
+            }
+        }
+
+        return equals;
     }
 
     private static void handleStatementList(CtBlock<?> returnBlock, CtStatementList statementsList) {
@@ -181,7 +220,7 @@ class CtIfModification {
         logger.info("Handling a executable reference.");
         List<CtTypeReference<?>> executableParameters = executableReference.getParameters();
         List<String> parametersVariable = new ArrayList<>(executableParameters.size());
-        String oldVariable = ControlFlowBasedVulnerabilityCorrection.getNameForVariable() + ControlFlowBasedVulnerabilityCorrection.getCounter();
+        String oldVariable = NamingConvention.getNameForVariable();
         String declaringType = executableReference.getDeclaringType().toString();
 
         for (int idx = 0; idx < executableParameters.size(); idx++) {
@@ -211,8 +250,8 @@ class CtIfModification {
 
     private static String createNewVariable(Factory factory, CtBlockImpl<?> ctBlock, String oldVariable, String declaringType) {
         logger.info("Creating a new variable.");
-        int counter = ControlFlowBasedVulnerabilityCorrection.increaseCounter();
-        String newVariable = ControlFlowBasedVulnerabilityCorrection.getNameForVariable() + counter;
+        //int counter = NamingConvention.increaseCounter();
+        String newVariable = NamingConvention.produceNewVariableName();
         CtCodeSnippetStatement variableInitiation = factory.createCodeSnippetStatement(declaringType + " " + newVariable + " = " + oldVariable);
         ctBlock.addStatement(variableInitiation);
         return newVariable;

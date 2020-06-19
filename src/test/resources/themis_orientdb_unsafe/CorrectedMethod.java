@@ -1,17 +1,14 @@
-public boolean equals_inline$Modification(String iPassword, String iHash) {
-    boolean $1 = false;
-    int n = iPassword.length();
-    if (n == iHash.length()) {
-        char[] v1 = iPassword.toCharArray();
-        char[] v2 = iHash.toCharArray();
-        int i = 0;
-        $1 = true;
-        while ((n--) != 0) {
-            if ((i < v1.length) && (i < v2.length) && v1[i] != v2[i]) {
-                $1 = false;
-            }
-            i++;
-        }
+public boolean checkPassword_unsafe$Modification(final String iPassword, final String iHash) {
+    boolean $1 = equals_inline(iPassword, iHash);
+    if (iHash.startsWith(HASH_ALGORITHM_PREFIX)) {
+        final String s = iHash.substring(HASH_ALGORITHM_PREFIX.length());
+        $1 = createSHA256(iPassword).equals(s);
+    } else if (iHash.startsWith(PBKDF2_ALGORITHM_PREFIX)) {
+        final String s = iHash.substring(PBKDF2_ALGORITHM_PREFIX.length());
+        $1 = checkPasswordWithSalt(iPassword, s, PBKDF2_ALGORITHM);
+    } else if (iHash.startsWith(PBKDF2_SHA256_ALGORITHM_PREFIX)) {
+        final String s = iHash.substring(PBKDF2_SHA256_ALGORITHM_PREFIX.length());
+        $1 = checkPasswordWithSalt(iPassword, s, PBKDF2_SHA256_ALGORITHM);
     }
     return $1;
 }

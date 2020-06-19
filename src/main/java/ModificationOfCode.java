@@ -6,20 +6,21 @@ import spoon.Launcher;
 import spoon.legacy.NameFilter;
 import spoon.refactoring.Refactoring;
 import spoon.reflect.CtModel;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.visitor.filter.ReturnOrThrowFilter;
 import spoon.reflect.visitor.filter.TypeFilter;
-import spoon.support.reflect.code.*;
+import spoon.support.reflect.code.CtIfImpl;
+import spoon.support.reflect.code.CtReturnImpl;
+import util.NamingConvention;
+import util.Setup;
 
 import java.util.*;
 
 public class ModificationOfCode {
     private static final Logger logger = LoggerFactory.getLogger(ModificationOfCode.class);
-    private static final String CLASS_NAME_ADDITION = "$Modification";
 
     public static void processVulnerableClass(String driverPath, VulnerableMethodUses vulnerableMethodUsesCases) {
         String packageName = vulnerableMethodUsesCases.getFirstUseCasePackageName();
@@ -59,7 +60,7 @@ public class ModificationOfCode {
                 if (classList.size() == 1)
                     vulnerableClass = classList.get(0);
             }
-            vulnerableClass.setSimpleName(className + CLASS_NAME_ADDITION);
+            vulnerableClass.setSimpleName(className + NamingConvention.getClassNameAddition());
 
             modifyCode(factory, vulnerableMethod, model, vulnerableMethodUsesCases);
             launcher.prettyprint();
@@ -87,18 +88,9 @@ public class ModificationOfCode {
         }
 
         CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
-        Refactoring.changeMethodName(modifiedMethod, vulnerableMethod.getSimpleName() + CLASS_NAME_ADDITION);
-
-        List<CtCFlowBreak> returnList = modifiedMethod.getElements(new ReturnOrThrowFilter());
-        returnList.removeIf(returnOrThrow -> !(returnOrThrow instanceof CtReturnImpl));
-
-        if (returnList.size() > 1) {
-            logger.info("The method suffers from early-exit timing side-channel vulnerability since it " +
-                    "has {} exit points.", returnList.size());
-            EarlyExitVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, returnList);
-        } else {
-            logger.info("The method suffers from control-flow-based timing side-channel vulnerability.");
-            ControlFlowBasedVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, vulnerableMethodUsesCases);
-        }
+        Refactoring.changeMethodName(modifiedMethod, vulnerableMethod.getSimpleName() + NamingConvention.getClassNameAddition());
+        EarlyExitVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod);
+        //logger.info("The method suffers from control-flow-based timing side-channel vulnerability.");
+        ControlFlowBasedVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, vulnerableMethodUsesCases);
     }
 }

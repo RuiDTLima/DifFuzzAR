@@ -12,6 +12,8 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtIfImpl;
+import util.NamingConvention;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,8 +80,8 @@ class CtLocalVariableModification {
 
     private static CtNamedElement createNewLocalVariable(CtLocalVariable<?> localVariable) {
         logger.info("A new local variable will be created.");
-        int counter = ControlFlowBasedVulnerabilityCorrection.increaseCounter();
-        String newVariable = ControlFlowBasedVulnerabilityCorrection.getNameForVariable() + counter;
+        //int counter = NamingConvention.increaseCounter();
+        String newVariable = NamingConvention.produceNewVariableName();
         ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(localVariable.getSimpleName(), newVariable);
         return localVariable.setSimpleName(newVariable);
     }

@@ -1,7 +1,9 @@
+package util;
+
 import spoon.Launcher;
 
 public class Setup {
-    static Launcher setupLauncher(String inputResourcePath, String outputResourcePath) {
+    public static Launcher setupLauncher(String inputResourcePath, String outputResourcePath) {
         Launcher launcher = new Launcher();
         launcher.addInputResource(inputResourcePath);
         launcher.setSourceOutputDirectory(outputResourcePath);
