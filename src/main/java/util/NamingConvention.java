@@ -1,8 +1,14 @@
 package util;
 
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtLocalVariable;
+import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
+
 public class NamingConvention {
     private static final String CLASS_NAME_ADDITION = "$Modification";
     private static final String NAME_FOR_VARIABLE = "$";
+    private static CtLocalVariable<?> localVariable = null;
     private static int counter = 0;
 
     public static String getClassNameAddition() {
@@ -13,17 +19,19 @@ public class NamingConvention {
         return NAME_FOR_VARIABLE + counter;
     }
 
-    public static int increaseCounter() {
-        return ++counter;
+    public static CtLocalVariable<?> getLocalVariable() {
+        return localVariable;
     }
 
-    public static int getCounter() {
-        return counter;
-    }
-
-    public static String produceNewVariableName() {
+    public static String produceNewVariable() {
         counter++;
         return NAME_FOR_VARIABLE + counter;
+    }
+
+    public static CtLocalVariable<?> produceNewVariable(Factory factory, CtTypeReference methodReturnType, CtExpression<?> returnElement) {
+        String variableName = produceNewVariable();
+        localVariable = factory.createLocalVariable(methodReturnType, variableName, returnElement);
+        return localVariable;
     }
 
     // TODO remove

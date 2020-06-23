@@ -7,6 +7,9 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.code.CtBlockImpl;
+import spoon.support.reflect.code.CtIfImpl;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +21,26 @@ class CtForModification {
         logger.info("Found a 'for' while traversing the method.");
         CtFor forStatement = (CtFor) statement;
         CtExpression<Boolean> forExpression = forStatement.getExpression();
+        CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
+        CtBlock<?> newBody = handleBody(forExpression, body); // TODO check if it can be after modifying the condition.
+        forStatement.setBody(newBody);
+        handleStoppingCondition(factory, secretVariables, publicArguments, forStatement, forExpression);
+        ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, newBody, secretVariables, publicArguments);
+    }
+
+    private static CtBlock<?> handleBody(CtExpression<Boolean> forExpression, CtBlock<?> body) {
+        CtIf newIf = new CtIfImpl();
+        newIf.setCondition(forExpression);
+        newIf.setThenStatement(body.clone());
+        CtBlock<?> newBlock = new CtBlockImpl<>();
+        newBlock.addStatement(newIf.clone());
+        return newBlock;
+    }
+
+    private static void handleStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,
+                                                List<CtParameter<?>> publicArguments, CtFor forStatement,
+                                                CtExpression<Boolean> forExpression) {
+
         if (ControlFlowBasedVulnerabilityCorrection.usesSecret(forExpression.toString(), secretVariables)) {
             logger.info("Cycle stopping condition depends on the secret.");
             if (forExpression instanceof CtBinaryOperator) {
@@ -26,7 +49,6 @@ class CtForModification {
                 logger.info("The for stopping condition is a binary operation that was modified.");
             }
         }
-        ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, ((CtBlock<?>)forStatement.getBody()), secretVariables, publicArguments);
     }
 
     private static CtBinaryOperator<Boolean> modifyStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,

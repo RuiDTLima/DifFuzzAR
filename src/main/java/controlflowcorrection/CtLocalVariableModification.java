@@ -12,6 +12,7 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtIfImpl;
+import spoon.support.reflect.code.CtVariableReadImpl;
 import util.NamingConvention;
 
 import java.util.ArrayList;
@@ -40,11 +41,12 @@ class CtLocalVariableModification {
         }
     }
 
-    static CtStatement modifyLocalVariable(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables) {
+    static CtStatement modifyLocalVariable(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a local variable to modify");
 
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
-        CtStatement statement = null;
+        CtStatement statement;
+        boolean condition;
         CtExpression<?> assignment = localVariable.getAssignment();
 
         if (assignment instanceof CtInvocation) {
@@ -54,17 +56,20 @@ class CtLocalVariableModification {
             List<CtExpression<?>> expressionList = new ArrayList<>(invocation.getArguments());
             expressionList.add(invocation.getTarget());
 
-            boolean condition = expressionList.stream()
+            condition = expressionList.stream()
                     .anyMatch(ctExpression -> dependableVariables.stream()
                             .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
 
-            statement = modifyStatement(dependableVariables, localVariable, condition);
+            //statement = modifyStatement(dependableVariables, localVariable, condition);
+        } else if (assignment instanceof CtVariableReadImpl) {
+            CtVariableReadImpl<?> variableRead = (CtVariableReadImpl<?>) assignment;
+            String variable = variableRead.getVariable().toString();
+            condition = dependableVariables.stream().anyMatch(dependableVariable -> dependableVariable.equals(variable));
         } else {
-            boolean condition = Arrays.stream(assignment.toString().split("\\."))
+           condition = Arrays.stream(assignment.toString().split("\\."))
                     .anyMatch(word -> dependableVariables.stream().anyMatch(secretVariable -> secretVariable.equals(word)));
-
-            statement = modifyStatement(dependableVariables, localVariable, condition);
         }
+        statement = modifyStatement(dependableVariables, localVariable, condition);
         return statement;
     }
 
@@ -80,8 +85,7 @@ class CtLocalVariableModification {
 
     private static CtNamedElement createNewLocalVariable(CtLocalVariable<?> localVariable) {
         logger.info("A new local variable will be created.");
-        //int counter = NamingConvention.increaseCounter();
-        String newVariable = NamingConvention.produceNewVariableName();
+        String newVariable = NamingConvention.produceNewVariable();
         ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(localVariable.getSimpleName(), newVariable);
         return localVariable.setSimpleName(newVariable);
     }

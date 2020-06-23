@@ -16,7 +16,6 @@ import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtReturnImpl;
 import util.NamingConvention;
 import util.Setup;
-
 import java.util.*;
 
 public class ModificationOfCode {
@@ -90,7 +89,6 @@ public class ModificationOfCode {
         CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
         Refactoring.changeMethodName(modifiedMethod, vulnerableMethod.getSimpleName() + NamingConvention.getClassNameAddition());
         EarlyExitVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod);
-        //logger.info("The method suffers from control-flow-based timing side-channel vulnerability.");
         ControlFlowBasedVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, vulnerableMethodUsesCases);
     }
 }

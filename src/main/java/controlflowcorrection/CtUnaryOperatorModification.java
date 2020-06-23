@@ -6,6 +6,7 @@ import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtUnaryOperator;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtIfImpl;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 class CtUnaryOperatorModification {
     private static final Logger logger = LoggerFactory.getLogger(CtUnaryOperatorModification.class);
 
-    static CtStatement modifyUnaryOperator(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables) {
+    static CtStatement modifyUnaryOperator(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a unary operator to modify.");
         CtStatement statement;
         CtUnaryOperator<?> unaryOperator = (CtUnaryOperator<?>) element;

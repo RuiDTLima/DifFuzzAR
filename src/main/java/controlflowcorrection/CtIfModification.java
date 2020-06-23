@@ -12,9 +12,9 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtAssignmentImpl;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
+import spoon.support.reflect.code.CtLiteralImpl;
 import util.EqualStatementsFunction;
 import util.NamingConvention;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,7 +39,7 @@ class CtIfModification {
         if (ControlFlowBasedVulnerabilityCorrection.usesSecret(ifStatement.getCondition().toString(), secretVariables)) {
             logger.info("Found the source of vulnerability.");
             List<String> dependableVariables = new ArrayList<>();
-            handleVulnerability(factory, ifStatement, dependableVariables);
+            handleVulnerability(factory, ifStatement, dependableVariables, secretVariables);
         } else {
             logger.info("The current if condition does not depend on a secret. So the body of the 'then' and 'else' must be analysed.");
             CtBlock<?> thenBlock = ifStatement.getThenStatement();
@@ -50,7 +50,7 @@ class CtIfModification {
         }
     }
 
-    private static CtBlock<?> handleVulnerability(Factory factory, CtIfImpl statement, List<String> dependableVariables) {
+    private static CtBlock<?> handleVulnerability(Factory factory, CtIfImpl statement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Handling the vulnerability");
         CtExpression<Boolean> condition = statement.getCondition();
 
@@ -62,14 +62,14 @@ class CtIfModification {
         CtBlock<?> elseStatement = statement.getElseStatement();
 
         List<CtStatement> thenStatements = thenStatement.clone().getStatements();
-        CtStatementList thenStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, thenStatements, statement, dependableVariables);
+        CtStatementList thenStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, thenStatements, statement, dependableVariables, secretVariables);
 
         if (elseStatement == null) {
             logger.info("There is no else statement.");
             CtBlock<Object> block = factory.createBlock();
             if (thenStatement.getStatement(0) instanceof CtIf) {
                 logger.info("The first statement in the 'then statement' is an 'if statement'");
-                CtBlock<?> newBlock = modifyCondition(factory, statement, thenStatement.getStatement(0), dependableVariables);
+                CtBlock<?> newBlock = modifyCondition(factory, statement, thenStatement.getStatement(0), dependableVariables, secretVariables);
                 newBlock.getStatements().forEach(element -> block.addStatement(element.clone()));
                 elseStatement = newBlock;
             } else {
@@ -80,7 +80,7 @@ class CtIfModification {
         } else if (elseStatement.getStatement(0) instanceof CtIf || !equals(thenStatement, elseStatement)) {    // TODO define a new equals, that ignores the variables of assignment.
             logger.info("There is an else statement.");
             List<CtStatement> elseStatements = elseStatement.clone().getStatements();
-            CtStatementList elseStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, elseStatements, statement, dependableVariables);
+            CtStatementList elseStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, elseStatements, statement, dependableVariables, secretVariables);
 
             handleStatementList(returnBlock, thenStatementsList);
             handleStatementList(returnBlock, elseStatementsList);
@@ -144,7 +144,7 @@ class CtIfModification {
         }
     }
 
-    private static CtBlock<?> modifyCondition(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables) {
+    private static CtBlock<?> modifyCondition(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Modifying the condition.");
         CtBlockImpl<?> ctBlock = new CtBlockImpl<>();
         CtExpression<Boolean> initialStatementCondition = initialStatement.getCondition();
@@ -154,7 +154,7 @@ class CtIfModification {
 
         if (condition instanceof CtInvocation) {
             logger.info("Condition is an invocation.");
-            handleInvocationCondition(factory, initialStatement, ifElement, dependableVariables, ctBlock, (CtInvocation<Boolean>) condition, initialStatementConditionTarget, conditionTarget);
+            handleInvocationCondition(factory, initialStatement, ifElement, dependableVariables, secretVariables, ctBlock, (CtInvocation<Boolean>) condition, initialStatementConditionTarget, conditionTarget);
         }
         return ctBlock;
     }
@@ -168,6 +168,8 @@ class CtIfModification {
         } else if (handOperand instanceof CtBinaryOperator) {
             logger.info("Hand operand is a binary operator.");
             populateDependableVariables(dependableVariables, handOperand);
+        } else if (!(handOperand instanceof CtLiteralImpl)) {
+                dependableVariables.add(handOperand.toString());
         }
     }
 
@@ -180,7 +182,7 @@ class CtIfModification {
         return possibleTarget.toString();
     }
 
-    private static void handleInvocationCondition(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, CtBlockImpl<?> ctBlock, CtInvocation<Boolean> conditionInvocation, String initialStatementConditionTarget, String conditionTarget) {
+    private static void handleInvocationCondition(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, List<CtVariable<?>> secretVariables, CtBlockImpl<?> ctBlock, CtInvocation<Boolean> conditionInvocation, String initialStatementConditionTarget, String conditionTarget) {
         logger.info("Handling a condition that is an invocation.");
         List<CtExpression<?>> conditionInvocationArguments = conditionInvocation.getArguments();
 
@@ -205,70 +207,69 @@ class CtIfModification {
         invocations.forEach(invocation -> {
             if (invocation instanceof CtInvocation) {
                 logger.info("Invocation is of the type CtInvocation.");
-                String type = ((CtInvocation<?>) invocation).getType().toString();
-                String newVariable = createNewVariable(factory, ctBlock, invocation.toString(), type);
-                CtCodeSnippetExpression<Object> expression = factory.createCodeSnippetExpression(newVariable);
-                ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement("", expression.toString());
+                CtInvocation<?> ctInvocation = (CtInvocation<?>) invocation;
+                CtTypeReference<?> type = ctInvocation.getType();
+                CtLocalVariable<?> newVariable = createNewVariable(factory, ctBlock, ctInvocation, type);
+                ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement("", newVariable.getSimpleName());
             } else if (invocation instanceof CtExecutableReference) {
                 logger.info("Invocation is of the type CtExecutableReference.");
-                handleExecutableReference(factory, initialStatement, ifElement, dependableVariables, ctBlock, (CtExecutableReference<?>) invocation);
+                handleExecutableReference(factory, initialStatement, ifElement, dependableVariables, secretVariables, ctBlock, (CtExecutableReference<?>) invocation);
             }
         });
     }
 
-    private static void handleExecutableReference(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, CtBlockImpl<?> ctBlock, CtExecutableReference<?> executableReference) {
+    private static void handleExecutableReference(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, List<CtVariable<?>> secretVariables, CtBlockImpl<?> ctBlock, CtExecutableReference<?> executableReference) {
         logger.info("Handling a executable reference.");
         List<CtTypeReference<?>> executableParameters = executableReference.getParameters();
-        List<String> parametersVariable = new ArrayList<>(executableParameters.size());
-        String oldVariable = NamingConvention.getNameForVariable();
-        String declaringType = executableReference.getDeclaringType().toString();
+        List<CtExpression<?>> parametersVariable = new ArrayList<>(executableParameters.size());
+        CtLocalVariable<?> localVariable = NamingConvention.getLocalVariable();
+        CtTypeReference<?> declaringType = executableReference.getDeclaringType();
 
         for (int idx = 0; idx < executableParameters.size(); idx++) {
-            String newVariable = createNewVariable(factory, ctBlock, oldVariable, declaringType);
-            parametersVariable.add(newVariable);
+            CtLocalVariable<?> newVariable = createNewVariable(factory, ctBlock, localVariable.getDefaultExpression(), declaringType);
+            parametersVariable.add(factory.createCodeSnippetExpression(newVariable.getSimpleName()));
         }
 
         String type = executableReference.getType().getSimpleName();
         if (type.equalsIgnoreCase("boolean")) {
             CtIf anIf = factory.createIf();
-            CtCodeSnippetExpression<Boolean> codeSnippetStatement = factory.createCodeSnippetExpression(oldVariable + "." + executableReference.getSimpleName() + "(" + String.join(" ,", parametersVariable) + ")");
-            anIf.setCondition(codeSnippetStatement);
+            CtCodeSnippetExpression<Object> target = factory.createCodeSnippetExpression(localVariable.getSimpleName());
+            CtInvocation invocation = factory.createInvocation(target, executableReference, parametersVariable);
+            anIf.setCondition(invocation);
 
             CtBlock<?> thenStatement = ifElement.getThenStatement();
             CtBlock<?> elseStatement = ifElement.getElseStatement();
 
-            CtBlock<?> newThenBlock = createNewBlock(thenStatement, factory, initialStatement, dependableVariables);
+            CtBlock<?> newThenBlock = createNewBlock(thenStatement, factory, initialStatement, dependableVariables, secretVariables);
             anIf.setThenStatement(newThenBlock);
 
             if (elseStatement != null) {
-                CtBlock<?> newElseBlock = createNewBlock(elseStatement, factory, initialStatement, dependableVariables);
+                CtBlock<?> newElseBlock = createNewBlock(elseStatement, factory, initialStatement, dependableVariables, secretVariables);
                 anIf.setElseStatement(newElseBlock);
             }
             ctBlock.addStatement(anIf);
         }
     }
 
-    private static String createNewVariable(Factory factory, CtBlockImpl<?> ctBlock, String oldVariable, String declaringType) {
+    private static CtLocalVariable<?> createNewVariable(Factory factory, CtBlockImpl<?> ctBlock, CtExpression<?> oldVariable, CtTypeReference<?> declaringType) {
         logger.info("Creating a new variable.");
-        //int counter = NamingConvention.increaseCounter();
-        String newVariable = NamingConvention.produceNewVariableName();
-        CtCodeSnippetStatement variableInitiation = factory.createCodeSnippetStatement(declaringType + " " + newVariable + " = " + oldVariable);
-        ctBlock.addStatement(variableInitiation);
+        CtLocalVariable<?> newVariable = NamingConvention.produceNewVariable(factory, declaringType, oldVariable);
+        ctBlock.addStatement(newVariable);
         return newVariable;
     }
 
-    private static CtBlock<?> createNewBlock( CtBlock<?> statement, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables) {
+    private static CtBlock<?> createNewBlock( CtBlock<?> statement, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Creating a new block.");
-        CtStatementList newElement = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, statement.clone().getStatements(), initialStatement, dependableVariables);
+        CtStatementList newElement = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, statement.clone().getStatements(), initialStatement, dependableVariables, secretVariables);
         CtBlock<?> newBlock = factory.createBlock();
         newElement.forEach(newThenStatement -> newBlock.addStatement(newThenStatement.clone()));
         return newBlock;
     }
 
-    static CtBlock<?> modifyIf(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables) {
+    static CtBlock<?> modifyIf(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Modifying an 'if'.");
         CtIfImpl ifElement = (CtIfImpl) element;
-        CtBlock<?> block = handleVulnerability(factory, ifElement, dependableVariables);
+        CtBlock<?> block = handleVulnerability(factory, ifElement, dependableVariables, secretVariables);
 
         if (!block.getStatements().isEmpty()) {
             initialStatement.setElseStatement(ifElement);
