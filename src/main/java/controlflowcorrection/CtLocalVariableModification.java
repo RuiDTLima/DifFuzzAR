@@ -14,7 +14,6 @@ import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtVariableReadImpl;
 import util.NamingConvention;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,7 +59,6 @@ class CtLocalVariableModification {
                     .anyMatch(ctExpression -> dependableVariables.stream()
                             .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
 
-            //statement = modifyStatement(dependableVariables, localVariable, condition);
         } else if (assignment instanceof CtVariableReadImpl) {
             CtVariableReadImpl<?> variableRead = (CtVariableReadImpl<?>) assignment;
             String variable = variableRead.getVariable().toString();

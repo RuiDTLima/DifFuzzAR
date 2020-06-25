@@ -48,7 +48,7 @@ class CtBinaryOperatorModification {
             newHandOperator = factory.createVariableRead(localVariable.getReference(), false);
             ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperator, newHandOperator.toString());
             ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newHandOperator.toString(), type);
-            logger.info("The hand operand is to a variable that will now be replaced.");
+            logger.info("The hand operand is a variable that will now be replaced.");
         }
         return  newHandOperator;
     }

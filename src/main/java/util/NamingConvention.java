@@ -28,9 +28,9 @@ public class NamingConvention {
         return NAME_FOR_VARIABLE + counter;
     }
 
-    public static CtLocalVariable<?> produceNewVariable(Factory factory, CtTypeReference methodReturnType, CtExpression<?> returnElement) {
+    public static CtLocalVariable<?> produceNewVariable(Factory factory, CtTypeReference returnType, CtExpression<?> defaultExpression) {
         String variableName = produceNewVariable();
-        localVariable = factory.createLocalVariable(methodReturnType, variableName, returnElement);
+        localVariable = factory.createLocalVariable(returnType, variableName, defaultExpression);
         return localVariable;
     }
 
