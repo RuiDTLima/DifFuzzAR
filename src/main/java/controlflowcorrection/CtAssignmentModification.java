@@ -11,6 +11,7 @@ import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.CtAssignmentImpl;
+import spoon.support.reflect.code.CtConditionalImpl;
 import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtVariableReadImpl;
 import util.NamingConvention;
@@ -58,22 +59,37 @@ class CtAssignmentModification {
         CtExpression<?> assignment = assignmentImpl.getAssignment();
         String newAssigned;
 
-        if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(assigned.toString())) {
-            newAssigned = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(assigned.toString());
-            logger.info("The assigned is a variable already replaced.");
-        } else {
-            newAssigned = NamingConvention.produceNewVariable();
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(assigned.toString(), newAssigned);
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type);
-            logger.info("The assigned is a variable to be replaced.");
-        }
-
         if (assignment instanceof CtArrayRead) {
             assignment = CtArrayModification.modifyArrayOperation(factory, (CtArrayRead<?>) assignment);
             logger.info("The assignment is an array read.");
         } else if (assignment instanceof CtBinaryOperator){
             assignment = CtBinaryOperatorModification.modifyBinaryOperator(factory, (CtBinaryOperator<Boolean>) assignment);
             logger.info("The assignment is of an binary operator.");
+        } else if (assignment instanceof CtConditionalImpl) {
+            CtConditionalImpl<?> conditional = (CtConditionalImpl<?>) assignment;
+            CtExpression<?> condition = conditional.getCondition();
+            CtExpression<?> thenExpression = conditional.getThenExpression();
+            CtExpression<?> elseExpression = conditional.getElseExpression();
+            if (dependableVariables.contains(condition.toString())) {
+                dependableVariables.add(assigned.toString());
+                return null;
+            } else if (dependableVariables.contains(thenExpression.toString())) {
+                dependableVariables.add(assigned.toString());
+                return null;
+            } else if (dependableVariables.contains(elseExpression.toString())) {
+                dependableVariables.add(assigned.toString());
+                return null;
+            }
+        }
+
+        if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(assigned.toString())) {
+            newAssigned = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(assigned.toString());
+            logger.info("The assigned is a variable already replaced.");
+        } else {
+            newAssigned = NamingConvention.produceNewVariable();
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(assigned.toString(), newAssigned);
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type, null);
+            logger.info("The assigned is a variable to be replaced.");
         }
 
         CtLocalVariableReference variableReference = factory.createLocalVariableReference(type, newAssigned);

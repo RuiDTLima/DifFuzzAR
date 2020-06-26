@@ -7,6 +7,7 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.code.CtBinaryOperatorImpl;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
 
@@ -21,11 +22,15 @@ class CtForModification {
         logger.info("Found a 'for' while traversing the method.");
         CtFor forStatement = (CtFor) statement;
         CtExpression<Boolean> forExpression = forStatement.getExpression();
+        CtExpression<Boolean> newCondition = forExpression.clone();
         CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
-        CtBlock<?> newBody = handleBody(forExpression, body); // TODO check if it can be after modifying the condition.
-        forStatement.setBody(newBody);
-        handleStoppingCondition(factory, secretVariables, publicArguments, forStatement, forExpression);
-        ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, newBody, secretVariables, publicArguments);
+
+        boolean modified = handleStoppingCondition(factory, secretVariables, publicArguments, forStatement, forExpression);
+        if (modified) {
+            body = handleBody(newCondition, body);   // Needs to happen before modification of condition to avoid messing the condition for the if.
+            forStatement.setBody(body);
+        }
+        ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, body, secretVariables, publicArguments);
     }
 
     private static CtBlock<?> handleBody(CtExpression<Boolean> forExpression, CtBlock<?> body) {
@@ -37,18 +42,23 @@ class CtForModification {
         return newBlock;
     }
 
-    private static void handleStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,
+    private static boolean handleStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,
                                                 List<CtParameter<?>> publicArguments, CtFor forStatement,
                                                 CtExpression<Boolean> forExpression) {
 
         if (ControlFlowBasedVulnerabilityCorrection.usesSecret(forExpression.toString(), secretVariables)) {
             logger.info("Cycle stopping condition depends on the secret.");
             if (forExpression instanceof CtBinaryOperator) {
-                CtBinaryOperator<Boolean> binaryOperator = modifyStoppingCondition(factory, secretVariables, publicArguments, (CtBinaryOperator<Boolean>) forExpression);
-                forStatement.setExpression(binaryOperator);
-                logger.info("The for stopping condition is a binary operation that was modified.");
+                CtBinaryOperator<Boolean> forCondition = (CtBinaryOperator<Boolean>) forExpression;
+                CtBinaryOperator<Boolean> binaryOperator = modifyStoppingCondition(factory, secretVariables, publicArguments, forCondition.clone());
+                if (!CtBinaryOperatorModification.equals(forCondition, binaryOperator)) {
+                    forStatement.setExpression(binaryOperator);
+                    logger.info("The for stopping condition is a binary operation that was modified.");
+                    return true;
+                }
             }
         }
+        return false;
     }
 
     private static CtBinaryOperator<Boolean> modifyStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,
@@ -60,6 +70,8 @@ class CtForModification {
         CtExpression<?> rightHandOperand = forExpression.getRightHandOperand();
         String leftHandOperandString = leftHandOperand.toString();
         String rightHandOperandString = rightHandOperand.toString();
+        CtBinaryOperator<Boolean> newStoppingCondition = factory.createBinaryOperator();
+        newStoppingCondition.setKind(forExpression.getKind());
 
         for (CtVariable<?> secretArgument : secretVariables) {
             String secretArgumentSimpleName = secretArgument.getSimpleName();
@@ -76,9 +88,9 @@ class CtForModification {
             }
         }
 
-        forExpression.setLeftHandOperand(leftHandOperand);
-        forExpression.setRightHandOperand(rightHandOperand);
-        return forExpression;
+        newStoppingCondition.setLeftHandOperand(leftHandOperand);
+        newStoppingCondition.setRightHandOperand(rightHandOperand);
+        return newStoppingCondition;
     }
 
     private static CtExpression<?> modifyOperand(Factory factory, List<CtParameter<?>> publicArguments, CtExpression<?> handOperand, CtVariable<?> secretArgument) {

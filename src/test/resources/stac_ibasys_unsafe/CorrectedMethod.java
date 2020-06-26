@@ -35,16 +35,18 @@ public static void test$Modification(byte[] i, byte[] pcode) {
     if (state) {
         success = true;
         for (int var16 = 0; (var16 < imagedata.length) && (var16 < i.length); var16 += 4) {
-            int var17 = Math.abs(imagedata[var16]);
-            int var18 = Math.abs(pcode[var16]);
-            boolean var19 = (var18 % 2) == (var17 % 2);
-            if (!var19) {
-                success = false;
-                break;
+            if ((var16 < imagedata.length) && (var16 < pcode.length)) {
+                int var17 = Math.abs(imagedata[var16]);
+                int var18 = Math.abs(pcode[var16]);
+                boolean var19 = (var18 % 2) == (var17 % 2);
+                if (!var19) {
+                    success = false;
+                    break;
+                }
+                imagedata[var16] = ((byte) ((var19) ? 1 : 0));
             } else {
                 $1 = false;
             }
-            imagedata[var16] = ((byte) ((var19) ? 1 : 0));
         }
         System.out.println(" - status:" + success);
     } else {

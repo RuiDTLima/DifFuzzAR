@@ -6,7 +6,7 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
-import spoon.support.reflect.code.CtIfImpl;
+import spoon.support.reflect.code.*;
 import util.NamingConvention;
 import java.util.List;
 import java.util.Optional;
@@ -21,21 +21,87 @@ public class CtInvocationModification {
         List<CtExpression<?>> invocationArguments = invocation.getArguments();
         CtExpression<?> target = invocation.getTarget();
 
+        if (usesDependable(invocation, dependableVariables))
+            return null;
+
         Optional<CtVariable<?>> optionalVariable = secretVariables.stream().filter(secret -> secret.getSimpleName().equals(target.toString())).findFirst();
         if (optionalVariable.isPresent()) {
             logger.info("Target is a secret.");
+            increaseDependableVariable(initialStatement, dependableVariables);
             CtVariable<?> variable = optionalVariable.get();
             CtExpression<?> defaultExpression = variable.getDefaultExpression();
-            CtLocalVariable<?> newVariable = NamingConvention.produceNewVariable(factory, variable.getType(), defaultExpression);
+            CtExpression<?> newDefaultExpression = null;
+
+            if (defaultExpression instanceof CtConstructorCallImpl) {
+                CtConstructorCallImpl constructorCall = (CtConstructorCallImpl<?>) defaultExpression;
+                List<CtExpression<?>> arguments = constructorCall.getArguments();
+
+                CtConstructorCall<?> newConstructorCall = factory.createConstructorCall();
+                newConstructorCall.setType(constructorCall.getType());
+                newConstructorCall.setTarget(constructorCall.getTarget());
+
+                for (CtExpression<?> argument : arguments) {
+                    Optional<CtVariable<?>> first = secretVariables.stream().filter(secret -> secret.getSimpleName().equals(argument.toString())).findFirst();
+                    CtVariable<?> secretVariable = first.get();
+                    CtExpression<?> secretDefaultExpression = secretVariable.getDefaultExpression();
+                    if (secretDefaultExpression instanceof CtBinaryOperatorImpl) {
+                        CtBinaryOperatorImpl<?> binaryOperator = (CtBinaryOperatorImpl<?>) secretDefaultExpression;
+                        CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
+                        CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
+
+                        if (!dependableVariables.contains(leftHandOperand.toString())) {
+                            newConstructorCall.addArgument(leftHandOperand);
+                        } else if (!dependableVariables.contains(rightHandOperand.toString())) {
+                            newConstructorCall.addArgument(rightHandOperand);
+                        }
+                    }
+                }
+                newDefaultExpression = newConstructorCall;
+            }
+
+            CtLocalVariable<?> newVariable = NamingConvention.produceNewVariable(factory, variable.getType(), newDefaultExpression);
             String variableName = newVariable.getSimpleName();
 
             ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(target.toString(), variableName);
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(variableName, newVariable.getType());
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(variableName, newVariable.getType(), newDefaultExpression);
 
             CtCodeSnippetExpression<Object> newTarget = factory.createCodeSnippetExpression(variableName);
             newInvocation.setTarget(newTarget);
         }
 
         return newInvocation;
+    }
+
+    private static void increaseDependableVariable(CtIfImpl initialStatement, List<String> dependableVariables) {
+        CtElement blockParent = initialStatement.getParent();
+        if (blockParent.isParentInitialized()) {
+            CtElement parent = blockParent.getParent();
+            if (parent instanceof CtForImpl) {
+                CtForImpl forImpl = (CtForImpl) parent;
+                CtExpression<Boolean> stoppingCondition = forImpl.getExpression();
+                if (stoppingCondition instanceof CtBinaryOperatorImpl) {
+                    CtBinaryOperatorImpl<?> stoppingOperator = (CtBinaryOperatorImpl<?>) stoppingCondition;
+                    CtExpression<?> leftHandOperand = stoppingOperator.getLeftHandOperand();
+                    CtExpression<?> rightHandOperand = stoppingOperator.getRightHandOperand();
+                    dependableVariables.add(leftHandOperand.toString());
+                    dependableVariables.add(rightHandOperand.toString());
+                }
+            }
+        }
+    }
+
+    private static boolean usesDependable(CtExpression<?> defaultExpression, List<String> dependableVariables) {
+        boolean usesDependable = false;
+        if (defaultExpression instanceof CtInvocationImpl) {
+            CtInvocationImpl<?> constructorCall = (CtInvocationImpl<?>) defaultExpression;
+            List<CtExpression<?>> arguments = constructorCall.getArguments();
+
+            for (CtExpression<?> argument : arguments) {
+                if (dependableVariables.contains(argument.toString())) {
+                    usesDependable = true;
+                }
+            }
+        }
+        return usesDependable;
     }
 }

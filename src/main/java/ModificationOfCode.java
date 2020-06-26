@@ -88,7 +88,7 @@ public class ModificationOfCode {
 
         CtMethod<?> modifiedMethod = vulnerableMethod.copyMethod();
         Refactoring.changeMethodName(modifiedMethod, vulnerableMethod.getSimpleName() + NamingConvention.getClassNameAddition());
-        EarlyExitVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod);
+        //EarlyExitVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod);
         ControlFlowBasedVulnerabilityCorrection.correctVulnerability(factory, modifiedMethod, vulnerableMethodUsesCases);
     }
 }

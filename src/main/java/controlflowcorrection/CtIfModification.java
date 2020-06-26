@@ -9,10 +9,7 @@ import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtAssignmentImpl;
-import spoon.support.reflect.code.CtBlockImpl;
-import spoon.support.reflect.code.CtIfImpl;
-import spoon.support.reflect.code.CtLiteralImpl;
+import spoon.support.reflect.code.*;
 import util.EqualStatementsFunction;
 import util.NamingConvention;
 import java.util.ArrayList;
@@ -168,8 +165,12 @@ class CtIfModification {
         } else if (handOperand instanceof CtBinaryOperator) {
             logger.info("Hand operand is a binary operator.");
             populateDependableVariables(dependableVariables, handOperand);
+        } else if (handOperand instanceof CtFieldReadImpl) {
+            CtFieldReadImpl<?> fieldRead = (CtFieldReadImpl<?>) handOperand;
+            CtExpression<?> target = fieldRead.getTarget();
+            dependableVariables.add(target.toString());
         } else if (!(handOperand instanceof CtLiteralImpl)) {
-                dependableVariables.add(handOperand.toString());
+            dependableVariables.add(handOperand.toString());
         }
     }
 

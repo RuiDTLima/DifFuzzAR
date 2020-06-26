@@ -47,9 +47,26 @@ class CtBinaryOperatorModification {
             CtLocalVariable<?> localVariable = NamingConvention.produceNewVariable(factory, type, null);
             newHandOperator = factory.createVariableRead(localVariable.getReference(), false);
             ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperator, newHandOperator.toString());
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newHandOperator.toString(), type);
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newHandOperator.toString(), type, null);
             logger.info("The hand operand is a variable that will now be replaced.");
         }
         return  newHandOperator;
+    }
+
+    static boolean equals(CtBinaryOperator<Boolean> firstCondition, CtBinaryOperator<Boolean> secondCondition) {
+        BinaryOperatorKind firstConditionKind = firstCondition.getKind();
+        BinaryOperatorKind secondConditionKind = secondCondition.getKind();
+
+        CtExpression<?> firstConditionLeftHandOperand = firstCondition.getLeftHandOperand();
+        CtExpression<?> firstConditionRightHandOperand = firstCondition.getRightHandOperand();
+
+        CtExpression<?> secondConditionLeftHandOperand = secondCondition.getLeftHandOperand();
+        CtExpression<?> secondConditionRightHandOperand = secondCondition.getRightHandOperand();
+
+        boolean equals = firstConditionKind.equals(secondConditionKind);
+        equals &= firstConditionLeftHandOperand.toString().equals(secondConditionLeftHandOperand.toString());
+        equals &= firstConditionRightHandOperand.toString().equals(secondConditionRightHandOperand.toString());
+        
+        return equals;
     }
 }
