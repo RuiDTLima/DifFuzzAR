@@ -114,28 +114,12 @@ public class TestDifFuzzAR {
                     new String[] {"firstEncryption", "true", "0", "storedPassword_invalid_secret2", "0", "firstEncryption.length()"}
                 },
                 {
-                    "apache_ftpserver_stringutils_unsafe/StringUtils.java",
-                    "StringUtils$Modification",
-                    "pad_unsafe",
-                    "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java",
-                    new String[] {"userName1", "' '", "true", "MAX_USERNAME_LENGTH"},
-                    new String[] {"userName2", "' '", "true", "MAX_USERNAME_LENGTH"}
-                },
-                {
                     "blazer_passwordEq_unsafe/User.java",
                     "User$Modification",
                     "passwordsEqual_unsafe",
                     "blazer_passwordEq_unsafe/CorrectedMethod.java",
                     new String[] {"secret1", "publicVal"},
                     new String[] {"secret2", "publicVal"}
-                },
-                {
-                    "blazer_sanity_unsafe/Sanity.java",
-                    "Sanity$Modification",
-                    "sanity_unsafe",
-                    "blazer_sanity_unsafe/CorrectedMethod.java",
-                    new String[] {"secret1_a", "public_b"},
-                    new String[] {"secret2_a", "public_b"}
                 },
                 {
                     "example_PWCheck_unsafe/PWCheck.java",
@@ -330,6 +314,36 @@ public class TestDifFuzzAR {
         };
     }
 
+    @DataProvider
+    /*
+      String pathToVulnerableMethod,
+      String correctedClassName,
+      String methodName,
+      String correctedMethodPath,
+      String[] firstUseCaseArgumentsNames,
+      String[] secondUseCaseArgumentsNames
+     */
+    private Object[][] correctVulnerableMethodWithMixedVulnerability() {
+        return new Object[][] {
+                {
+                    "apache_ftpserver_stringutils_unsafe/StringUtils.java",
+                    "StringUtils$Modification",
+                    "pad_unsafe",
+                    "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java",
+                    new String[] {"userName1", "' '", "true", "MAX_USERNAME_LENGTH"},
+                    new String[] {"userName2", "' '", "true", "MAX_USERNAME_LENGTH"}
+                }/*,
+                {
+                        "blazer_sanity_unsafe/Sanity.java",
+                        "Sanity$Modification",
+                        "sanity_unsafe",
+                        "blazer_sanity_unsafe/CorrectedMethod.java",
+                        new String[] {"secret1_a", "public_b"},
+                        new String[] {"secret2_a", "public_b"}
+                }*/
+        };
+    }
+
     @Test(dataProvider = "findVulnerableMethodAndClass")
     public void testDiscoverMethod(String classpath, String expectedClassName, String expectedMethodName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -362,42 +376,8 @@ public class TestDifFuzzAR {
                                                String correctedMethodPath,
                                                String[] firstUseCaseArgumentsNames,
                                                String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // util.Setup
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
-        Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");
-        CtModel model = launcher.buildModel();
-        Factory factory = launcher.getFactory();
-        CtClass<?> vulnerableClass = model.filterChildren(new TypeFilter<>(CtClass.class)).first();
-        CtMethod<?> vulnerableMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName)).first();
-        vulnerableClass.setSimpleName(correctedClassName);
-        VulnerableMethodUses vulnerableMethodUses = new VulnerableMethodUses();
-        vulnerableMethodUses.setUseCase("", "", "", firstUseCaseArgumentsNames);
-        vulnerableMethodUses.setUseCase("", "", "", secondUseCaseArgumentsNames);
 
-        // Act
-        final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
-        modifyCode.setAccessible(true);
-        modifyCode.invoke(null, factory, vulnerableMethod, model, vulnerableMethodUses);
-
-        // Assert
-        URL resource = classLoader.getResource(correctedMethodPath);
-        List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
-
-        CtMethod<?> correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
-        List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));
-
-        Iterator<String> expectedCorrectionIterator = strings.iterator();
-        Iterator<String> actualCorrectionIterator = correctedMethodList.iterator();
-
-        while (expectedCorrectionIterator.hasNext() && actualCorrectionIterator.hasNext()) {
-            String expectedCorrectionLine = expectedCorrectionIterator.next().replace(" ", "");
-            String actualCorrectionLine = actualCorrectionIterator.next().replace(" ", "");
-            Assert.assertEquals(actualCorrectionLine, expectedCorrectionLine);
-        }
-
-        Assert.assertFalse(expectedCorrectionIterator.hasNext());
-        Assert.assertFalse(actualCorrectionIterator.hasNext());
+        runVulnerabilityCorrection(pathToVulnerableMethod, correctedClassName, methodName, correctedMethodPath, firstUseCaseArgumentsNames, secondUseCaseArgumentsNames);
     }
 
     @Test(dataProvider = "correctVulnerableMethodWithControlFlow") //  TODO remove exceptions
@@ -405,7 +385,22 @@ public class TestDifFuzzAR {
                                                  String correctedMethodPath,
                                                  String[] firstUseCaseArgumentsNames,
                                                  String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // util.Setup
+
+        runVulnerabilityCorrection(pathToVulnerableMethod, correctedClassName, methodName, correctedMethodPath, firstUseCaseArgumentsNames, secondUseCaseArgumentsNames);
+    }
+
+    @Test(dataProvider = "correctVulnerableMethodWithMixedVulnerability") //  TODO remove exceptions
+    public void testCorrectMethodWithMixedVulnerability(String pathToVulnerableMethod, String correctedClassName,
+                                                        String methodName,
+                                                        String correctedMethodPath,
+                                                        String[] firstUseCaseArgumentsNames,
+                                                        String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+
+        runVulnerabilityCorrection(pathToVulnerableMethod, correctedClassName, methodName, correctedMethodPath, firstUseCaseArgumentsNames, secondUseCaseArgumentsNames);
+    }
+
+    private void runVulnerabilityCorrection(String pathToVulnerableMethod, String correctedClassName, String methodName, String correctedMethodPath, String[] firstUseCaseArgumentsNames, String[] secondUseCaseArgumentsNames) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, IOException, URISyntaxException {
+        // Setup
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
         Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");

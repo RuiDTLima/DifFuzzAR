@@ -33,7 +33,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Modpow2 | Yes | Unknown | No | - | - |
  | Blazer PasswordEq | Yes | Early-Exit | Yes | Yes | Yes |
- | Blazer Sanity | Yes | Mixed | Yes | - | - |
+ | Blazer Sanity | Yes | Mixed | Yes | Yes | - |
  | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | No |
  | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | No |
  | Example PWCheck | Yes | Possibly Mixed | Yes | Yes | No |

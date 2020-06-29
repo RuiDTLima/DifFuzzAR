@@ -8,6 +8,9 @@ import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
+import spoon.support.reflect.code.CtLiteralImpl;
+import util.NamingConvention;
+
 import java.util.List;
 
 class CtWhileModification {
@@ -18,21 +21,35 @@ class CtWhileModification {
 
         CtWhile whileStatement = (CtWhile) element;
         CtBinaryOperator<Boolean> loopingExpression = (CtBinaryOperator<Boolean>) whileStatement.getLoopingExpression();
-        String leftHandOperand = loopingExpression.getLeftHandOperand().toString();
-        String rightHandOperand = loopingExpression.getRightHandOperand().toString();
+        CtExpression<?> leftHandOperand = loopingExpression.getLeftHandOperand();
+        CtExpression<?> rightHandOperand = loopingExpression.getRightHandOperand();
+        String leftHandOperandString = leftHandOperand.toString();
+        String rightHandOperandString = rightHandOperand.toString();
 
-        if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(leftHandOperand)) {
-            String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(leftHandOperand);
+        if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(leftHandOperandString)) {
+            String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(leftHandOperandString);
             CtCodeSnippetExpression<Object> expressionReplacement = factory.createCodeSnippetExpression(replacement);
             loopingExpression.setLeftHandOperand(expressionReplacement);
             logger.info("The left hand operand was modified.");
+        } else if (leftHandOperand instanceof CtVariableRead) {
+            String newVariable = NamingConvention.produceNewVariable();
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newVariable, leftHandOperand.getType(), leftHandOperand);
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(leftHandOperandString, newVariable);
+            CtCodeSnippetExpression<Object> expressionReplacement = factory.createCodeSnippetExpression(newVariable);
+            loopingExpression.setLeftHandOperand(expressionReplacement);
         }
 
-        if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(rightHandOperand)) {
-            String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(rightHandOperand);
+        if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(rightHandOperandString)) {
+            String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(rightHandOperandString);
             CtCodeSnippetExpression<Object> expressionReplacement = factory.createCodeSnippetExpression(replacement);
             loopingExpression.setRightHandOperand(expressionReplacement);
             logger.info("The right hand operand was modified.");
+        } else if (rightHandOperand instanceof CtVariableRead) {
+            String newVariable = NamingConvention.produceNewVariable();
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newVariable, rightHandOperand.getType(), rightHandOperand);
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(rightHandOperandString, newVariable);
+            CtCodeSnippetExpression<Object> expressionReplacement = factory.createCodeSnippetExpression(newVariable);
+            loopingExpression.setRightHandOperand(expressionReplacement);
         }
 
         CtBlock<?> whileBody = (CtBlock<?>) whileStatement.getBody();

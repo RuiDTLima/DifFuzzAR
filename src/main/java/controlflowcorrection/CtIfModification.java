@@ -74,7 +74,7 @@ class CtIfModification {
                 elseStatement = block.insertEnd(thenStatementsList);
             }
             statement.setElseStatement(elseStatement);
-        } else if (elseStatement.getStatement(0) instanceof CtIf || !equals(thenStatement, elseStatement)) {    // TODO define a new equals, that ignores the variables of assignment.
+        } else {    // TODO define a new equals, that ignores the variables of assignment.
             logger.info("There is an else statement.");
             List<CtStatement> elseStatements = elseStatement.clone().getStatements();
             CtStatementList elseStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, elseStatements, statement, dependableVariables, secretVariables);

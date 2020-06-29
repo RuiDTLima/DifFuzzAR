@@ -16,8 +16,8 @@ class CtUnaryOperatorModification {
 
     static CtStatement modifyUnaryOperator(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a unary operator to modify.");
-        CtStatement statement;
         CtUnaryOperator<?> unaryOperator = (CtUnaryOperator<?>) element;
+        CtStatement statement = unaryOperator;
         String operand = unaryOperator.getOperand().toString();
 
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(operand)) {
@@ -25,8 +25,6 @@ class CtUnaryOperatorModification {
             CtExpression variableExpression = factory.createCodeSnippetExpression(valueVariablesReplacement);
             statement = unaryOperator.setOperand(variableExpression);
             logger.info("The unary operator was modified.");
-        } else {
-            statement = null;
         }
         return statement;
     }
