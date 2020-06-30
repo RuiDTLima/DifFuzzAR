@@ -70,6 +70,7 @@ public class TestDifFuzzAR {
                 {"themis_jetty_safe/Credential_FuzzDriver.java", "Credential", "stringEquals_safe"},
                 {"themis_jetty_unsafe/Credential_FuzzDriver.java", "Credential", "stringEquals_original"},
                 {"themis_oacc_unsafe/Driver.java", "PasswordCredentials", "equals"},
+                {"themis_oacc_unsafe2/Driver.java", "PasswordCredentials", "ArraysIsEquals"},
                 {"themis_openmrs-core_unsafe/Driver.java", "Security", "hashMatches"},
                 {"themis_orientdb_safe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "checkPassword_safe"},
                 {"themis_orientdb_unsafe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "equals_inline"},
@@ -100,8 +101,17 @@ public class TestDifFuzzAR {
         return new Object[][] {
                 {
                     "apache_ftpserver_clear_unsafe/ClearTextPasswordEncryptor.java",
-                    "ClearTextPasswordEncryptor$Modification", "isEqual_unsafe",
+                    "ClearTextPasswordEncryptor$Modification",
+                    "matches",
                     "apache_ftpserver_clear_unsafe/CorrectedMethod.java",
+                    new String[] {"validPassword_public", "storedPassword_valid_secret1"},
+                    new String[] {"validPassword_public", "storedPassword_invalid_secret2"}
+                },
+                {
+                    "apache_ftpserver_clear_unsafe2/ClearTextPasswordEncryptor.java",
+                    "ClearTextPasswordEncryptor$Modification",
+                    "isEqual_unsafe",
+                    "apache_ftpserver_clear_unsafe2/CorrectedMethod.java",
                     new String[] {"validPassword_public", "storedPassword_valid_secret1"},
                     new String[] {"validPassword_public", "storedPassword_invalid_secret2"}
                  },

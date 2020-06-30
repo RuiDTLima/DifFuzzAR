@@ -63,17 +63,19 @@ class CtIfModification {
 
         if (elseStatement == null) {
             logger.info("There is no else statement.");
-            CtBlock<Object> block = factory.createBlock();
-            if (thenStatement.getStatement(0) instanceof CtIf) {
-                logger.info("The first statement in the 'then statement' is an 'if statement'");
-                CtBlock<?> newBlock = modifyCondition(factory, statement, thenStatement.getStatement(0), dependableVariables, secretVariables);
-                newBlock.getStatements().forEach(element -> block.addStatement(element.clone()));
-                elseStatement = newBlock;
-            } else {
-                handleStatementList(returnBlock, thenStatementsList);
-                elseStatement = block.insertEnd(thenStatementsList);
+            if (thenStatementsList.getStatements().size() != 0) {
+                CtBlock<Object> block = factory.createBlock();
+                if (thenStatement.getStatement(0) instanceof CtIf) {
+                    logger.info("The first statement in the 'then statement' is an 'if statement'");
+                    CtBlock<?> newBlock = modifyCondition(factory, statement, thenStatement.getStatement(0), dependableVariables, secretVariables);
+                    newBlock.getStatements().forEach(element -> block.addStatement(element.clone()));
+                    elseStatement = newBlock;
+                } else {
+                    handleStatementList(returnBlock, thenStatementsList);
+                    elseStatement = block.insertEnd(thenStatementsList);
+                }
+                statement.setElseStatement(elseStatement);
             }
-            statement.setElseStatement(elseStatement);
         } else {    // TODO define a new equals, that ignores the variables of assignment.
             logger.info("There is an else statement.");
             List<CtStatement> elseStatements = elseStatement.clone().getStatements();

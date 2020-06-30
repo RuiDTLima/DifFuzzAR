@@ -24,8 +24,8 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Apache FtpServer Clear | Yes | Possibly Mixed | Yes | Yes | No |
  | Apache FtpServer Md5 | Yes | Early-Exit | Yes | No | No |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
- | Apache FtpServer Salted | Yes | Mixed | No | - | - |
- | Apache FtpServer StringUtils | Yes | Mixed | Yes | No | No |
+ | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
+ | Apache FtpServer StringUtils | Yes | Mixed | Yes | Yes | - |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | No |
  | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | No |
  | Blazer K96 | Yes | Control-Flow | Yes | Yes | No |

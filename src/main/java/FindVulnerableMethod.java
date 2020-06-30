@@ -252,6 +252,7 @@ public class FindVulnerableMethod {
                     packageName = targetType.getPackage().getSimpleName();
                     className = targetType.getSimpleName();
                 } else {
+                    packageName = invocation.getTarget().getType().getPackage().getSimpleName().replace(".", "\\");;
                     className = target.prettyprint();
                 }
             } else {
