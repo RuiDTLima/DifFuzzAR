@@ -7,13 +7,11 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
-import spoon.support.reflect.code.CtAssignmentImpl;
-import spoon.support.reflect.code.CtConditionalImpl;
-import spoon.support.reflect.code.CtIfImpl;
-import spoon.support.reflect.code.CtVariableReadImpl;
+import spoon.support.reflect.code.*;
 import util.NamingConvention;
 import java.util.List;
 
@@ -79,6 +77,21 @@ class CtAssignmentModification {
             } else if (dependableVariables.contains(elseExpression.toString())) {
                 dependableVariables.add(assigned.toString());
                 return null;
+            }
+        } else if (assignment instanceof CtFieldReadImpl) {
+            CtFieldReadImpl<?> fieldRead = (CtFieldReadImpl<?>) assignment;
+            CtFieldReference<?> variable = fieldRead.getVariable();
+            String variableName = fieldRead.getTarget().toString();
+            CtTypeReference<?> declaringType = variable.getDeclaringType();
+            if (dependableVariables.contains(variableName)) {
+                if (declaringType.isPrimitive()) {
+                    if (declaringType.getSimpleName().equals("String")) {
+                        assignment = factory.createLiteral("");
+                    } else if (declaringType.getSimpleName().equals("boolean")) {
+                        assignment = factory.createLiteral(false);
+                    } else
+                        assignment = factory.createLiteral(0);
+                }
             }
         }
 

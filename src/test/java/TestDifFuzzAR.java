@@ -108,14 +108,6 @@ public class TestDifFuzzAR {
                     new String[] {"validPassword_public", "storedPassword_invalid_secret2"}
                 },
                 {
-                    "apache_ftpserver_clear_unsafe2/ClearTextPasswordEncryptor.java",
-                    "ClearTextPasswordEncryptor$Modification",
-                    "isEqual_unsafe",
-                    "apache_ftpserver_clear_unsafe2/CorrectedMethod.java",
-                    new String[] {"validPassword_public", "storedPassword_valid_secret1"},
-                    new String[] {"validPassword_public", "storedPassword_invalid_secret2"}
-                 },
-                {
                     "apache_ftpserver_md5_unsafe/Md5PasswordEncryptor.java",
                     "Md5PasswordEncryptor$Modification",
                     "regionMatches",
@@ -132,14 +124,6 @@ public class TestDifFuzzAR {
                     new String[] {"secret2", "publicVal"}
                 },
                 {
-                    "example_PWCheck_unsafe/PWCheck.java",
-                    "PWCheck$Modification",
-                    "pwcheck1_unsafe",
-                    "example_PWCheck_unsafe/CorrectedMethod.java",
-                    new String[] {"public_guess", "secret1_pw"},
-                    new String[] {"public_guess", "secret2_pw"}
-                },
-                {
                     "github_authmreloaded_unsafe/UnsaltedMethod.java",
                     "UnsaltedMethod$Modification",
                     "isEqual_unsafe",
@@ -148,28 +132,12 @@ public class TestDifFuzzAR {
                     new String[] {"storedPassword_invalid_secret2.getHash()", "encrMethod.computeHash(password_public)"}
                 },
                 {
-                    "themis_boot-stateless-auth_unsafe/TokenHandler.java",
-                    "TokenHandler$Modification",
-                    "parseUserFromToken_unsafe",
-                    "themis_boot-stateless-auth_unsafe/CorrectedMethod.java",
-                    new String[] {"userTokenValid"},
-                    new String[] {"userTokenInvalid"}
-                },
-                {
                     "themis_dynatable_unsafe/SchoolCalendarServiceImpl.java",
                     "SchoolCalendarServiceImpl$Modification",
                     "getPeople_unsafe",
                     "themis_dynatable_unsafe/CorrectedMethod.java",
                     new String[] {"startIndex", "maxCount"},
                     new String[] {"startIndex", "maxCount"}
-                },
-                {
-                    "themis_jdk_unsafe/MessageDigest.java",
-                    "MessageDigest$Modification",
-                    "isEqual_unsafe",
-                    "themis_jdk_unsafe/CorrectedMethod.java",
-                    new String[] {"secret1_digesta", "public_digestb"},
-                    new String[] {"secret2_digesta", "public_digestb"}
                 },
                 {
                     "themis_jetty_unsafe/Credential.java",
@@ -186,14 +154,6 @@ public class TestDifFuzzAR {
                     "themis_oacc_unsafe/CorrectedMethod.java",
                     new String[] {"secret1"},
                     new String[] {"secret2"}
-                },
-                {
-                    "themis_oacc_unsafe2/PasswordCredentials.java",
-                    "PasswordCredentials$Modification",
-                    "ArraysIsEquals",
-                    "themis_oacc_unsafe2/CorrectedMethod.java",
-                    new String[] {"public_credentials.getPassword()", "secret1.getPassword()"},
-                    new String[] {"public_credentials.getPassword()", "secret2.getPassword()"}
                 },
                 {
                     "themis_orientdb_unsafe/OSecurityManager.java",
@@ -336,21 +296,61 @@ public class TestDifFuzzAR {
     private Object[][] correctVulnerableMethodWithMixedVulnerability() {
         return new Object[][] {
                 {
+                    "apache_ftpserver_clear_unsafe2/ClearTextPasswordEncryptor.java",
+                    "ClearTextPasswordEncryptor$Modification",
+                    "isEqual_unsafe",
+                    "apache_ftpserver_clear_unsafe2/CorrectedMethod.java",
+                    new String[] {"validPassword_public", "storedPassword_valid_secret1"},
+                    new String[] {"validPassword_public", "storedPassword_invalid_secret2"}
+                },
+                {
                     "apache_ftpserver_stringutils_unsafe/StringUtils.java",
                     "StringUtils$Modification",
                     "pad_unsafe",
                     "apache_ftpserver_stringutils_unsafe/CorrectedMethod.java",
                     new String[] {"userName1", "' '", "true", "MAX_USERNAME_LENGTH"},
                     new String[] {"userName2", "' '", "true", "MAX_USERNAME_LENGTH"}
-                }/*,
+                },
                 {
-                        "blazer_sanity_unsafe/Sanity.java",
-                        "Sanity$Modification",
-                        "sanity_unsafe",
-                        "blazer_sanity_unsafe/CorrectedMethod.java",
-                        new String[] {"secret1_a", "public_b"},
-                        new String[] {"secret2_a", "public_b"}
-                }*/
+                    "blazer_sanity_unsafe/Sanity.java",
+                    "Sanity$Modification",
+                    "sanity_unsafe",
+                    "blazer_sanity_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_a", "public_b"},
+                    new String[] {"secret2_a", "public_b"}
+                },
+                {
+                    "example_PWCheck_unsafe/PWCheck.java",
+                    "PWCheck$Modification",
+                    "pwcheck1_unsafe",
+                    "example_PWCheck_unsafe/CorrectedMethod.java",
+                    new String[] {"public_guess", "secret1_pw"},
+                    new String[] {"public_guess", "secret2_pw"}
+                },
+                {
+                    "themis_boot-stateless-auth_unsafe/TokenHandler.java",
+                    "TokenHandler$Modification",
+                    "parseUserFromToken_unsafe",
+                    "themis_boot-stateless-auth_unsafe/CorrectedMethod.java",
+                    new String[] {"userTokenValid"},
+                    new String[] {"userTokenInvalid"}
+                },
+                {
+                    "themis_jdk_unsafe/MessageDigest.java",
+                    "MessageDigest$Modification",
+                    "isEqual_unsafe",
+                    "themis_jdk_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_digesta", "public_digestb"},
+                    new String[] {"secret2_digesta", "public_digestb"}
+                },
+                {
+                    "themis_oacc_unsafe2/PasswordCredentials.java",
+                    "PasswordCredentials$Modification",
+                    "ArraysIsEquals",
+                    "themis_oacc_unsafe2/CorrectedMethod.java",
+                    new String[] {"public_credentials.getPassword()", "secret1.getPassword()"},
+                    new String[] {"public_credentials.getPassword()", "secret2.getPassword()"}
+                }
         };
     }
 

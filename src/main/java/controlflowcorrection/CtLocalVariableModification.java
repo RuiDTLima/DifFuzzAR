@@ -44,46 +44,12 @@ class CtLocalVariableModification {
         logger.info("Found a local variable to modify");
 
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
+        CtExpression<?> assignment = localVariable.getAssignment();
         CtStatement statement;
         boolean condition;
-        CtExpression<?> assignment = localVariable.getAssignment();
 
         if (assignment instanceof CtInvocation) {
-            logger.info("Assignment is an invocation.");
-
-            List<CtExpression<?>> expressionList = new ArrayList<>();
-
-            CtInvocation<?> invocation = (CtInvocation<?>) assignment;
-            List<CtExpression<?>> invocationArguments = invocation.getArguments();
-            for (CtExpression<?> invocationArgument : invocationArguments) {
-                if (invocationArgument instanceof CtArrayRead) {
-                    CtArrayRead<?> arrayRead = (CtArrayRead<?>) invocationArgument;
-
-                    CtExpression<?> target = arrayRead.getTarget();
-                    CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
-
-                    expressionList.add(target);
-                    expressionList.add(indexExpression);
-                } else if (invocationArgument instanceof CtVariableRead) {
-                    CtVariableRead<?> variableRead = (CtVariableRead<?>) invocationArgument;
-                    expressionList.add(variableRead);
-                } else if (invocationArgument instanceof CtInvocationImpl) {
-                    CtInvocationImpl<?> invocationImpl = (CtInvocationImpl<?>) invocationArgument;
-                    CtExpression<?> target = invocationImpl.getTarget();
-                    List<CtExpression<?>> arguments = invocationImpl.getArguments();
-
-                    expressionList.add(target);
-                    List<CtExpression<?>> collect = arguments.stream().filter(argument -> !(argument instanceof CtLiteralImpl)).collect(Collectors.toList());
-                    expressionList.addAll(collect);
-                }
-            }
-
-            expressionList.add(invocation.getTarget());
-
-            condition = expressionList.stream()
-                    .anyMatch(ctExpression -> dependableVariables.stream()
-                            .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
-
+            condition = handleInvocation(dependableVariables, (CtInvocation<?>) assignment);
         } else if (assignment instanceof CtVariableReadImpl) {
             condition = handleVariableReadAssignment(dependableVariables, (CtVariableReadImpl<?>) assignment);
         } else if (assignment instanceof CtBinaryOperator) {
@@ -96,12 +62,45 @@ class CtLocalVariableModification {
         return statement;
     }
 
+    private static boolean handleInvocation(List<String> dependableVariables, CtInvocation<?> invocation) {
+        logger.info("Assignment is an invocation.");
+        List<CtExpression<?>> expressionList = new ArrayList<>();
+
+        List<CtExpression<?>> invocationArguments = invocation.getArguments();
+        for (CtExpression<?> invocationArgument : invocationArguments) {
+            if (invocationArgument instanceof CtArrayRead) {
+                CtArrayRead<?> arrayRead = (CtArrayRead<?>) invocationArgument;
+
+                CtExpression<?> target = arrayRead.getTarget();
+                CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
+
+                expressionList.add(target);
+                expressionList.add(indexExpression);
+            } else if (invocationArgument instanceof CtVariableRead) {
+                CtVariableRead<?> variableRead = (CtVariableRead<?>) invocationArgument;
+                expressionList.add(variableRead);
+            } else if (invocationArgument instanceof CtInvocationImpl) {
+                CtInvocationImpl<?> invocationImpl = (CtInvocationImpl<?>) invocationArgument;
+                CtExpression<?> target = invocationImpl.getTarget();
+                List<CtExpression<?>> arguments = invocationImpl.getArguments();
+
+                expressionList.add(target);
+                List<CtExpression<?>> collect = arguments.stream().filter(argument -> !(argument instanceof CtLiteralImpl)).collect(Collectors.toList());
+                expressionList.addAll(collect);
+            }
+        }
+
+        expressionList.add(invocation.getTarget());
+
+        return expressionList.stream()
+                .anyMatch(ctExpression -> dependableVariables.stream()
+                        .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
+    }
+
     private static boolean handleVariableReadAssignment(List<String> dependableVariables, CtVariableReadImpl<?> assignment) {
-        boolean condition;
         CtVariableReadImpl<?> variableRead = assignment;
         String variable = variableRead.getVariable().toString();
-        condition = dependableVariables.stream().anyMatch(dependableVariable -> dependableVariable.equals(variable));
-        return condition;
+        return dependableVariables.stream().anyMatch(dependableVariable -> dependableVariable.equals(variable));
     }
 
     private static boolean handleBinaryAssignment(List<String> dependableVariables, CtBinaryOperator<?> binaryOperator) {
@@ -126,10 +125,8 @@ class CtLocalVariableModification {
         if (condition) {
             dependableVariables.add(localVariable.getSimpleName());
             logger.info("A new variable was added to the dependable variables.");
-            return null;
-        } else {
-            return  (CtStatement) createNewLocalVariable(localVariable.clone());
         }
+        return null;
     }
 
     private static CtNamedElement createNewLocalVariable(CtLocalVariable<?> localVariable) {

@@ -21,7 +21,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
 ### Dataset Information
  | **Dataset name** | **Has secure version?** | **Type** | **Correction Attempted** | **Symbolically Correct?** | **Correct Vulnerability?** |
  | --- | --- | --- | --- | --- | --- |
- | Apache FtpServer Clear | Yes | Possibly Mixed | Yes | Yes | No |
+ | Apache FtpServer Clear | Yes | Mixed | Yes | Yes | No |
  | Apache FtpServer Md5 | Yes | Early-Exit | Yes | No | No |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
  | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
@@ -36,16 +36,16 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Blazer Sanity | Yes | Mixed | Yes | Yes | - |
  | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | No |
  | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | No |
- | Example PWCheck | Yes | Possibly Mixed | Yes | Yes | No |
- | GitHub AuthmReloaded | Yes | Possibly Mixed | Yes | Yes | No |
+ | Example PWCheck | Yes | Mixed | Yes | Yes | No |
+ | GitHub AuthmReloaded | Yes | Mixed | Yes | Yes | No |
  | STAC Crime | No | Unknown | No | - | - |
  | STAC Ibasys | No | Control-Flow | Yes | Yes | No |
- | Themis Boot-Stateless-Auth | Yes | Possibly Mixed | Yes | Yes | No |
+ | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | No |
  | Themis Dynatable | No | Early-Exit | Yes | No | No |
  | Themis GWT Advanced Table | No | Unknown | No | - | - |
- | Themis Jdk | Yes | Possibly Mixed | Yes | Yes | No |
+ | Themis Jdk | Yes | Mixed | Yes | Yes | No |
  | Themis Jetty | Yes | Early-Exit | Yes | Yes | Yes |
- | Themis OACC | No | Possibly Mixed | Yes | Yes | No |
+ | Themis OACC | No | Mixed | Yes | Yes | No |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
  | Themis OrientDb | Yes | Possibly Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | - |

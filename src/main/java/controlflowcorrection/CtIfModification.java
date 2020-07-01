@@ -34,7 +34,7 @@ class CtIfModification {
         CtIfImpl ifStatement = (CtIfImpl) statement;
 
         if (ControlFlowBasedVulnerabilityCorrection.usesSecret(ifStatement.getCondition().toString(), secretVariables)) {
-            logger.info("Found the source of vulnerability.");
+            logger.info("Found a source of vulnerability.");
             List<String> dependableVariables = new ArrayList<>();
             handleVulnerability(factory, ifStatement, dependableVariables, secretVariables);
         } else {
@@ -54,6 +54,7 @@ class CtIfModification {
         populateDependableVariables(dependableVariables, condition);
 
         CtBlock<?> returnBlock = new CtBlockImpl<>();
+        CtBlock<?> block2 = new CtBlockImpl<>();
 
         CtBlock<?> thenStatement = statement.getThenStatement();
         CtBlock<?> elseStatement = statement.getElseStatement();
@@ -65,14 +66,18 @@ class CtIfModification {
             logger.info("There is no else statement.");
             if (thenStatementsList.getStatements().size() != 0) {
                 CtBlock<Object> block = factory.createBlock();
+                CtBlock<?> thenBlock = factory.createBlock();
                 if (thenStatement.getStatement(0) instanceof CtIf) {
                     logger.info("The first statement in the 'then statement' is an 'if statement'");
                     CtBlock<?> newBlock = modifyCondition(factory, statement, thenStatement.getStatement(0), dependableVariables, secretVariables);
                     newBlock.getStatements().forEach(element -> block.addStatement(element.clone()));
-                    elseStatement = newBlock;
+                    //elseStatement = newBlock;
+                    elseStatement = block.insertEnd(thenStatementsList.clone());
+                    thenStatement = thenBlock.insertEnd(thenStatementsList);
+                    statement.setThenStatement(thenStatement);
                 } else {
                     handleStatementList(returnBlock, thenStatementsList);
-                    elseStatement = block.insertEnd(thenStatementsList);
+                    elseStatement = block.insertEnd(thenStatementsList.clone());
                 }
                 statement.setElseStatement(elseStatement);
             }
@@ -88,27 +93,29 @@ class CtIfModification {
             elseStatement.insertBegin(thenStatementsList);
         }
 
-        return returnBlock;
+        //returnBlock.delete();
+        block2.addStatement(statement.clone());
+        return block2;
     }
 
-    private static void populateDependableVariables(List<String> dependableVariables, CtExpression<?> condition) {
+    private static void populateDependableVariables(List<String> dependableVariables, CtExpression<?> expression) {
         logger.info("Populating the dependable variables.");
-        if (condition instanceof CtBinaryOperator) {
+        if (expression instanceof CtBinaryOperator) {
             logger.info("Condition is a binary operator.");
-            CtBinaryOperator<?> binaryOperator = (CtBinaryOperator<?>) condition;
+            CtBinaryOperator<?> binaryOperator = (CtBinaryOperator<?>) expression;
             CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
             CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
 
             handleHandOperand(dependableVariables, leftHandOperand);
             handleHandOperand(dependableVariables, rightHandOperand);
 
-        } else if (condition instanceof CtInvocation) {
+        } else if (expression instanceof CtInvocation) {
             logger.info("Condition is an invocation.");
-            CtInvocation<?> invocation = (CtInvocation<?>) condition;
+            CtInvocation<?> invocation = (CtInvocation<?>) expression;
             CtExpression<?> target = invocation.getTarget();
             dependableVariables.add(target.toString());
-        } else {
-            dependableVariables.add(condition.toString());
+        } else if (!(expression instanceof CtLiteralImpl) && !(expression instanceof CtTypeAccessImpl)) {
+            dependableVariables.add(expression.toString());
         }
     }
 
