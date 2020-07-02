@@ -47,7 +47,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis Jetty | Yes | Early-Exit | Yes | Yes | Yes |
  | Themis OACC | No | Mixed | Yes | Yes | No |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
- | Themis OrientDb | Yes | Possibly Mixed | Yes | Yes | No |
+ | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | - |
  | Themis PicketBox | Yes | Possibly Mixed | Yes | Yes | No |
  | Themis Spring-Security | Yes | Early-Exit | Yes | No | - |

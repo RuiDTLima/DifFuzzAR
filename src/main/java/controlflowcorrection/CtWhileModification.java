@@ -34,7 +34,8 @@ class CtWhileModification {
         CtStatementList bodyNewStatements = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
         CtBlockImpl<?> ctBlock = new CtBlockImpl<>();
         bodyNewStatements.forEach(ctStatement -> ctBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
-        //whileStatement.setBody(ctBlock);
+        whileStatement.setBody(ctBlock);
+        element.replace(whileStatement);
         return whileStatement;
     }
 
