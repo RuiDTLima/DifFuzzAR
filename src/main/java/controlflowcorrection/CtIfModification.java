@@ -51,10 +51,14 @@ class CtIfModification {
         logger.info("Handling the vulnerability");
         CtExpression<Boolean> condition = statement.getCondition();
 
-        populateDependableVariables(dependableVariables, condition);
-
         CtBlock<?> returnBlock = new CtBlockImpl<>();
         CtBlock<?> block2 = new CtBlockImpl<>();
+
+        if (!isConditionValid(dependableVariables, condition)) {
+            return block2;
+        }
+        populateDependableVariables(dependableVariables, condition);
+
 
         CtBlock<?> thenStatement = statement.getThenStatement();
         CtBlock<?> elseStatement = statement.getElseStatement();
@@ -71,7 +75,7 @@ class CtIfModification {
                     logger.info("The first statement in the 'then statement' is an 'if statement'");
                     CtBlock<?> newBlock = modifyCondition(factory, statement, thenStatement.getStatement(0), dependableVariables, secretVariables);
                     newBlock.getStatements().forEach(element -> block.addStatement(element.clone()));
-                    //elseStatement = newBlock;
+
                     elseStatement = block.insertEnd(thenStatementsList.clone());
                     thenStatement = thenBlock.insertEnd(thenStatementsList);
                     statement.setThenStatement(thenStatement);
@@ -93,9 +97,32 @@ class CtIfModification {
             elseStatement.insertBegin(thenStatementsList);
         }
 
-        //returnBlock.delete();
         block2.addStatement(statement.clone());
         return block2;
+    }
+
+    private static boolean isConditionValid(List<String> dependableVariables, CtExpression<?> condition) {
+        CtExpression<?> element = condition;
+        if (condition instanceof CtBinaryOperator) {
+            CtBinaryOperator<?> binaryOperator = (CtBinaryOperator<?>) condition;
+            CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
+            CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
+
+            return isConditionValid(dependableVariables, leftHandOperand) &&
+                    isConditionValid(dependableVariables, rightHandOperand);
+
+        } else if (condition instanceof CtInvocation) {
+            CtInvocation<?> invocation = (CtInvocation<?>) condition;
+            element = invocation.getTarget();
+        } else if (condition instanceof CtFieldReadImpl) {
+            CtFieldReadImpl<?> fieldRead = (CtFieldReadImpl<?>) condition;
+            element = fieldRead.getTarget();
+        } else if (condition instanceof CtArrayRead) {
+            CtArrayReadImpl<?> arrayRead = (CtArrayReadImpl<?>) condition;
+            element = arrayRead.getTarget();
+        }
+
+        return !dependableVariables.contains(element.toString());
     }
 
     private static void populateDependableVariables(List<String> dependableVariables, CtExpression<?> expression) {
