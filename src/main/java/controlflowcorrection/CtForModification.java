@@ -7,10 +7,10 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.code.CtBinaryOperatorImpl;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -18,19 +18,32 @@ import java.util.Optional;
 class CtForModification {
     private static final Logger logger = LoggerFactory.getLogger(CtForModification.class);
 
-    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
+    static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         logger.info("Found a 'for' while traversing the method.");
         CtFor forStatement = (CtFor) statement;
         CtExpression<Boolean> forExpression = forStatement.getExpression();
         CtExpression<Boolean> newCondition = forExpression.clone();
         CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
 
+        CtBlock<?>[] returnBlocks = new CtBlock[2];
+        returnBlocks[0] = new CtBlockImpl<>();
+        returnBlocks[1] = new CtBlockImpl<>();
+
         boolean modified = handleStoppingCondition(factory, secretVariables, publicArguments, forStatement, forExpression);
         if (modified) {
             body = handleBody(newCondition, body);   // Needs to happen before modification of condition to avoid messing the condition for the if.
             forStatement.setBody(body);
         }
-        ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, body, secretVariables, publicArguments);
+        CtBlock<?>[] returnedStatements = ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, body, secretVariables, publicArguments);
+
+        CtBlock<?> oldBlock = returnedStatements[0];
+        forStatement.setBody(oldBlock);
+        returnBlocks[0].addStatement(forStatement.clone());
+        //oldBlock.getStatements().forEach(element -> returnBlocks[0].addStatement(element.clone()));
+
+        CtBlock<?> newBlock = returnedStatements[1];
+        newBlock.getStatements().forEach(element -> returnBlocks[1].addStatement(element.clone()));
+        return returnBlocks;
     }
 
     private static CtBlock<?> handleBody(CtExpression<Boolean> forExpression, CtBlock<?> body) {
@@ -49,6 +62,19 @@ class CtForModification {
         if (ControlFlowBasedVulnerabilityCorrection.usesSecret(forExpression.toString(), secretVariables)) {
             logger.info("Cycle stopping condition depends on the secret.");
             if (forExpression instanceof CtBinaryOperator) {
+                CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
+                List<CtStatement> statements = body.getStatements();
+                if (statements.size() == 1 && statements.get(0) instanceof CtIf) {
+                    CtIf ctIf = (CtIf) statements.get(0);
+                    List<CtBinaryOperator<?>> conditions = getConditions(ctIf.getCondition());
+                    CtBinaryOperator<?> forCondition = (CtBinaryOperator<?>) forExpression;
+                    BinaryOperatorKind kind = forCondition.getKind();
+                    String leftHandOperand = forCondition.getLeftHandOperand().toString();
+                    String rightHandOperand = forCondition.getRightHandOperand().toString();
+                    if (conditions.stream().anyMatch(condition -> condition.getKind().equals(kind) && condition.getLeftHandOperand().toString().equals(leftHandOperand) && condition.getRightHandOperand().toString().equals(rightHandOperand))) {
+                        return false;
+                    }
+                }
                 CtBinaryOperator<Boolean> forCondition = (CtBinaryOperator<Boolean>) forExpression;
                 CtBinaryOperator<Boolean> binaryOperator = modifyStoppingCondition(factory, secretVariables, publicArguments, forCondition.clone());
                 if (!CtBinaryOperatorModification.equals(forCondition, binaryOperator)) {
@@ -59,6 +85,23 @@ class CtForModification {
             }
         }
         return false;
+    }
+
+    private static List<CtBinaryOperator<?>> getConditions(CtExpression<?> condition) {
+        List<CtBinaryOperator<?>> conditions = new ArrayList<>();
+        if (condition instanceof CtBinaryOperator) {
+            CtBinaryOperator<?> binaryOperator = (CtBinaryOperator<?>) condition;
+            BinaryOperatorKind kind = binaryOperator.getKind();
+            if (kind.equals(BinaryOperatorKind.AND) || kind.equals(BinaryOperatorKind.OR)) {
+                CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
+                CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
+                conditions.addAll(getConditions(leftHandOperand));
+                conditions.addAll(getConditions(rightHandOperand));
+            } else {
+                conditions.add(binaryOperator);
+            }
+        }
+        return conditions;
     }
 
     private static CtBinaryOperator<Boolean> modifyStoppingCondition(Factory factory, List<CtVariable<?>> secretVariables,

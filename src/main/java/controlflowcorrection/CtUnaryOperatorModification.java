@@ -2,6 +2,7 @@ package controlflowcorrection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtUnaryOperator;
@@ -14,11 +15,13 @@ import java.util.List;
 class CtUnaryOperatorModification {
     private static final Logger logger = LoggerFactory.getLogger(CtUnaryOperatorModification.class);
 
-    static CtStatement modifyUnaryOperator(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtBlock<?>[] modifyUnaryOperator(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a unary operator to modify.");
         CtUnaryOperator<?> unaryOperator = (CtUnaryOperator<?>) element;
-        CtStatement statement = unaryOperator;
+        CtStatement statement = unaryOperator.clone();
         String operand = unaryOperator.getOperand().toString();
+
+        CtBlock<?> oldBlock = factory.createBlock().addStatement(unaryOperator.clone());
 
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(operand)) {
             String valueVariablesReplacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(operand);
@@ -26,6 +29,8 @@ class CtUnaryOperatorModification {
             statement = unaryOperator.setOperand(variableExpression);
             logger.info("The unary operator was modified.");
         }
-        return statement;
+        CtBlock<?> newBlock = factory.createBlock().addStatement(statement.clone());
+
+        return new CtBlock[]{oldBlock, newBlock};
     }
 }

@@ -164,14 +164,6 @@ public class TestDifFuzzAR {
                     new String[] {"secret_iPassword2", "public_ihash"}
                 },
                 {
-                    "themis_orientdb_unsafe2/OSecurityManager.java",
-                    "OSecurityManager$Modification",
-                    "equals_inline",
-                    "themis_orientdb_unsafe2/CorrectedMethod.java",
-                    new String[] {"secret_iPassword1", "public_ihash"},
-                    new String[] {"secret_iPassword2", "public_ihash"}
-                },
-                {
                     "themis_picketbox_unsafe/UsernamePasswordLoginModule.java",
                     "UsernamePasswordLoginModule$Modification",
                     "validatePassword_unsafe",
@@ -330,10 +322,10 @@ public class TestDifFuzzAR {
                 {
                     "themis_boot-stateless-auth_unsafe/TokenHandler.java",
                     "TokenHandler$Modification",
-                    "parseUserFromToken_unsafe",
+                    "unsafe_isEqual",
                     "themis_boot-stateless-auth_unsafe/CorrectedMethod.java",
-                    new String[] {"userTokenValid"},
-                    new String[] {"userTokenInvalid"}
+                    new String[] {"userBytes1", "hash1"},
+                    new String[] {"userBytes2", "hash2"}
                 },
                 {
                     "themis_jdk_unsafe/MessageDigest.java",
@@ -350,6 +342,14 @@ public class TestDifFuzzAR {
                     "themis_oacc_unsafe2/CorrectedMethod.java",
                     new String[] {"public_credentials.getPassword()", "secret1.getPassword()"},
                     new String[] {"public_credentials.getPassword()", "secret2.getPassword()"}
+                },
+                {
+                    "themis_orientdb_unsafe2/OSecurityManager.java",
+                    "OSecurityManager$Modification",
+                    "equals_inline",
+                    "themis_orientdb_unsafe2/CorrectedMethod.java",
+                    new String[] {"secret_iPassword1", "public_ihash"},
+                    new String[] {"secret_iPassword2", "public_ihash"}
                 }
         };
     }

@@ -18,7 +18,7 @@ import java.util.List;
 class CtAssignmentModification {
     private static final Logger logger = LoggerFactory.getLogger(CtAssignmentModification.class);
 
-    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
+    static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         logger.info("Found an assignment while traversing the method.");
 
         CtAssignment<?, ?> assignmentStatement = (CtAssignment<?, ?>) statement;
@@ -46,12 +46,20 @@ class CtAssignmentModification {
                 logger.info("The assignment is to a variable, that is now a secret variable.");
             }
         }
+
+        CtBlock<?>[] returnBlocks = new CtBlock[2];
+        returnBlocks[0] = new CtBlockImpl<>();
+        returnBlocks[1] = new CtBlockImpl<>();
+        returnBlocks[0].addStatement(assignmentStatement.clone());
+        returnBlocks[1].addStatement(null);
+        return returnBlocks;
     }
 
-    static CtStatement modifyAssignment(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtStatement[] modifyAssignment(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found an assignment to modify.");
 
         CtAssignmentImpl<?, ?> assignmentImpl = (CtAssignmentImpl<?, ?>) element;
+        CtAssignment<?, ?> oldAssignment = assignmentImpl.clone();
         CtTypeReference<?> type = assignmentImpl.getType();
         CtExpression<?> assigned = assignmentImpl.getAssigned();
         CtExpression<?> assignment = assignmentImpl.getAssignment();
@@ -106,7 +114,8 @@ class CtAssignmentModification {
         }
 
         CtLocalVariableReference variableReference = factory.createLocalVariableReference(type, newAssigned);
-        return factory.createVariableAssignment(variableReference, false, assignment);
+        CtAssignment<?, ?> variableAssignment = factory.createVariableAssignment(variableReference, false, assignment);
+        return new CtStatement[]{oldAssignment, variableAssignment};
     }
 
     public static boolean equalAssignments(CtStatement firstStatement, CtStatement secondStatement) {

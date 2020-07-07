@@ -14,29 +14,43 @@ import java.util.List;
 class CtWhileModification {
     private static final Logger logger = LoggerFactory.getLogger(CtWhileModification.class);
 
-    static CtWhile modifyWhile(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtWhile[] modifyWhile(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a 'while' statement to modify.");
         CtWhile whileStatement = (CtWhile) element;
+        CtWhile newWhileStatement = whileStatement.clone();
 
         if (initialStatement == null) {
-            CtBinaryOperator<Boolean> loopingExpression = (CtBinaryOperator<Boolean>) whileStatement.getLoopingExpression();
-            CtExpression<?> leftHandOperand = loopingExpression.getLeftHandOperand();
-            CtExpression<?> newLeftHandOperand = handleHandOperand(factory, leftHandOperand);
-            loopingExpression.setLeftHandOperand(newLeftHandOperand);
-
-            CtExpression<?> rightHandOperand = loopingExpression.getRightHandOperand();
-            CtExpression<?> newRightHandOperand = handleHandOperand(factory, rightHandOperand);
-            loopingExpression.setRightHandOperand(newRightHandOperand);
+            updateStoppingCondition(factory, whileStatement);
         }
 
-        CtBlock<?> whileBody = (CtBlock<?>) whileStatement.getBody();
+        updateStoppingCondition(factory, newWhileStatement);
+        CtBlock<?> whileBody = (CtBlock<?>) newWhileStatement.getBody();
         List<CtStatement> bodyStatements = whileBody.getStatements();
-        CtStatementList bodyNewStatements = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
-        CtBlockImpl<?> ctBlock = new CtBlockImpl<>();
-        bodyNewStatements.forEach(ctStatement -> ctBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
-        whileStatement.setBody(ctBlock);
-        element.replace(whileStatement);
-        return whileStatement;
+        CtStatementList[] bodyNewStatements = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
+
+        CtStatementList newBodyOldWhile = bodyNewStatements[0];
+        CtStatementList newBodyNewWhile = bodyNewStatements[1];
+
+        CtBlockImpl<?> oldCtBlock = new CtBlockImpl<>();
+        newBodyOldWhile.forEach(ctStatement -> oldCtBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
+        whileStatement.setBody(oldCtBlock);
+
+        CtBlockImpl<?> newCtBlock = new CtBlockImpl<>();
+        newBodyNewWhile.forEach(ctStatement -> newCtBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
+        newWhileStatement.setBody(newCtBlock);
+
+        return new CtWhile[]{whileStatement, newWhileStatement};
+    }
+
+    private static void updateStoppingCondition(Factory factory, CtWhile newWhileStatement) {
+        CtBinaryOperator<Boolean> loopingExpression = (CtBinaryOperator<Boolean>) newWhileStatement.getLoopingExpression();
+        CtExpression<?> leftHandOperand = loopingExpression.getLeftHandOperand();
+        CtExpression<?> newLeftHandOperand = handleHandOperand(factory, leftHandOperand);
+        loopingExpression.setLeftHandOperand(newLeftHandOperand);
+
+        CtExpression<?> rightHandOperand = loopingExpression.getRightHandOperand();
+        CtExpression<?> newRightHandOperand = handleHandOperand(factory, rightHandOperand);
+        loopingExpression.setRightHandOperand(newRightHandOperand);
     }
 
     private static CtExpression<?> handleHandOperand(Factory factory, CtExpression<?> handOperand) {

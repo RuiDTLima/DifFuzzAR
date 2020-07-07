@@ -15,15 +15,13 @@ class CtArrayModification {
 
         CtExpression<?> target = arrayRead.getTarget();
         CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
-        CtArrayRead<?> newArrayRead = factory.createArrayRead();
+        CtArrayRead<?> newArrayRead = arrayRead.clone();
 
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(target.toString())) {
             String valueVariablesReplacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(target.toString());
             CtCodeSnippetExpression<?> newTarget = factory.createCodeSnippetExpression(valueVariablesReplacement);
             newArrayRead.setTarget(newTarget);
             logger.info("Changed the target of the array read.");
-        } else {
-            newArrayRead.setTarget(target);
         }
 
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(indexExpression.toString())) {

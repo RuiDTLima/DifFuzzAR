@@ -14,7 +14,7 @@ import java.util.Optional;
 public class CtInvocationModification {
     private static final Logger logger = LoggerFactory.getLogger(CtInvocationModification.class);
 
-    static CtStatement modifyInvocation(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtBlock<?>[] modifyInvocation(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found an invocation to modify.");
         CtInvocation<?> invocation = (CtInvocation<?>) element;
         CtInvocation<?> newInvocation = invocation.clone();
@@ -69,7 +69,10 @@ public class CtInvocationModification {
             newInvocation.setTarget(newTarget);
         }
 
-        return newInvocation;
+        CtBlock<?> oldBlock = factory.createBlock().addStatement(invocation.clone());
+        CtBlock<?> newBlock = factory.createBlock().addStatement(newInvocation.clone());
+
+        return new CtBlock[]{oldBlock, newBlock};
     }
 
     private static void increaseDependableVariable(CtIfImpl initialStatement, List<String> dependableVariables) {
