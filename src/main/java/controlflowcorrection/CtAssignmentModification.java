@@ -60,7 +60,7 @@ class CtAssignmentModification {
 
         CtAssignmentImpl<?, ?> assignmentImpl = (CtAssignmentImpl<?, ?>) element;
         CtAssignment<?, ?> oldAssignment = assignmentImpl.clone();
-        CtTypeReference<?> type = assignmentImpl.getType();
+        CtTypeReference type = assignmentImpl.getType();
         CtExpression<?> assigned = assignmentImpl.getAssigned();
         CtExpression<?> assignment = assignmentImpl.getAssignment();
         String newAssigned;
@@ -73,19 +73,20 @@ class CtAssignmentModification {
             logger.info("The assignment is of an binary operator.");
         } else if (assignment instanceof CtConditionalImpl) {
             CtConditionalImpl<?> conditional = (CtConditionalImpl<?>) assignment;
-            CtExpression<?> condition = conditional.getCondition();
-            CtExpression<?> thenExpression = conditional.getThenExpression();
-            CtExpression<?> elseExpression = conditional.getElseExpression();
-            if (dependableVariables.contains(condition.toString())) {
+            String condition = conditional.getCondition().toString();
+            String thenExpression = conditional.getThenExpression().toString();
+            String elseExpression = conditional.getElseExpression().toString();
+            if (dependableVariables.contains(condition) || dependableVariables.contains(thenExpression) || dependableVariables.contains(elseExpression)) {
+                dependableVariables.add(assigned.toString());
+                return new CtStatement[]{oldAssignment, null};
+                //return null;
+            } /*else if (dependableVariables.contains(thenExpression)) {
                 dependableVariables.add(assigned.toString());
                 return null;
-            } else if (dependableVariables.contains(thenExpression.toString())) {
+            } else if (dependableVariables.contains(elseExpression)) {
                 dependableVariables.add(assigned.toString());
                 return null;
-            } else if (dependableVariables.contains(elseExpression.toString())) {
-                dependableVariables.add(assigned.toString());
-                return null;
-            }
+            }*/
         } else if (assignment instanceof CtFieldReadImpl) {
             CtFieldReadImpl<?> fieldRead = (CtFieldReadImpl<?>) assignment;
             CtFieldReference<?> variable = fieldRead.getVariable();
@@ -115,6 +116,7 @@ class CtAssignmentModification {
 
         CtLocalVariableReference variableReference = factory.createLocalVariableReference(type, newAssigned);
         CtAssignment<?, ?> variableAssignment = factory.createVariableAssignment(variableReference, false, assignment);
+        variableAssignment.setType(type);
         return new CtStatement[]{oldAssignment, variableAssignment};
     }
 

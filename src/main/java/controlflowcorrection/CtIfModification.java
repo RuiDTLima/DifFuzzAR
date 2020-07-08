@@ -43,22 +43,27 @@ class CtIfModification {
             CtBlock<?> thenBlock = ifStatement.getThenStatement();
             CtBlock<?> elseBlock = ifStatement.getElseStatement();
 
+            CtIfImpl oldIf = new CtIfImpl();
             CtIfImpl newIf = new CtIfImpl();
+
+            oldIf.setCondition(ifStatement.getCondition());
             newIf.setCondition(ifStatement.getCondition());
+
             returnBlocks = new CtBlock[2];
             returnBlocks[0] = new CtBlockImpl<>();
             returnBlocks[1] = new CtBlockImpl<>();
 
-            returnBlocks[0].addStatement(ifStatement.clone());
-
             CtBlock<?>[] returnedThenBlock = ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, thenBlock, secretVariables, publicArguments);
-            newIf.setThenStatement(returnedThenBlock[0]);
+            oldIf.setThenStatement(returnedThenBlock[0]);
+            newIf.setThenStatement(returnedThenBlock[1]);
             if (elseBlock != null) {
                 CtBlock<?>[] returnedElseBlock = ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, elseBlock, secretVariables, publicArguments);
-                newIf.setElseStatement(returnedElseBlock[0]);
+                oldIf.setElseStatement(returnedElseBlock[0]);
+                newIf.setElseStatement(returnedElseBlock[1]);
             } else {
                 newIf.setElseStatement(returnedThenBlock[1]);
             }
+            returnBlocks[0].addStatement(oldIf);
             returnBlocks[1].addStatement(newIf);
         }
         return returnBlocks;
@@ -72,6 +77,7 @@ class CtIfModification {
 
         CtBlock<?> oldBlock = new CtBlockImpl<>();
         CtBlock<?> newBlock = new CtBlockImpl<>();
+        CtBlock<?> elseBlock = new CtBlockImpl<>();
 
         populateDependableVariables(dependableVariables, condition);
 
@@ -84,22 +90,32 @@ class CtIfModification {
         CtStatementList oldThenStatementList = thenStatementsList[0];
         CtStatementList newThenStatementList = thenStatementsList[1];
 
-        oldBlock.insertBegin(oldThenStatementList);
+        oldBlock.insertBegin(oldThenStatementList.clone());
 
         if (elseStatement != null) {
             List<CtStatement> elseStatements = elseStatement.clone().getStatements();
             CtStatementList[] elseStatementsList = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, elseStatements, statement, dependableVariables, secretVariables);
             CtStatementList oldElseStatementList = elseStatementsList[0];
             CtStatementList newElseStatementList = elseStatementsList[1];
-            logger.info("Test.");
-            oldBlock.insertBegin(newElseStatementList);
-            newBlock.insertBegin(oldElseStatementList);
-            newBlock.insertBegin(newThenStatementList);
-            oldIf.setElseStatement(newBlock);
-        } else if (newThenStatementList.getStatements().size() != 0) {
-            logger.info("There is no else statement.");
-            newBlock.insertBegin(newThenStatementList);
-            oldIf.setElseStatement(newBlock);
+            CtStatementList newElse = newElseStatementList.clone();
+
+            oldBlock.insertBegin(newElse.clone());
+            elseBlock.insertBegin(oldElseStatementList.clone());
+            elseBlock.insertBegin(newThenStatementList.clone());
+            newBlock.insertBegin(newElse.clone());
+            oldIf.setElseStatement(elseBlock);
+        } else {
+            if (oldThenStatementList.getStatements().size() != 0) {
+                logger.info("There is no else statement.");
+                if (oldThenStatementList.getStatement(0) instanceof CtIf) {
+                    CtBlock<?> changedBlock = modifyCondition(factory, statement, oldThenStatementList.getStatement(0), dependableVariables, secretVariables);
+                    oldIf.setElseStatement(changedBlock);
+                }
+            }
+            if (newThenStatementList.getStatements().size() != 0) {
+                elseBlock.insertBegin(newThenStatementList);
+                oldIf.setElseStatement(elseBlock);
+            }
         }
 
         oldIf.setThenStatement(oldBlock);
@@ -113,6 +129,11 @@ class CtIfModification {
             newIf.setElseStatement(newBlock);
 
             newIfBlock.addStatement(newIf);
+        } else {
+            List<CtStatement> statements = newBlock.getStatements();
+            if (statements.size() != 0){
+                statements.forEach(element -> newIfBlock.addStatement(element.clone()));
+            }
         }
 
         return new CtBlock[] {oldIfBlock, newIfBlock};
@@ -243,12 +264,12 @@ class CtIfModification {
                 ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement("", newVariable.getSimpleName());
             } else if (invocation instanceof CtExecutableReference) {
                 logger.info("Invocation is of the type CtExecutableReference.");
-                //handleExecutableReference(factory, initialStatement, ifElement, dependableVariables, secretVariables, ctBlock, (CtExecutableReference<?>) invocation);
+                handleExecutableReference(factory, initialStatement, ifElement, dependableVariables, secretVariables, ctBlock, (CtExecutableReference<?>) invocation);
             }
         });
     }
 
-    /*private static void handleExecutableReference(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, List<CtVariable<?>> secretVariables, CtBlockImpl<?> ctBlock, CtExecutableReference<?> executableReference) {
+    private static void handleExecutableReference(Factory factory, CtIfImpl initialStatement, CtIf ifElement, List<String> dependableVariables, List<CtVariable<?>> secretVariables, CtBlockImpl<?> ctBlock, CtExecutableReference<?> executableReference) {
         logger.info("Handling a executable reference.");
         List<CtTypeReference<?>> executableParameters = executableReference.getParameters();
         List<CtExpression<?>> parametersVariable = new ArrayList<>(executableParameters.size());
@@ -279,7 +300,7 @@ class CtIfModification {
             }
             ctBlock.addStatement(anIf);
         }
-    }*/
+    }
 
     private static CtLocalVariable<?> createNewVariable(Factory factory, CtBlockImpl<?> ctBlock, CtExpression<?> oldVariable, CtTypeReference<?> declaringType) {
         logger.info("Creating a new variable.");
@@ -288,19 +309,20 @@ class CtIfModification {
         return newVariable;
     }
 
-    private static CtBlock<?>[] createNewBlock( CtBlock<?> statement, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    private static CtBlock<?> createNewBlock(CtBlock<?> statement, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Creating a new block.");
-        CtStatementList newElement[] = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, statement.clone().getStatements(), initialStatement, dependableVariables, secretVariables);
+        CtStatementList[] newElement = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, statement.clone().getStatements(), initialStatement, dependableVariables, secretVariables);
 
         CtStatementList newElementOldIf = newElement[0];
         CtStatementList newElementNewIf = newElement[1];
 
-        CtBlock<?> oldBlock = factory.createBlock();
-        newElementOldIf.forEach(newThenStatement -> oldBlock.addStatement(newThenStatement.clone()));
+       /* CtBlock<?> oldBlock = factory.createBlock();
+        newElementOldIf.forEach(newThenStatement -> oldBlock.addStatement(newThenStatement.clone()));*/
 
         CtBlock<?> newBlock = factory.createBlock();
         newElementNewIf.forEach(newThenStatement -> newBlock.addStatement(newThenStatement.clone()));
-        return new CtBlock[]{oldBlock, newBlock};
+        // return new CtBlock[]{oldBlock, newBlock};
+        return newBlock;
     }
 
     static CtBlock<?>[] modifyIf(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {

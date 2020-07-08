@@ -42,10 +42,10 @@ public static void test$Modification(byte[] i, byte[] pcode) {
                 if (!var19) {
                     success = false;
                     break;
+                } else {
+                    $1 = false;
                 }
                 imagedata[var16] = ((byte) ((var19) ? 1 : 0));
-            } else {
-                $1 = false;
             }
         }
         System.out.println(" - status:" + success);

@@ -49,9 +49,9 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
  | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | - |
- | Themis PicketBox | Yes | Possibly Mixed | Yes | Yes | No |
+ | Themis PicketBox | Yes |  Mixed | No | - | - |
  | Themis Spring-Security | Yes | Early-Exit | Yes | No | - |
- | Themis Tomcat | Yes | Possibly Mixed | Yes | Yes | No |
+ | Themis Tomcat | Yes |  Mixed | Yes | Yes | No |
  | Themis TourPlanner | Yes | Special Early-Exit | No | - | - |
  
  #### Captions of table

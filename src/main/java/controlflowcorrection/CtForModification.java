@@ -9,7 +9,6 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

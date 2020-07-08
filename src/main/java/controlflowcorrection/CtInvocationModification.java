@@ -20,9 +20,14 @@ public class CtInvocationModification {
         CtInvocation<?> newInvocation = invocation.clone();
         List<CtExpression<?>> invocationArguments = invocation.getArguments();
         CtExpression<?> target = invocation.getTarget();
+        CtBlock<?> oldBlock = factory.createBlock();
+        CtBlock<?> newBlock = factory.createBlock();
 
-        if (usesDependable(invocation, dependableVariables))
-            return null;
+        oldBlock.addStatement(invocation.clone());
+
+        if (usesDependable(invocation, dependableVariables)) {
+            return new CtBlock[]{oldBlock, newBlock};
+        }
 
         Optional<CtVariable<?>> optionalVariable = secretVariables.stream().filter(secret -> secret.getSimpleName().equals(target.toString())).findFirst();
         if (optionalVariable.isPresent()) {
@@ -69,8 +74,7 @@ public class CtInvocationModification {
             newInvocation.setTarget(newTarget);
         }
 
-        CtBlock<?> oldBlock = factory.createBlock().addStatement(invocation.clone());
-        CtBlock<?> newBlock = factory.createBlock().addStatement(newInvocation.clone());
+        newBlock.addStatement(newInvocation.clone());
 
         return new CtBlock[]{oldBlock, newBlock};
     }

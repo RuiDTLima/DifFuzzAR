@@ -6,12 +6,14 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.*;
 import util.NamingConvention;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class CtLocalVariableModification {
@@ -47,6 +49,7 @@ class CtLocalVariableModification {
         logger.info("Found a local variable to modify");
 
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
+        Set<ModifierKind> modifiers = localVariable.getModifiers();
         CtExpression<?> assignment = localVariable.getAssignment();
         boolean condition;
 
@@ -60,7 +63,7 @@ class CtLocalVariableModification {
            condition = Arrays.stream(assignment.toString().split("\\."))
                     .anyMatch(word -> dependableVariables.stream().anyMatch(secretVariable -> secretVariable.equals(word)));
         }
-        CtLocalVariable<?> newLocalVariable = modifyStatement(factory, dependableVariables, localVariable, condition);
+        CtLocalVariable<?> newLocalVariable = modifyStatement(factory, dependableVariables, localVariable, condition, modifiers);
         return new CtStatement[]{localVariable, newLocalVariable};
     }
 
@@ -123,13 +126,15 @@ class CtLocalVariableModification {
         return condition;
     }
 
-    private static CtLocalVariable<?> modifyStatement(Factory factory, List<String> dependableVariables, CtLocalVariable<?> localVariable, boolean condition) {
+    private static CtLocalVariable<?> modifyStatement(Factory factory, List<String> dependableVariables, CtLocalVariable<?> localVariable, boolean condition, Set<ModifierKind> modifiers) {
         if (condition) {
             dependableVariables.add(localVariable.getSimpleName());
             logger.info("A new variable was added to the dependable variables.");
             return null;
         } else {
-            return createNewLocalVariable(factory, localVariable);
+            CtLocalVariable<?> newLocalVariable = createNewLocalVariable(factory, localVariable);
+            newLocalVariable.setModifiers(modifiers);
+            return newLocalVariable;
         }
     }
 
