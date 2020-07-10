@@ -10,7 +10,6 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtBlockImpl;
-
 import java.util.List;
 
 public class CtTryModification {
@@ -34,17 +33,14 @@ public class CtTryModification {
         CtBlock<?>[] returnBlocks = new CtBlock[2];
         returnBlocks[0] = new CtBlockImpl<>();
         returnBlocks[1] = new CtBlockImpl<>();
-        //returnBlocks[0].addStatement(tryStatement.clone());
 
         CtBlock<?>[] returnedStatements = ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, tryStatementBody, secretVariables, publicArguments);
 
         CtBlock<?> oldBlock = returnedStatements[0];
         oldTryStatement.setBody(oldBlock);
-        //oldBlock.getStatements().forEach(element -> returnBlocks[0].addStatement(element.clone()));
 
         CtBlock<?> newBlock = returnedStatements[1];
         newTryStatement.setBody(newBlock);
-        //newBlock.getStatements().forEach(element -> returnBlocks[1].addStatement(element.clone()));
 
         returnBlocks[0].addStatement(oldTryStatement);
         returnBlocks[1].addStatement(newTryStatement);

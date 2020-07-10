@@ -9,7 +9,6 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.*;
 import util.Setup;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;

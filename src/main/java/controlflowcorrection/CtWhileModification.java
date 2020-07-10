@@ -55,9 +55,12 @@ class CtWhileModification {
 
     private static CtExpression<?> handleHandOperand(Factory factory, CtExpression<?> handOperand) {
         String handOperandString;
+        CtExpression newHandOperator;
+        CtExpression<?> variable = handOperand;
         if (handOperand instanceof CtUnaryOperator) {
             CtUnaryOperator<?> unaryOperator = (CtUnaryOperator<?>) handOperand;
-            handOperandString = unaryOperator.getOperand().toString();
+            variable = unaryOperator.getOperand();
+            handOperandString = variable.toString();
         } else {
             handOperandString = handOperand.toString();
         }
@@ -65,13 +68,24 @@ class CtWhileModification {
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(handOperandString)) {
             logger.info("The left hand operand will be modified.");
             String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(handOperandString);
-            return factory.createCodeSnippetExpression(replacement);
-        } else if (handOperand instanceof CtVariableRead) {
-            String newVariable = NamingConvention.produceNewVariable();
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newVariable, handOperand.getType(), handOperand);
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperandString, newVariable);
-            return factory.createCodeSnippetExpression(newVariable);
+            newHandOperator = factory.createCodeSnippetExpression(replacement);
+        } else if (variable instanceof CtVariableRead || variable instanceof CtVariableWrite) {
+            String newVariableName = NamingConvention.produceNewVariable();
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newVariableName, handOperand.getType(), variable);
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperandString, newVariableName);
+            newHandOperator = factory.createCodeSnippetExpression(newVariableName);
+        } else {
+            newHandOperator = variable;
         }
-        return handOperand;
+
+        if (handOperand instanceof CtUnaryOperator) {
+            CtUnaryOperator unaryOperator = (CtUnaryOperator<?>) handOperand;
+            CtUnaryOperator<?> newUnaryOperator = factory.createUnaryOperator();
+            newUnaryOperator.setKind(unaryOperator.getKind());
+            newUnaryOperator.setType(unaryOperator.getType());
+            newUnaryOperator.setOperand(newHandOperator);
+            return newUnaryOperator;
+        }
+        return newHandOperator;
     }
 }

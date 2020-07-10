@@ -124,36 +124,12 @@ public class TestDifFuzzAR {
                     new String[] {"secret2", "publicVal"}
                 },
                 {
-                    "github_authmreloaded_unsafe/UnsaltedMethod.java",
-                    "UnsaltedMethod$Modification",
-                    "isEqual_unsafe",
-                    "github_authmreloaded_unsafe/CorrectedMethod.java",
-                    new String[] {"storedPassword_valid_secret1.getHash()", "encrMethod.computeHash(password_public)"},
-                    new String[] {"storedPassword_invalid_secret2.getHash()", "encrMethod.computeHash(password_public)"}
-                },
-                {
                     "themis_dynatable_unsafe/SchoolCalendarServiceImpl.java",
                     "SchoolCalendarServiceImpl$Modification",
                     "getPeople_unsafe",
                     "themis_dynatable_unsafe/CorrectedMethod.java",
                     new String[] {"startIndex", "maxCount"},
                     new String[] {"startIndex", "maxCount"}
-                },
-                {
-                    "themis_jetty_unsafe/Credential.java",
-                    "Credential$Modification",
-                    "stringEquals_original",
-                    "themis_jetty_unsafe/CorrectedMethod.java",
-                    new String[] {"publicCred", "secret1"},
-                    new String[] {"publicCred", "secret2"}
-                },
-                {
-                    "themis_oacc_unsafe/PasswordCredentials.java",
-                    "PasswordCredentials$Modification",
-                    "equals",
-                    "themis_oacc_unsafe/CorrectedMethod.java",
-                    new String[] {"secret1"},
-                    new String[] {"secret2"}
                 },
                 {
                     "themis_orientdb_unsafe/OSecurityManager.java",
@@ -164,36 +140,12 @@ public class TestDifFuzzAR {
                     new String[] {"secret_iPassword2", "public_ihash"}
                 },
                 {
-                    "themis_picketbox_unsafe/UsernamePasswordLoginModule.java",
-                    "UsernamePasswordLoginModule$Modification",
-                    "validatePassword_unsafe",
-                    "themis_picketbox_unsafe/CorrectedMethod.java",
-                    new String[] {"secret1_expected", "public_actual"},
-                    new String[] {"secret2_expected", "public_actual"}
-                },
-                {
-                    "themis_picketbox_unsafe2/UsernamePasswordLoginModule.java",
-                    "UsernamePasswordLoginModule$Modification",
-                    "equals",
-                    "themis_picketbox_unsafe2/CorrectedMethod.java",
-                    new String[] {"secret1_expected", "public_actual"},
-                    new String[] {"secret2_expected", "public_actual"}
-                },
-                {
                     "themis_spring-security_unsafe/PasswordEncoderUtils.java",
                     "PasswordEncoderUtils$Modification",
                     "equals_unsafe",
                     "themis_spring-security_unsafe/CorrectedMethod.java",
                     new String[] {"secret1_expected", "public_actual"},
                     new String[] {"secret2_expected", "public_actual"}
-                },
-                {
-                    "themis_tomcat_unsafe/DataSourceRealm.java",
-                    "DataSourceRealm$Modification",
-                    "authenticate_unsafe",
-                    "themis_tomcat_unsafe/CorrectedMethod.java",
-                    new String[] {"dbConnection", "secret_user1", "pw"},
-                    new String[] {"dbConnection", "secret_user2", "pw"}
                 }
         };
     }
@@ -320,6 +272,14 @@ public class TestDifFuzzAR {
                     new String[] {"public_guess", "secret2_pw"}
                 },
                 {
+                    "github_authmreloaded_unsafe/UnsaltedMethod.java",
+                    "UnsaltedMethod$Modification",
+                    "isEqual_unsafe",
+                    "github_authmreloaded_unsafe/CorrectedMethod.java",
+                    new String[] {"storedPassword_valid_secret1.getHash()", "encrMethod.computeHash(password_public)"},
+                    new String[] {"storedPassword_invalid_secret2.getHash()", "encrMethod.computeHash(password_public)"}
+                },
+                {
                     "themis_boot-stateless-auth_unsafe/TokenHandler.java",
                     "TokenHandler$Modification",
                     "unsafe_isEqual",
@@ -336,6 +296,22 @@ public class TestDifFuzzAR {
                     new String[] {"secret2_digesta", "public_digestb"}
                 },
                 {
+                    "themis_jetty_unsafe/Credential.java",
+                    "Credential$Modification",
+                    "stringEquals_original",
+                    "themis_jetty_unsafe/CorrectedMethod.java",
+                    new String[] {"publicCred", "secret1"},
+                    new String[] {"publicCred", "secret2"}
+                },
+                {
+                    "themis_oacc_unsafe/PasswordCredentials.java",
+                    "PasswordCredentials$Modification",
+                    "equals",
+                    "themis_oacc_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1"},
+                    new String[] {"secret2"}
+                },
+                {
                     "themis_oacc_unsafe2/PasswordCredentials.java",
                     "PasswordCredentials$Modification",
                     "ArraysIsEquals",
@@ -350,6 +326,30 @@ public class TestDifFuzzAR {
                     "themis_orientdb_unsafe2/CorrectedMethod.java",
                     new String[] {"secret_iPassword1", "public_ihash"},
                     new String[] {"secret_iPassword2", "public_ihash"}
+                },
+                {
+                    "themis_picketbox_unsafe/UsernamePasswordLoginModule.java",
+                    "UsernamePasswordLoginModule$Modification",
+                    "validatePassword_unsafe",
+                    "themis_picketbox_unsafe/CorrectedMethod.java",
+                    new String[] {"secret1_expected", "public_actual"},
+                    new String[] {"secret2_expected", "public_actual"}
+                },
+                {
+                    "themis_picketbox_unsafe2/UsernamePasswordLoginModule.java",
+                    "UsernamePasswordLoginModule$Modification",
+                    "equals",
+                    "themis_picketbox_unsafe2/CorrectedMethod.java",
+                    new String[] {"secret1_expected", "public_actual"},
+                    new String[] {"secret2_expected", "public_actual"}
+                },
+                {
+                    "themis_tomcat_unsafe/DataSourceRealm.java",
+                    "DataSourceRealm$Modification",
+                    "authenticate_unsafe",
+                    "themis_tomcat_unsafe/CorrectedMethod.java",
+                    new String[] {"dbConnection", "secret_user1", "pw"},
+                    new String[] {"dbConnection", "secret_user2", "pw"}
                 }
         };
     }

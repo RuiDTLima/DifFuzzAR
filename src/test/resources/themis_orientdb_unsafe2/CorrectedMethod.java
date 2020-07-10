@@ -2,6 +2,7 @@ public boolean equals_inline$Modification(String iPassword, String iHash) {
     boolean $4 = false;
     boolean $1 = false;
     int n = iPassword.length();
+    int $5 = n;
     if (n == iHash.length()) {
         char[] v1 = iPassword.toCharArray();
         char[] v2 = iHash.toCharArray();
@@ -19,7 +20,7 @@ public boolean equals_inline$Modification(String iPassword, String iHash) {
         char[] $2 = iPassword.toCharArray();
         int $3 = 0;
         $4 = true;
-        while ((n--) != 0) {
+        while (($5--) != 0) {
             $3++;
         }
     }

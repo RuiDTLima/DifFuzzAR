@@ -9,7 +9,6 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtBlockImpl;
-
 import java.util.List;
 
 public class CtLoopModification {

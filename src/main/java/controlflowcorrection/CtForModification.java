@@ -38,7 +38,6 @@ class CtForModification {
         CtBlock<?> oldBlock = returnedStatements[0];
         forStatement.setBody(oldBlock);
         returnBlocks[0].addStatement(forStatement.clone());
-        //oldBlock.getStatements().forEach(element -> returnBlocks[0].addStatement(element.clone()));
 
         CtBlock<?> newBlock = returnedStatements[1];
         newBlock.getStatements().forEach(element -> returnBlocks[1].addStatement(element.clone()));

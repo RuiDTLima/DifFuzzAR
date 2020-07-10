@@ -63,6 +63,7 @@ class CtLocalVariableModification {
            condition = Arrays.stream(assignment.toString().split("\\."))
                     .anyMatch(word -> dependableVariables.stream().anyMatch(secretVariable -> secretVariable.equals(word)));
         }
+
         CtLocalVariable<?> newLocalVariable = modifyStatement(factory, dependableVariables, localVariable, condition, modifiers);
         return new CtStatement[]{localVariable, newLocalVariable};
     }
@@ -75,7 +76,6 @@ class CtLocalVariableModification {
         for (CtExpression<?> invocationArgument : invocationArguments) {
             if (invocationArgument instanceof CtArrayRead) {
                 CtArrayRead<?> arrayRead = (CtArrayRead<?>) invocationArgument;
-
                 CtExpression<?> target = arrayRead.getTarget();
                 CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
 
@@ -102,8 +102,7 @@ class CtLocalVariableModification {
                         .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
     }
 
-    private static boolean handleVariableReadAssignment(List<String> dependableVariables, CtVariableReadImpl<?> assignment) {
-        CtVariableReadImpl<?> variableRead = assignment;
+    private static boolean handleVariableReadAssignment(List<String> dependableVariables, CtVariableReadImpl<?> variableRead) {
         String variable = variableRead.getVariable().toString();
         return dependableVariables.stream().anyMatch(dependableVariable -> dependableVariable.equals(variable));
     }
@@ -123,6 +122,7 @@ class CtLocalVariableModification {
         } else if (rightHandOperand instanceof CtVariableReadImpl) {
             condition = handleVariableReadAssignment(dependableVariables, (CtVariableReadImpl<?>) rightHandOperand);
         }
+
         return condition;
     }
 

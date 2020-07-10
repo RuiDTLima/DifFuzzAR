@@ -21,8 +21,8 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
 ### Dataset Information
  | **Dataset name** | **Has secure version?** | **Type** | **Correction Attempted** | **Symbolically Correct?** | **Correct Vulnerability?** |
  | --- | --- | --- | --- | --- | --- |
- | Apache FtpServer Clear | Yes | Mixed | Yes | Yes | No |
- | Apache FtpServer Md5 | Yes | Early-Exit | Yes | No | No |
+ | Apache FtpServer Clear | Yes | Mixed | Yes | No | No |
+ | Apache FtpServer Md5 | Yes | Mixed | Yes | No | No |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
  | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
  | Apache FtpServer StringUtils | Yes | Mixed | Yes | Yes | - |
@@ -44,14 +44,14 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis Dynatable | No | Early-Exit | Yes | No | No |
  | Themis GWT Advanced Table | No | Unknown | No | - | - |
  | Themis Jdk | Yes | Mixed | Yes | Yes | No |
- | Themis Jetty | Yes | Early-Exit | Yes | Yes | Yes |
+ | Themis Jetty | Yes | Mixed | Yes | Yes | No |
  | Themis OACC | No | Mixed | Yes | Yes | No |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
  | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | - |
- | Themis PicketBox | Yes |  Mixed | No | - | - |
+ | Themis PicketBox | Yes |  Mixed | Yes | Yes | - |
  | Themis Spring-Security | Yes | Early-Exit | Yes | No | - |
- | Themis Tomcat | Yes |  Mixed | Yes | Yes | No |
+ | Themis Tomcat | Yes |  Mixed | Yes | No | No |
  | Themis TourPlanner | Yes | Special Early-Exit | No | - | - |
  
  #### Captions of table
@@ -66,4 +66,4 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  **Correct Vulnerability** indicates if after executing DifFuzz in the corrected version of the dataset it found a vulnerability.
  
  
- #### This tool will be in constant update. 
+ #### This tool will be constantly updated. 

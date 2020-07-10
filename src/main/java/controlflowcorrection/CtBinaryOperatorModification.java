@@ -6,12 +6,16 @@ import spoon.reflect.code.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import util.NamingConvention;
+import java.util.List;
 
 class CtBinaryOperatorModification {
     private static final Logger logger = LoggerFactory.getLogger(CtBinaryOperatorModification.class);
 
-    static CtBinaryOperator<Boolean> modifyBinaryOperator(Factory factory, CtBinaryOperator<Boolean> binaryOperator) {
+    static CtBinaryOperator<Boolean> modifyBinaryOperator(Factory factory, CtExpression<?> expression, List<String> dependableVariables) {
         logger.info("Modifying a binary operator.");
+
+        CtBinaryOperator<Boolean> binaryOperator = (CtBinaryOperator<Boolean>) expression;
+
         CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
         CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
 
@@ -20,7 +24,7 @@ class CtBinaryOperatorModification {
             binaryOperator.setLeftHandOperand(leftHandOperator);
             logger.info("The left hand operand is a variable read.");
         } else if (leftHandOperand instanceof CtArrayRead) {
-            CtArrayRead<?> leftOperand = CtArrayModification.modifyArrayOperation(factory, (CtArrayRead<?>) leftHandOperand);
+            CtArrayRead<?> leftOperand = CtArrayModification.modifyArrayOperation(factory, leftHandOperand, dependableVariables);
             binaryOperator.setLeftHandOperand(leftOperand);
             logger.info("The left hand operand is an array read.");
         }

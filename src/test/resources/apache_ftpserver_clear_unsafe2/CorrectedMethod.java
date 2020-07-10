@@ -26,7 +26,7 @@ public boolean isEqual_unsafe$Modification(String thisObject, Object otherObject
             char[] $4 = thisObject.toCharArray();
             int $5 = 0;
             $2 = true;
-            while ($3 != 0) {
+            while (($3--) != 0) {
                 $5++;
             }
         }
