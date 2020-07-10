@@ -14,15 +14,20 @@ import java.util.Optional;
 public class CtInvocationModification {
     private static final Logger logger = LoggerFactory.getLogger(CtInvocationModification.class);
 
-    static CtStatement modifyInvocation(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtBlock<?>[] modifyInvocation(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found an invocation to modify.");
         CtInvocation<?> invocation = (CtInvocation<?>) element;
         CtInvocation<?> newInvocation = invocation.clone();
         List<CtExpression<?>> invocationArguments = invocation.getArguments();
         CtExpression<?> target = invocation.getTarget();
+        CtBlock<?> oldBlock = factory.createBlock();
+        CtBlock<?> newBlock = factory.createBlock();
 
-        if (usesDependable(invocation, dependableVariables))
-            return null;
+        oldBlock.addStatement(invocation.clone());
+
+        if (usesDependable(invocationArguments, dependableVariables)) {
+            return new CtBlock[]{oldBlock, newBlock};
+        }
 
         Optional<CtVariable<?>> optionalVariable = secretVariables.stream().filter(secret -> secret.getSimpleName().equals(target.toString())).findFirst();
         if (optionalVariable.isPresent()) {
@@ -33,30 +38,7 @@ public class CtInvocationModification {
             CtExpression<?> newDefaultExpression = null;
 
             if (defaultExpression instanceof CtConstructorCallImpl) {
-                CtConstructorCallImpl constructorCall = (CtConstructorCallImpl<?>) defaultExpression;
-                List<CtExpression<?>> arguments = constructorCall.getArguments();
-
-                CtConstructorCall<?> newConstructorCall = factory.createConstructorCall();
-                newConstructorCall.setType(constructorCall.getType());
-                newConstructorCall.setTarget(constructorCall.getTarget());
-
-                for (CtExpression<?> argument : arguments) {
-                    Optional<CtVariable<?>> first = secretVariables.stream().filter(secret -> secret.getSimpleName().equals(argument.toString())).findFirst();
-                    CtVariable<?> secretVariable = first.get();
-                    CtExpression<?> secretDefaultExpression = secretVariable.getDefaultExpression();
-                    if (secretDefaultExpression instanceof CtBinaryOperatorImpl) {
-                        CtBinaryOperatorImpl<?> binaryOperator = (CtBinaryOperatorImpl<?>) secretDefaultExpression;
-                        CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
-                        CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
-
-                        if (!dependableVariables.contains(leftHandOperand.toString())) {
-                            newConstructorCall.addArgument(leftHandOperand);
-                        } else if (!dependableVariables.contains(rightHandOperand.toString())) {
-                            newConstructorCall.addArgument(rightHandOperand);
-                        }
-                    }
-                }
-                newDefaultExpression = newConstructorCall;
+                newDefaultExpression = createNewDefaultExpression(factory, dependableVariables, secretVariables, (CtConstructorCallImpl<?>) defaultExpression);
             }
 
             CtLocalVariable<?> newVariable = NamingConvention.produceNewVariable(factory, variable.getType(), newDefaultExpression);
@@ -69,7 +51,13 @@ public class CtInvocationModification {
             newInvocation.setTarget(newTarget);
         }
 
-        return newInvocation;
+        newBlock.addStatement(newInvocation.clone());
+
+        return new CtBlock[]{oldBlock, newBlock};
+    }
+
+    private static boolean usesDependable(List<CtExpression<?>> arguments, List<String> dependableVariables) {
+        return arguments.stream().anyMatch(argument -> dependableVariables.contains(argument.toString()));
     }
 
     private static void increaseDependableVariable(CtIfImpl initialStatement, List<String> dependableVariables) {
@@ -90,18 +78,31 @@ public class CtInvocationModification {
         }
     }
 
-    private static boolean usesDependable(CtExpression<?> defaultExpression, List<String> dependableVariables) {
-        boolean usesDependable = false;
-        if (defaultExpression instanceof CtInvocationImpl) {
-            CtInvocationImpl<?> constructorCall = (CtInvocationImpl<?>) defaultExpression;
-            List<CtExpression<?>> arguments = constructorCall.getArguments();
+    private static CtExpression<?> createNewDefaultExpression(Factory factory, List<String> dependableVariables, List<CtVariable<?>> secretVariables, CtConstructorCallImpl constructorCall) {
+        CtExpression<?> newDefaultExpression;
+        List<CtExpression<?>> arguments = constructorCall.getArguments();
 
-            for (CtExpression<?> argument : arguments) {
-                if (dependableVariables.contains(argument.toString())) {
-                    usesDependable = true;
+        CtConstructorCall<?> newConstructorCall = factory.createConstructorCall();
+        newConstructorCall.setType(constructorCall.getType());
+        newConstructorCall.setTarget(constructorCall.getTarget());
+
+        for (CtExpression<?> argument : arguments) {
+            Optional<CtVariable<?>> first = secretVariables.stream().filter(secret -> secret.getSimpleName().equals(argument.toString())).findFirst();
+            CtVariable<?> secretVariable = first.get();
+            CtExpression<?> secretDefaultExpression = secretVariable.getDefaultExpression();
+            if (secretDefaultExpression instanceof CtBinaryOperatorImpl) {
+                CtBinaryOperatorImpl<?> binaryOperator = (CtBinaryOperatorImpl<?>) secretDefaultExpression;
+                CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
+                CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
+
+                if (!dependableVariables.contains(leftHandOperand.toString())) {
+                    newConstructorCall.addArgument(leftHandOperand);
+                } else if (!dependableVariables.contains(rightHandOperand.toString())) {
+                    newConstructorCall.addArgument(rightHandOperand);
                 }
             }
         }
-        return usesDependable;
+        newDefaultExpression = newConstructorCall;
+        return newDefaultExpression;
     }
 }

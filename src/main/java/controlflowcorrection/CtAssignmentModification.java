@@ -7,18 +7,31 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.*;
+import util.ModifyOperation;
 import util.NamingConvention;
+import java.util.HashMap;
 import java.util.List;
 
 class CtAssignmentModification {
     private static final Logger logger = LoggerFactory.getLogger(CtAssignmentModification.class);
+    private static HashMap<Class<?>, ModifyOperation<Factory, CtExpression<?>, List<String>, CtExpression<?>>> modifyOperation;
 
-    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
+    static {
+        populateModifyOperation();
+    }
+
+    private static void populateModifyOperation() {
+        modifyOperation = new HashMap<>();
+        modifyOperation.put(CtArrayReadImpl.class, CtArrayModification::modifyArrayOperation);
+        modifyOperation.put(CtBinaryOperatorImpl.class, CtBinaryOperatorModification::modifyBinaryOperator);
+        modifyOperation.put(CtFieldReadImpl.class, CtFieldReadModification::modifyFieldRead);
+    }
+
+    static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         logger.info("Found an assignment while traversing the method.");
 
         CtAssignment<?, ?> assignmentStatement = (CtAssignment<?, ?>) statement;
@@ -29,69 +42,54 @@ class CtAssignmentModification {
 
         if (usesSecret) {
             CtExpression<?> assigned = assignmentStatement.getAssigned();
+            CtVariable<?> secretVariable;
 
             if (assigned instanceof CtArrayWrite) {
                 CtArrayWrite<?> arrayWrite = (CtArrayWrite<?>) assigned;
                 CtVariableReadImpl<?> localVariableReference = (CtVariableReadImpl<?>) arrayWrite.getTarget();
                 CtVariableReference<?> variable = localVariableReference.getVariable();
-                CtLocalVariable<?> localVariable = factory.createLocalVariable(variable.getType(), variable.getSimpleName(), null);
-                secretVariables.add(localVariable);
+                secretVariable = factory.createLocalVariable(variable.getType(), variable.getSimpleName(), null);
                 logger.info("The assignment is an array write where the target is now a secret variable");
             } else if (assigned instanceof CtVariableWrite) {
                 CtVariableWrite<?> variable = (CtVariableWrite<?>) assigned;
-                secretVariables.add(variable.getVariable().getDeclaration());
-            } else{
-                CtVariable<?> variable = (CtVariable<?>) assigned;
-                secretVariables.add(variable);
+                secretVariable = variable.getVariable().getDeclaration();
+            } else {
+                secretVariable = (CtVariable<?>) assigned;
                 logger.info("The assignment is to a variable, that is now a secret variable.");
             }
+            secretVariables.add(secretVariable);
         }
+
+        CtBlock<?>[] returnBlocks = new CtBlock[2];
+        returnBlocks[0] = new CtBlockImpl<>();
+        returnBlocks[1] = new CtBlockImpl<>();
+        returnBlocks[0].addStatement(assignmentStatement.clone());
+        returnBlocks[1].addStatement(null);
+        return returnBlocks;
     }
 
-    static CtStatement modifyAssignment(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtStatement[] modifyAssignment(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found an assignment to modify.");
 
+        String newAssigned;
         CtAssignmentImpl<?, ?> assignmentImpl = (CtAssignmentImpl<?, ?>) element;
-        CtTypeReference<?> type = assignmentImpl.getType();
+        CtAssignment<?, ?> oldAssignment = assignmentImpl.clone();
+        CtTypeReference type = assignmentImpl.getType();
         CtExpression<?> assigned = assignmentImpl.getAssigned();
         CtExpression<?> assignment = assignmentImpl.getAssignment();
-        String newAssigned;
 
-        if (assignment instanceof CtArrayRead) {
-            assignment = CtArrayModification.modifyArrayOperation(factory, (CtArrayRead<?>) assignment);
-            logger.info("The assignment is an array read.");
-        } else if (assignment instanceof CtBinaryOperator){
-            assignment = CtBinaryOperatorModification.modifyBinaryOperator(factory, (CtBinaryOperator<Boolean>) assignment);
-            logger.info("The assignment is of an binary operator.");
+        ModifyOperation<Factory, CtExpression<?>, List<String>, CtExpression<?>> function = modifyOperation.get(assignment.getClass());
+
+        if (function != null) {
+            assignment = function.apply(factory, assignment, dependableVariables);
         } else if (assignment instanceof CtConditionalImpl) {
             CtConditionalImpl<?> conditional = (CtConditionalImpl<?>) assignment;
-            CtExpression<?> condition = conditional.getCondition();
-            CtExpression<?> thenExpression = conditional.getThenExpression();
-            CtExpression<?> elseExpression = conditional.getElseExpression();
-            if (dependableVariables.contains(condition.toString())) {
+            String condition = conditional.getCondition().toString();
+            String thenExpression = conditional.getThenExpression().toString();
+            String elseExpression = conditional.getElseExpression().toString();
+            if (dependableVariables.contains(condition) || dependableVariables.contains(thenExpression) || dependableVariables.contains(elseExpression)) {
                 dependableVariables.add(assigned.toString());
-                return null;
-            } else if (dependableVariables.contains(thenExpression.toString())) {
-                dependableVariables.add(assigned.toString());
-                return null;
-            } else if (dependableVariables.contains(elseExpression.toString())) {
-                dependableVariables.add(assigned.toString());
-                return null;
-            }
-        } else if (assignment instanceof CtFieldReadImpl) {
-            CtFieldReadImpl<?> fieldRead = (CtFieldReadImpl<?>) assignment;
-            CtFieldReference<?> variable = fieldRead.getVariable();
-            String variableName = fieldRead.getTarget().toString();
-            CtTypeReference<?> declaringType = variable.getDeclaringType();
-            if (dependableVariables.contains(variableName)) {
-                if (declaringType.isPrimitive()) {
-                    if (declaringType.getSimpleName().equals("String")) {
-                        assignment = factory.createLiteral("");
-                    } else if (declaringType.getSimpleName().equals("boolean")) {
-                        assignment = factory.createLiteral(false);
-                    } else
-                        assignment = factory.createLiteral(0);
-                }
+                return new CtStatement[]{oldAssignment, null};
             }
         }
 
@@ -106,13 +104,8 @@ class CtAssignmentModification {
         }
 
         CtLocalVariableReference variableReference = factory.createLocalVariableReference(type, newAssigned);
-        return factory.createVariableAssignment(variableReference, false, assignment);
-    }
-
-    public static boolean equalAssignments(CtStatement firstStatement, CtStatement secondStatement) {
-        CtAssignment<?, ?> firstAssignment = (CtAssignment<?, ?>) firstStatement;
-        CtAssignment<?, ?> secondAssignment = (CtAssignment<?, ?>) secondStatement;
-
-        return firstAssignment.getAssignment().equals(secondAssignment.getAssignment());
+        CtAssignment<?, ?> variableAssignment = factory.createVariableAssignment(variableReference, false, assignment);
+        variableAssignment.setType(type);
+        return new CtStatement[]{oldAssignment, variableAssignment};
     }
 }

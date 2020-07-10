@@ -14,36 +14,53 @@ import java.util.List;
 class CtWhileModification {
     private static final Logger logger = LoggerFactory.getLogger(CtWhileModification.class);
 
-    static CtWhile modifyWhile(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtWhile[] modifyWhile(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a 'while' statement to modify.");
         CtWhile whileStatement = (CtWhile) element;
+        CtWhile newWhileStatement = whileStatement.clone();
 
         if (initialStatement == null) {
-            CtBinaryOperator<Boolean> loopingExpression = (CtBinaryOperator<Boolean>) whileStatement.getLoopingExpression();
-            CtExpression<?> leftHandOperand = loopingExpression.getLeftHandOperand();
-            CtExpression<?> newLeftHandOperand = handleHandOperand(factory, leftHandOperand);
-            loopingExpression.setLeftHandOperand(newLeftHandOperand);
-
-            CtExpression<?> rightHandOperand = loopingExpression.getRightHandOperand();
-            CtExpression<?> newRightHandOperand = handleHandOperand(factory, rightHandOperand);
-            loopingExpression.setRightHandOperand(newRightHandOperand);
+            updateStoppingCondition(factory, whileStatement);
         }
 
-        CtBlock<?> whileBody = (CtBlock<?>) whileStatement.getBody();
+        updateStoppingCondition(factory, newWhileStatement);
+        CtBlock<?> whileBody = (CtBlock<?>) newWhileStatement.getBody();
         List<CtStatement> bodyStatements = whileBody.getStatements();
-        CtStatementList bodyNewStatements = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
-        CtBlockImpl<?> ctBlock = new CtBlockImpl<>();
-        bodyNewStatements.forEach(ctStatement -> ctBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
-        whileStatement.setBody(ctBlock);
-        element.replace(whileStatement);
-        return whileStatement;
+        CtStatementList[] bodyNewStatements = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
+
+        CtStatementList newBodyOldWhile = bodyNewStatements[0];
+        CtStatementList newBodyNewWhile = bodyNewStatements[1];
+
+        CtBlockImpl<?> oldCtBlock = new CtBlockImpl<>();
+        newBodyOldWhile.forEach(ctStatement -> oldCtBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
+        whileStatement.setBody(oldCtBlock);
+
+        CtBlockImpl<?> newCtBlock = new CtBlockImpl<>();
+        newBodyNewWhile.forEach(ctStatement -> newCtBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
+        newWhileStatement.setBody(newCtBlock);
+
+        return new CtWhile[]{whileStatement, newWhileStatement};
+    }
+
+    private static void updateStoppingCondition(Factory factory, CtWhile newWhileStatement) {
+        CtBinaryOperator<Boolean> loopingExpression = (CtBinaryOperator<Boolean>) newWhileStatement.getLoopingExpression();
+        CtExpression<?> leftHandOperand = loopingExpression.getLeftHandOperand();
+        CtExpression<?> newLeftHandOperand = handleHandOperand(factory, leftHandOperand);
+        loopingExpression.setLeftHandOperand(newLeftHandOperand);
+
+        CtExpression<?> rightHandOperand = loopingExpression.getRightHandOperand();
+        CtExpression<?> newRightHandOperand = handleHandOperand(factory, rightHandOperand);
+        loopingExpression.setRightHandOperand(newRightHandOperand);
     }
 
     private static CtExpression<?> handleHandOperand(Factory factory, CtExpression<?> handOperand) {
         String handOperandString;
+        CtExpression newHandOperator;
+        CtExpression<?> variable = handOperand;
         if (handOperand instanceof CtUnaryOperator) {
             CtUnaryOperator<?> unaryOperator = (CtUnaryOperator<?>) handOperand;
-            handOperandString = unaryOperator.getOperand().toString();
+            variable = unaryOperator.getOperand();
+            handOperandString = variable.toString();
         } else {
             handOperandString = handOperand.toString();
         }
@@ -51,13 +68,24 @@ class CtWhileModification {
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(handOperandString)) {
             logger.info("The left hand operand will be modified.");
             String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(handOperandString);
-            return factory.createCodeSnippetExpression(replacement);
-        } else if (handOperand instanceof CtVariableRead) {
-            String newVariable = NamingConvention.produceNewVariable();
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newVariable, handOperand.getType(), handOperand);
-            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperandString, newVariable);
-            return factory.createCodeSnippetExpression(newVariable);
+            newHandOperator = factory.createCodeSnippetExpression(replacement);
+        } else if (variable instanceof CtVariableRead || variable instanceof CtVariableWrite) {
+            String newVariableName = NamingConvention.produceNewVariable();
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newVariableName, handOperand.getType(), variable);
+            ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(handOperandString, newVariableName);
+            newHandOperator = factory.createCodeSnippetExpression(newVariableName);
+        } else {
+            newHandOperator = variable;
         }
-        return handOperand;
+
+        if (handOperand instanceof CtUnaryOperator) {
+            CtUnaryOperator unaryOperator = (CtUnaryOperator<?>) handOperand;
+            CtUnaryOperator<?> newUnaryOperator = factory.createUnaryOperator();
+            newUnaryOperator.setKind(unaryOperator.getKind());
+            newUnaryOperator.setType(unaryOperator.getType());
+            newUnaryOperator.setOperand(newHandOperator);
+            return newUnaryOperator;
+        }
+        return newHandOperator;
     }
 }

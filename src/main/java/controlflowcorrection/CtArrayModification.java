@@ -6,24 +6,25 @@ import spoon.reflect.code.CtArrayRead;
 import spoon.reflect.code.CtCodeSnippetExpression;
 import spoon.reflect.code.CtExpression;
 import spoon.reflect.factory.Factory;
+import java.util.List;
 
 class CtArrayModification {
     private static final Logger logger = LoggerFactory.getLogger(CtArrayModification.class);
 
-    static CtArrayRead<?> modifyArrayOperation(Factory factory, CtArrayRead<?> arrayRead) {
+    static CtArrayRead<?> modifyArrayOperation(Factory factory, CtExpression<?> expression, List<String> dependableVariables) {
         logger.info("Modifying an array operation.");
+
+        CtArrayRead<?> arrayRead = (CtArrayRead<?>) expression;
 
         CtExpression<?> target = arrayRead.getTarget();
         CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
-        CtArrayRead<?> newArrayRead = factory.createArrayRead();
+        CtArrayRead<?> newArrayRead = arrayRead.clone();
 
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(target.toString())) {
             String valueVariablesReplacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(target.toString());
             CtCodeSnippetExpression<?> newTarget = factory.createCodeSnippetExpression(valueVariablesReplacement);
             newArrayRead.setTarget(newTarget);
             logger.info("Changed the target of the array read.");
-        } else {
-            newArrayRead.setTarget(target);
         }
 
         if (ControlFlowBasedVulnerabilityCorrection.containsKeyVariablesReplacement(indexExpression.toString())) {

@@ -1,4 +1,5 @@
 public boolean regionMatches$Modification(String thisValue, boolean ignoreCase, int toffset, String other, int ooffset, int len) {
+    boolean $2 = true;
     boolean $1 = true;
     char[] ta = thisValue.toCharArray();
     int to = toffset;
@@ -6,6 +7,8 @@ public boolean regionMatches$Modification(String thisValue, boolean ignoreCase, 
     int po = ooffset;
     if ((((ooffset < 0) || (toffset < 0)) || (toffset > (((long) (thisValue.length())) - len))) || (ooffset > (((long) (other.length())) - len))) {
         $1 = false;
+    } else {
+        $2 = false;
     }
     while ((len--) > 0) {
         char c1 = ta[to++];

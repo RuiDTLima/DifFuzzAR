@@ -4,32 +4,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtNamedElement;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.factory.Factory;
-import spoon.support.reflect.code.CtIfImpl;
-import spoon.support.reflect.code.CtInvocationImpl;
-import spoon.support.reflect.code.CtLiteralImpl;
-import spoon.support.reflect.code.CtVariableReadImpl;
+import spoon.support.reflect.code.*;
 import util.NamingConvention;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class CtLocalVariableModification {
     private static final Logger logger = LoggerFactory.getLogger(CtLocalVariableModification.class);
 
-    static void traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
+    static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables, List<CtParameter<?>> publicArguments) {
         logger.info("Found a local variable while traversing the method.");
 
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) statement;
         CtExpression<?> assignment = localVariable.getAssignment();
 
+        CtBlock<?>[] returnBlocks = new CtBlock[2];
+        returnBlocks[0] = new CtBlockImpl<>();
+        returnBlocks[1] = new CtBlockImpl<>();
+        returnBlocks[0].addStatement(localVariable.clone());
+        returnBlocks[1].addStatement(null);
+
         if (assignment == null) {
             logger.info("There is no assignment to the local variable.");
-            return;
+            return returnBlocks;
         }
 
         boolean usesSecret = ControlFlowBasedVulnerabilityCorrection.usesSecret(assignment.toString(), secretVariables);
@@ -38,14 +42,15 @@ class CtLocalVariableModification {
         if (usesSecret) {
             secretVariables.add(localVariable);
         }
+        return returnBlocks;
     }
 
-    static CtStatement modifyLocalVariable(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
+    static CtStatement[] modifyLocalVariable(CtElement element, Factory factory, CtIfImpl initialStatement, List<String> dependableVariables, List<CtVariable<?>> secretVariables) {
         logger.info("Found a local variable to modify");
 
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
+        Set<ModifierKind> modifiers = localVariable.getModifiers();
         CtExpression<?> assignment = localVariable.getAssignment();
-        CtStatement statement;
         boolean condition;
 
         if (assignment instanceof CtInvocation) {
@@ -58,8 +63,9 @@ class CtLocalVariableModification {
            condition = Arrays.stream(assignment.toString().split("\\."))
                     .anyMatch(word -> dependableVariables.stream().anyMatch(secretVariable -> secretVariable.equals(word)));
         }
-        statement = modifyStatement(dependableVariables, localVariable, condition);
-        return statement;
+
+        CtLocalVariable<?> newLocalVariable = modifyStatement(factory, dependableVariables, localVariable, condition, modifiers);
+        return new CtStatement[]{localVariable, newLocalVariable};
     }
 
     private static boolean handleInvocation(List<String> dependableVariables, CtInvocation<?> invocation) {
@@ -70,7 +76,6 @@ class CtLocalVariableModification {
         for (CtExpression<?> invocationArgument : invocationArguments) {
             if (invocationArgument instanceof CtArrayRead) {
                 CtArrayRead<?> arrayRead = (CtArrayRead<?>) invocationArgument;
-
                 CtExpression<?> target = arrayRead.getTarget();
                 CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
 
@@ -97,8 +102,7 @@ class CtLocalVariableModification {
                         .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
     }
 
-    private static boolean handleVariableReadAssignment(List<String> dependableVariables, CtVariableReadImpl<?> assignment) {
-        CtVariableReadImpl<?> variableRead = assignment;
+    private static boolean handleVariableReadAssignment(List<String> dependableVariables, CtVariableReadImpl<?> variableRead) {
         String variable = variableRead.getVariable().toString();
         return dependableVariables.stream().anyMatch(dependableVariable -> dependableVariable.equals(variable));
     }
@@ -118,21 +122,27 @@ class CtLocalVariableModification {
         } else if (rightHandOperand instanceof CtVariableReadImpl) {
             condition = handleVariableReadAssignment(dependableVariables, (CtVariableReadImpl<?>) rightHandOperand);
         }
+
         return condition;
     }
 
-    private static CtStatement modifyStatement(List<String> dependableVariables, CtLocalVariable<?> localVariable, boolean condition) {
+    private static CtLocalVariable<?> modifyStatement(Factory factory, List<String> dependableVariables, CtLocalVariable<?> localVariable, boolean condition, Set<ModifierKind> modifiers) {
         if (condition) {
             dependableVariables.add(localVariable.getSimpleName());
             logger.info("A new variable was added to the dependable variables.");
+            return null;
+        } else {
+            CtLocalVariable<?> newLocalVariable = createNewLocalVariable(factory, localVariable);
+            newLocalVariable.setModifiers(modifiers);
+            return newLocalVariable;
         }
-        return null;
     }
 
-    private static CtNamedElement createNewLocalVariable(CtLocalVariable<?> localVariable) {
+    private static CtLocalVariable<?> createNewLocalVariable(Factory factory, CtLocalVariable localVariable) {
         logger.info("A new local variable will be created.");
         String newVariable = NamingConvention.produceNewVariable();
         ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(localVariable.getSimpleName(), newVariable);
-        return localVariable.setSimpleName(newVariable);
+
+        return factory.createLocalVariable(localVariable.getType(), newVariable, localVariable.getDefaultExpression());
     }
 }
