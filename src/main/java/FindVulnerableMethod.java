@@ -70,7 +70,7 @@ public class FindVulnerableMethod {
 
         // TODO
         // First Vulnerable method use case
-        /*String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
+        String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
         String[] firstVulnerableMethodArguments = vulnerableMethodUseCases.getFirstUseCaseArgumentsNames();
 
         // Second Vulnerable method use case
@@ -87,7 +87,7 @@ public class FindVulnerableMethod {
             return null;
         }
 
-        logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));*/
+        logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));
         return  vulnerableMethodUseCases;
     }
 

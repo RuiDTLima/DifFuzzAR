@@ -34,7 +34,6 @@ public class NamingConvention {
         return localVariable;
     }
 
-    // TODO remove
     public static void resetCounter() {
         counter = 0;
     }

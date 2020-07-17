@@ -93,7 +93,7 @@ public class ModPow2_FuzzDriver {
 
         /* We do not care about the bit length of the public values. */
         public_base = new BigInteger(public_base_bytes);
-        public_modulus = new BigInteger(public_modulus_bytes); // TODO may fix the modulus value here
+        public_modulus = new BigInteger(public_modulus_bytes);
         // Ensure that modulus is not zero.
         if (public_modulus.equals(BigInteger.ZERO)) {
             public_modulus = BigInteger.ONE;

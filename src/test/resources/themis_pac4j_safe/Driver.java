@@ -153,15 +153,17 @@ public class Driver {
             h.close();
         }
 
+        // Added
+        UsernamePasswordCredentials cred2 = new UsernamePasswordCredentials(user, pw, ""); // public info
         Mem.clear();
         boolean authenticated2 = false;
         try {
             if (RUN_UNSAFE_VERSION) {
-                dbAuth.validate_unsafe(cred);
+                dbAuth.validate_unsafe(cred2);
             } else {
-                dbAuth.validate_safe(cred);
+                dbAuth.validate_safe(cred2);
             }
-            if (cred.getUserProfile() != null) {
+            if (cred2.getUserProfile() != null) {
                 authenticated2 = true;
             }
         } catch (Exception e) {

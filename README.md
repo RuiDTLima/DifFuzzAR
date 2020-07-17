@@ -22,17 +22,17 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | **Dataset name** | **Has secure version?** | **Type** | **Correction Attempted** | **Symbolically Correct?** | **Correct Vulnerability?** |
  | --- | --- | --- | --- | --- | --- |
  | Apache FtpServer Clear | Yes | Mixed | Yes | No | No |
- | Apache FtpServer Md5 | Yes | Mixed | Yes | No | No |
+ | Apache FtpServer Md5 | Yes | Early-Exit (If dependant) | Yes | No | No |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
  | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
  | Apache FtpServer StringUtils | Yes | Mixed | Yes | Yes | - |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | No |
  | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | No |
  | Blazer K96 | Yes | Control-Flow | Yes | Yes | No |
- | Blazer LoopAndBranch | Yes | Unknown | No | - | - |
+ | Blazer LoopAndBranch | Yes | Control-Flow (ignored) | No | - | - |
  | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Modpow2 | Yes | Unknown | No | - | - |
- | Blazer PasswordEq | Yes | Early-Exit | Yes | Yes | Yes |
+ | Blazer PasswordEq | Yes | Early-Exit (If dependant) | Yes | Yes | Yes |
  | Blazer Sanity | Yes | Mixed | Yes | Yes | - |
  | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | No |
  | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | No |
@@ -41,7 +41,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | STAC Crime | No | Unknown | No | - | - |
  | STAC Ibasys | No | Control-Flow | Yes | Yes | No |
  | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | No |
- | Themis Dynatable | No | Early-Exit | Yes | No | No |
+ | Themis Dynatable | No | Early-Exit (If dependant) | Yes | No | - |
  | Themis GWT Advanced Table | No | Unknown | No | - | - |
  | Themis Jdk | Yes | Mixed | Yes | Yes | No |
  | Themis Jetty | Yes | Mixed | Yes | Yes | No |
@@ -50,9 +50,9 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | - |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | - |
- | Themis Spring-Security | Yes | Early-Exit | Yes | No | - |
- | Themis Tomcat | Yes |  Mixed | Yes | No | No |
- | Themis TourPlanner | Yes | Special Early-Exit | No | - | - |
+ | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | No | - |
+ | Themis Tomcat | Yes |  Mixed | No | - | - |
+ | Themis TourPlanner | Yes | Special Early-Exit (Ignored) | No | - | - |
  
  #### Captions of table
  **Has secure Version** indicates whether the dataset provided both the safe and unsafe versions of the program.

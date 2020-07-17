@@ -1,6 +1,6 @@
 public static boolean straightline_unsafe$Modification(int a, int b) {
-    int $1 = a;
     int $2 = b;
+    int $1 = a;
     int x = a;
     int y = b;
     if ((a > 0) && (b > 0)) {

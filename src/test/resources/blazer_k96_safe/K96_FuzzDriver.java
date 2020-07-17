@@ -93,7 +93,7 @@ public class K96_FuzzDriver {
 
         /* We do not care about the bit length of the public values. */
         public_y = new BigInteger(public_y_bytes);
-        public_n = new BigInteger(public_n_bytes); // TODO may fix the modulus value here
+        public_n = new BigInteger(public_n_bytes);
         // Ensure that modulus is not zero.
         if (public_n.equals(BigInteger.ZERO)) {
             public_n = BigInteger.ONE;

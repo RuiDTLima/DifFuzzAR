@@ -93,7 +93,7 @@ public class GPT14_FuzzDriver {
 
         /* We do not care about the bit length of the public values. */
         public_a = new BigInteger(public_base_bytes);
-        public_p = new BigInteger(public_modulus_bytes); // TODO may fix the modulus value here
+        public_p = new BigInteger(public_modulus_bytes);
         // Ensure that modulus is not zero.
         if (public_p.equals(BigInteger.ZERO)) {
             public_p = BigInteger.ONE;

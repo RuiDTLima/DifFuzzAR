@@ -1,6 +1,6 @@
 public static boolean login_unsafe$Modification(String u, String p) {
-    boolean $1 = false;
     boolean $4;
+    boolean $1 = false;
     boolean outcome = false;
     if (map.containsKey(u)) {
         if (map.get(u).equals(md5(p))) {

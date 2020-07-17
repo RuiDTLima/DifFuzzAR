@@ -196,8 +196,7 @@ public class StringUtils {
         return sb.toString();
     }
 
-    public final static String pad(String src, char padChar, boolean rightPad, // TODO YN vulnerable? get the length of
-            // the src? which is the username
+    public final static String pad(String src, char padChar, boolean rightPad,
             int totalLength) {
         if (safeMode) {
             return pad_safe(src, padChar, rightPad, totalLength);
@@ -209,9 +208,7 @@ public class StringUtils {
     /**
      * Pad string object
      */
-    public final static String pad_unsafe(String src, char padChar, boolean rightPad, // TODO YN vulnerable? get the
-                                                                                      // length of
-            // the src? which is the username
+    public final static String pad_unsafe(String src, char padChar, boolean rightPad,
             int totalLength) {
 
         int srcLength = src.length();

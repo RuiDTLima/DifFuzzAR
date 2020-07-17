@@ -2,7 +2,7 @@
 public boolean equals$Modification(Object other) {
     boolean $2;
     boolean $1;
-    if (PasswordCredentials.Impl.this == other) {
+    if (this == other) {
         $1 = true;
     } else {
         $2 = true;
@@ -12,7 +12,7 @@ public boolean equals$Modification(Object other) {
     } else {
         $2 = false;
     }
-    PasswordCredentials.Impl impl = ((PasswordCredentials.Impl) (other));
+    Impl impl = ((Impl) (other));
     $1 = ArraysIsEquals(password, impl.password);
     return $1;
 }
