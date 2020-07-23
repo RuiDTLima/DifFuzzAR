@@ -29,7 +29,8 @@ class CtLocalVariableModification {
 	 * @param publicArguments	The list of public arguments. NOT USED.
 	 * @return	Returns an array of blocks where in the first index is the local variable and in the second index is null.
 	 */
-	static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory, List<CtVariable<?>> secretVariables,
+	static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory,
+										  List<CtVariable<?>> secretVariables,
 										  List<CtParameter<?>> publicArguments) {
 		logger.info("Found a local variable while traversing the method.");
 
@@ -67,7 +68,8 @@ class CtLocalVariableModification {
 	 * @return An array of statements where in the first index is the local variable received, and in the second index
 	 * is the modified version of the local variable.
 	 */
-	static CtStatement[] modifyLocalVariable(CtElement element, Factory factory, CtIfImpl initialStatement,
+	static CtStatement[] modifyLocalVariable(CtElement element, Factory factory,
+											 CtIfImpl initialStatement,
 											 Set<String> dependableVariables,
 											 List<CtVariable<?>> secretVariables) {
 		logger.info("Found a local variable to modify");
@@ -77,7 +79,35 @@ class CtLocalVariableModification {
 		boolean isDependableVariableInUse;
 
 		if (assignment instanceof CtInvocation) {
-			isDependableVariableInUse = isDependableVariableInUse(dependableVariables, (CtInvocation<?>) assignment);
+			CtInvocation<?> invocation = (CtInvocation<?>) assignment;
+			List<CtExpression<?>> invocationArguments = invocation.getArguments();
+			List<CtExpression<?>> newArguments = new ArrayList<>(invocationArguments.size());
+			boolean special = false;	//	TODO change name.
+			for (CtExpression<?> argument : invocationArguments) {
+				if (argument instanceof CtArrayRead) {
+					CtArrayRead arrayRead = (CtArrayRead<?>) argument;
+					CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
+					if (dependableVariables.contains(indexExpression.toString())) {
+						special = true;
+						CtArrayRead<?> newArrayRead = arrayRead.clone();
+						newArrayRead.setIndexExpression(factory.createCodeSnippetExpression("0"));
+						newArguments.add(newArrayRead);
+					} else
+						newArguments.add(argument);
+				}
+			}
+
+			if (special) {
+				CtInvocation<?> newInvocation = invocation.clone();
+				newInvocation.setArguments(newArguments);
+
+				CtLocalVariable newLocalVariable = localVariable.clone();
+				newLocalVariable.setAssignment(newInvocation);
+
+				return new CtStatement[]{localVariable, newLocalVariable};
+			}
+
+			isDependableVariableInUse = isDependableVariableInUse(dependableVariables, invocation);
 		} else if (assignment instanceof CtVariableReadImpl) {
 			isDependableVariableInUse = isDependableVariableInUse(dependableVariables, (CtVariableReadImpl<?>) assignment);
 		} else if (assignment instanceof CtBinaryOperator) {
@@ -119,7 +149,9 @@ class CtLocalVariableModification {
 				List<CtExpression<?>> arguments = invocationImpl.getArguments();
 
 				expressionList.add(target);
-				List<CtExpression<?>> collect = arguments.stream().filter(argument -> !(argument instanceof CtLiteralImpl)).collect(Collectors.toList());
+				List<CtExpression<?>> collect = arguments.stream()
+						.filter(argument -> !(argument instanceof CtLiteralImpl))
+						.collect(Collectors.toList());
 				expressionList.addAll(collect);
 			}
 		}
@@ -185,7 +217,8 @@ class CtLocalVariableModification {
 			dependableVariables.add(variableName);
 			logger.info("A new variable was added to the dependable variables.");
 			return null;
-		} else {logger.info("A new local variable will be created.");
+		} else {
+			logger.info("A new local variable will be created.");
 			String newVariable = NamingConvention.produceNewVariable();
 			ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(variableName, newVariable);
 

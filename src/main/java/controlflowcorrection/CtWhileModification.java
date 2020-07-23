@@ -38,17 +38,20 @@ class CtWhileModification {
 		updateStoppingCondition(factory, newWhileStatement);
 		CtBlock<?> whileBody = (CtBlock<?>) newWhileStatement.getBody();
 		List<CtStatement> bodyStatements = whileBody.getStatements();
-		CtStatementList[] bodyNewStatements = ControlFlowBasedVulnerabilityCorrection.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
+		CtStatementList[] bodyNewStatements = ControlFlowBasedVulnerabilityCorrection
+				.modifyStatements(factory, bodyStatements, initialStatement, dependableVariables, secretVariables);
 
 		CtStatementList newBodyOldWhile = bodyNewStatements[0];
 		CtStatementList newBodyNewWhile = bodyNewStatements[1];
 
 		CtBlockImpl<?> oldCtBlock = new CtBlockImpl<>();
-		newBodyOldWhile.forEach(ctStatement -> oldCtBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
+		// Needs clone to avoid error by modify node parent.
+		newBodyOldWhile.forEach(ctStatement -> oldCtBlock.addStatement(ctStatement.clone()));
 		whileStatement.setBody(oldCtBlock);
 
 		CtBlockImpl<?> newCtBlock = new CtBlockImpl<>();
-		newBodyNewWhile.forEach(ctStatement -> newCtBlock.addStatement(ctStatement.clone()));    // Needs clone to avoid error by modify node parent.
+		// Needs clone to avoid error by modify node parent.
+		newBodyNewWhile.forEach(ctStatement -> newCtBlock.addStatement(ctStatement.clone()));
 		newWhileStatement.setBody(newCtBlock);
 
 		return new CtWhile[]{whileStatement, newWhileStatement};

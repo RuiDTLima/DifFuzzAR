@@ -1,4 +1,5 @@
 public static boolean passwordsEqual_unsafe$Modification(String a, String b) {
+    boolean $2 = true;
     boolean $1 = true;
     boolean equal = true;
     boolean shmequal = true;
@@ -12,8 +13,10 @@ public static boolean passwordsEqual_unsafe$Modification(String a, String b) {
     int min = Math.min(aLen, bLen);
     for (int i = 0; i < min; i++) {
         if (a.charAt(i) != b.charAt(i)) {
+            $2 = true;
             equal = false;
         } else {
+            $1 = false;
             shmequal = true;
         }
     }

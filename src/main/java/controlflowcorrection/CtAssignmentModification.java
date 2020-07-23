@@ -129,14 +129,45 @@ class CtAssignmentModification {
 			}
 		}
 
-		if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(assigned.toString())) {
-			newAssigned = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(assigned.toString());
-			logger.info("The assigned is a variable already replaced.");
+		if (assigned instanceof CtArrayWrite) {
+			String arrayType = type.clone().getSimpleName();
+			type = type.setSimpleName(type.getSimpleName() + "[]");
+			CtArrayWrite<?> arrayWrite = (CtArrayWrite<?>) assigned;
+			CtExpression<?> target = arrayWrite.getTarget();
+			CtExpression<Integer> indexExpression = arrayWrite.getIndexExpression();
+
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(target.toString())) {
+				newAssigned = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(target.toString());
+				logger.info("The assigned is a variable already replaced.");
+			} else {
+				newAssigned = NamingConvention.produceNewVariable();
+				ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(target.toString(), newAssigned);
+				/*CtNewArray<?> newArray1 = factory.createNewArray();
+				CtCodeSnippetExpression<Integer> dimension = factory.createCodeSnippetExpression(String.format("%s.length", target));
+				List<CtExpression<Integer>> size = new ArrayList<>(1);
+				size.add(dimension);
+				//newArray1 = newArray1.addElement(dimension);
+				newArray1.setType(type);
+				newArray1.setDimensionExpressions(size);
+				//newArray1 = newArray1.addDimensionExpression(dimension);*/
+				CtCodeSnippetExpression<Object> newArray = factory.createCodeSnippetExpression(String.format("new %s[%d]", arrayType, 1));
+				ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type, newArray);
+				logger.info("The assigned is a variable to be replaced.");
+			}
+
+			if (dependableVariables.contains(indexExpression.toString())) {
+				newAssigned += "[0]";
+			}
 		} else {
-			newAssigned = NamingConvention.produceNewVariable();
-			ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(assigned.toString(), newAssigned);
-			ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type, null);
-			logger.info("The assigned is a variable to be replaced.");
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(assigned.toString())) {
+				newAssigned = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(assigned.toString());
+				logger.info("The assigned is a variable already replaced.");
+			} else {
+				newAssigned = NamingConvention.produceNewVariable();
+				ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(assigned.toString(), newAssigned);
+				ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type, null);
+				logger.info("The assigned is a variable to be replaced.");
+			}
 		}
 
 		CtLocalVariableReference variableReference = factory.createLocalVariableReference(type, newAssigned);

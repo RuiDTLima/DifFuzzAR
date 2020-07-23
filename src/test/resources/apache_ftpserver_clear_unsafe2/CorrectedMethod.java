@@ -32,6 +32,12 @@ public boolean isEqual_unsafe$Modification(String thisObject, Object otherObject
         }
     } else {
         int $3 = thisObject.length();
+        char[] $4 = thisObject.toCharArray();
+        int $5 = 0;
+        $2 = true;
+        while (($3--) != 0) {
+            $5++;
+        }
     }
     return $1;
 }
