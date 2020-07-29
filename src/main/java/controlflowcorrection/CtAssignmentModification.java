@@ -7,12 +7,15 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.factory.TypeFactory;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.*;
 import util.ModifyOperation;
 import util.NamingConvention;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -142,14 +145,6 @@ class CtAssignmentModification {
 			} else {
 				newAssigned = NamingConvention.produceNewVariable();
 				ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(target.toString(), newAssigned);
-				/*CtNewArray<?> newArray1 = factory.createNewArray();
-				CtCodeSnippetExpression<Integer> dimension = factory.createCodeSnippetExpression(String.format("%s.length", target));
-				List<CtExpression<Integer>> size = new ArrayList<>(1);
-				size.add(dimension);
-				//newArray1 = newArray1.addElement(dimension);
-				newArray1.setType(type);
-				newArray1.setDimensionExpressions(size);
-				//newArray1 = newArray1.addDimensionExpression(dimension);*/
 				CtCodeSnippetExpression<Object> newArray = factory.createCodeSnippetExpression(String.format("new %s[%d]", arrayType, 1));
 				ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type, newArray);
 				logger.info("The assigned is a variable to be replaced.");

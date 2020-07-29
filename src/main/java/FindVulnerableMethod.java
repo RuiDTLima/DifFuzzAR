@@ -68,7 +68,6 @@ public class FindVulnerableMethod {
             return null;
         }
 
-        // TODO
         // First Vulnerable method use case
         String firstVulnerableMethodName = vulnerableMethodUseCases.getFirstUseCaseMethodName();
         String[] firstVulnerableMethodArguments = vulnerableMethodUseCases.getFirstUseCaseArgumentsNames();

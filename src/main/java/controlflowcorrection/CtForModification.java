@@ -21,7 +21,7 @@ class CtForModification {
 	 * This method is invoked when a 'for' statement is found. Here if the condition uses a secret variable it will be
 	 * modified and the previous condition will be added to the 'for' body as an 'if' statement, while the existing body
 	 * will be added to the 'then' block of the 'if'. Afterwards the modified body of the 'for' will be analysed in search
-	 * of possible vulnerabilidades.
+	 * of possible vulnerabilities.
 	 * @param statement The statement representing the 'for'.
 	 * @param factory   The factory used to create new instructions.
 	 * @param secretVariables   A list of secret variables.
@@ -35,7 +35,7 @@ class CtForModification {
 		logger.info("Found a 'for' while traversing the method.");
 		CtFor forStatement = (CtFor) statement;
 		CtExpression<Boolean> forExpression = forStatement.getExpression();
-		CtExpression<Boolean> newCondition = forExpression.clone();
+		CtExpression<Boolean> oldCondition = forExpression.clone();
 		CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
 
 		CtBlock<?>[] returnBlocks = new CtBlock[2];
@@ -43,8 +43,8 @@ class CtForModification {
 		returnBlocks[1] = new CtBlockImpl<>();
 
 		boolean modified = handleStoppingCondition(factory, secretVariables, publicArguments, forStatement, forExpression);
-		if (modified) {
-			body = handleBody(newCondition, body);
+		if (modified && isIfNecessary(oldCondition, body)) {
+			body = handleBody(oldCondition, body);
 			forStatement.setBody(body);
 		}
 		CtBlock<?>[] returnedStatements = ControlFlowBasedVulnerabilityCorrection.traverseMethodBody(factory, body, secretVariables, publicArguments);
@@ -56,6 +56,17 @@ class CtForModification {
 		CtBlock<?> newBlock = returnedStatements[1];
 		newBlock.getStatements().forEach(element -> returnBlocks[1].addStatement(element.clone()));
 		return returnBlocks;
+	}
+
+	private static boolean isIfNecessary(CtExpression<Boolean> oldCondition, CtBlock<?> body) {
+		if (body.getStatements().size() == 1) {
+			if (body.getStatement(0) instanceof CtIf) {
+				CtIf existingIf = body.getStatement(0);
+				CtExpression<Boolean> condition = existingIf.getCondition();
+				return !condition.toString().contains(oldCondition.toString());
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -93,7 +104,7 @@ class CtForModification {
 			if (forExpression instanceof CtBinaryOperator) {
 				CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
 				List<CtStatement> statements = body.getStatements();
-				if (statements.size() == 1 && statements.get(0) instanceof CtIf) {
+				/*if (statements.size() == 1 && statements.get(0) instanceof CtIf) {
 					CtIf ctIf = (CtIf) statements.get(0);
 					List<CtBinaryOperator<?>> conditions = getConditions(ctIf.getCondition());
 					CtBinaryOperator<?> forCondition = (CtBinaryOperator<?>) forExpression;
@@ -105,7 +116,7 @@ class CtForModification {
 							condition.getRightHandOperand().toString().equals(rightHandOperand))) {
 						return false;
 					}
-				}
+				}*/
 				CtBinaryOperator<Boolean> forCondition = (CtBinaryOperator<Boolean>) forExpression;
 				CtBinaryOperator<Boolean> binaryOperator = modifyStoppingCondition(factory, secretVariables, publicArguments, forCondition.clone());
 				if (!CtBinaryOperatorModification.equals(forCondition, binaryOperator)) {

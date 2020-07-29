@@ -28,7 +28,8 @@ class CtWhileModification {
 	 * slight modifications in the body, while in the second index is a completely new version of the 'while' statement
 	 * with a new body and a modified stopping condition.
 	 */
-	static CtWhile[] modifyWhile(CtElement element, Factory factory, CtIfImpl initialStatement,
+	static CtWhile[] modifyWhile(CtElement element, Factory factory,
+								 CtIfImpl initialStatement,
 								 Set<String> dependableVariables,
 								 List<CtVariable<?>> secretVariables) {
 		logger.info("Found a 'while' statement to modify.");

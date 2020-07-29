@@ -116,6 +116,14 @@ public class TestDifFuzzAR {
                     new String[] {"firstEncryption", "true", "0", "storedPassword_invalid_secret2", "0", "firstEncryption.length()"}
                 },
                 {
+                    "apache_ftpserver_salted_unsafe/SaltedPasswordEncryptor.java",
+                    "SaltedPasswordEncryptor$Modification",
+                    "matches",
+                    "apache_ftpserver_salted_unsafe/CorrectedMethod.java",
+                    new String[] {"password_public", "storedPassword_secret1"},
+                    new String[] {"password_public", "storedPassword_secret2"}
+                },
+                {
                     "blazer_passwordEq_unsafe/User.java",
                     "User$Modification",
                     "passwordsEqual_unsafe",
@@ -239,6 +247,14 @@ public class TestDifFuzzAR {
      */
     private Object[][] correctVulnerableMethodWithMixedVulnerability() {
         return new Object[][] {
+                {
+                    "apache_ftpserver_salted_unsafe2/SaltedPasswordEncryptor.java",
+                    "SaltedPasswordEncryptor$Modification",
+                    "regionMatches",
+                    "apache_ftpserver_salted_unsafe2/CorrectedMethod.java",
+                    new String[] {"thisString1", "true", "0", "password_public", "0", "thisString1.length()"},
+                    new String[] {"thisString2", "true", "0", "password_public", "0", "thisString2.length()"}
+                },
                 {
                     "apache_ftpserver_clear_unsafe2/ClearTextPasswordEncryptor.java",
                     "ClearTextPasswordEncryptor$Modification",
