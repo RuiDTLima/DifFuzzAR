@@ -209,12 +209,9 @@ class CtIfModification {
 			CtFieldReadImpl<?> fieldRead = (CtFieldReadImpl<?>) handOperand;
 			CtExpression<?> target = fieldRead.getTarget();
 			evaluateOperand = target.toString();
-		} else if (handOperand instanceof CtArrayRead) {
-
 		} else if (!(handOperand instanceof CtLiteralImpl)) {
-				evaluateOperand = handOperand.toString();
+			evaluateOperand = handOperand.toString();
 		}
-
 
 		if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(evaluateOperand)) {
 			String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(evaluateOperand);

@@ -7,15 +7,12 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
-import spoon.reflect.factory.TypeFactory;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.*;
 import util.ModifyOperation;
 import util.NamingConvention;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -112,7 +109,31 @@ class CtAssignmentModification {
 		CtAssignment<?, ?> oldAssignment = assignmentImpl.clone();
 		CtTypeReference type = assignmentImpl.getType();
 		CtExpression<?> assigned = assignmentImpl.getAssigned();
-		CtExpression<?> assignment = assignmentImpl.getAssignment();
+		CtExpression assignment = assignmentImpl.getAssignment();
+
+		boolean usesSecret = ControlFlowBasedVulnerabilityCorrection.usesSecret(assignment.toString(), secretVariables);
+
+		if (usesSecret) {
+			CtVariable<?> secretVariable;
+
+			if (assigned instanceof CtArrayWrite) {
+				CtArrayWrite<?> arrayWrite = (CtArrayWrite<?>) assigned;
+				CtVariableReadImpl<?> localVariableReference = (CtVariableReadImpl<?>) arrayWrite.getTarget();
+				CtVariableReference<?> variable = localVariableReference.getVariable();
+				secretVariable = factory.createLocalVariable(variable.getType(), variable.getSimpleName(), null);
+				logger.info("The assignment is an array write where the target is now a secret variable");
+			} else if (assigned instanceof CtVariableWrite) {
+				CtVariableWrite<?> variable = (CtVariableWrite<?>) assigned;
+				//secretVariable = variable.getVariable().getDeclaration();
+				secretVariable = factory.createLocalVariable(variable.getType(), variable.toString(), assignment.clone());
+			} else {
+				secretVariable = (CtVariable<?>) assigned;
+				logger.info("The assignment is to a variable, that is now a secret variable.");
+			}
+
+			if (secretVariable != null)
+				secretVariables.add(secretVariable);
+		}
 
 		ModifyOperation<Factory, CtExpression<?>, Set<String>, CtExpression<?>> function = modifyOperation.get(assignment.getClass());
 

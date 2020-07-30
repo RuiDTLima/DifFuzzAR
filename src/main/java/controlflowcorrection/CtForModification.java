@@ -102,21 +102,6 @@ class CtForModification {
 		if (ControlFlowBasedVulnerabilityCorrection.usesSecret(forExpression.toString(), secretVariables)) {
 			logger.info("Cycle stopping condition depends on the secret.");
 			if (forExpression instanceof CtBinaryOperator) {
-				CtBlock<?> body = (CtBlock<?>) forStatement.getBody();
-				List<CtStatement> statements = body.getStatements();
-				/*if (statements.size() == 1 && statements.get(0) instanceof CtIf) {
-					CtIf ctIf = (CtIf) statements.get(0);
-					List<CtBinaryOperator<?>> conditions = getConditions(ctIf.getCondition());
-					CtBinaryOperator<?> forCondition = (CtBinaryOperator<?>) forExpression;
-					BinaryOperatorKind kind = forCondition.getKind();
-					String leftHandOperand = forCondition.getLeftHandOperand().toString();
-					String rightHandOperand = forCondition.getRightHandOperand().toString();
-					if (conditions.stream().anyMatch(condition -> condition.getKind().equals(kind) &&
-							condition.getLeftHandOperand().toString().equals(leftHandOperand) &&
-							condition.getRightHandOperand().toString().equals(rightHandOperand))) {
-						return false;
-					}
-				}*/
 				CtBinaryOperator<Boolean> forCondition = (CtBinaryOperator<Boolean>) forExpression;
 				CtBinaryOperator<Boolean> binaryOperator = modifyStoppingCondition(factory, secretVariables, publicArguments, forCondition.clone());
 				if (!CtBinaryOperatorModification.equals(forCondition, binaryOperator)) {
