@@ -137,7 +137,7 @@ public class TestDifFuzzAR {
                     "getPeople_unsafe",
                     "themis_dynatable_unsafe/CorrectedMethod.java",
                     new String[] {"startIndex", "maxCount"},
-                    new String[] {"startIndex", "maxCount"}
+                    new String[] {"startIndex2", "maxCount2"}
                 },
                 {
                     "themis_orientdb_unsafe/OSecurityManager.java",

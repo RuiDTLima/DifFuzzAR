@@ -11,7 +11,7 @@ import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.*;
-import util.ModifyOperation;
+import util.ModifyOperationFunction;
 import util.NamingConvention;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 class CtAssignmentModification {
 	private static final Logger logger = LoggerFactory.getLogger(CtAssignmentModification.class);
-	private static HashMap<Class<?>, ModifyOperation<Factory, CtExpression<?>, Set<String>, CtExpression<?>>> modifyOperation;
+	private static HashMap<Class<?>, ModifyOperationFunction<Factory, CtExpression<?>, Set<String>, CtExpression<?>>> modifyOperation;
 
 	static {
 		populateModifyOperation();
@@ -135,7 +135,7 @@ class CtAssignmentModification {
 				secretVariables.add(secretVariable);
 		}
 
-		ModifyOperation<Factory, CtExpression<?>, Set<String>, CtExpression<?>> function = modifyOperation.get(assignment.getClass());
+		ModifyOperationFunction<Factory, CtExpression<?>, Set<String>, CtExpression<?>> function = modifyOperation.get(assignment.getClass());
 
 		if (function != null) {
 			assignment = function.apply(factory, assignment, dependableVariables);

@@ -1,4 +1,5 @@
 import controlflowcorrection.ControlFlowBasedVulnerabilityCorrection;
+import earlyexitcorrection.EarlyExitVulnerabilityCorrection;
 import model.VulnerableMethodUses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -25,7 +25,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Apache FtpServer Md5 | Yes | Early-Exit (If dependant) | Yes | No |  |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - |  |
  | Apache FtpServer Salted | Yes | Mixed | Yes | No |  |
- | Apache FtpServer StringUtils | Yes | Mixed | Yes | No |  |
+ | Apache FtpServer StringUtils | Yes | Mixed | Yes | No | Yes |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | ? (No) |
  | Blazer K96 | Yes | Control-Flow | Yes | Yes | ? (No) |
@@ -33,7 +33,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Modpow2 | Yes | Unknown | No | - |  |
  | Blazer PasswordEq | Yes | Early-Exit (If dependant) | Yes | Yes | Yes |
- | Blazer Sanity | Yes | Mixed | Yes | Yes |  |
+ | Blazer Sanity | Yes | Mixed | Yes | Yes | Yes |
  | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | Yes |
  | Example PWCheck | Yes | Mixed | Yes | Yes | Yes |
@@ -100,7 +100,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |themis_tomcat_safe                        |             |            |                          |
  |themis_tomcat_unsafe                      |             |            |                          |
  |themis_tomcat_unsafe_corrected            |             |            |                          |
- |Control-Flow                              |#############|############|###############           |
+ |Control-Flow                              |#############|############|##########################|
  |blazer_array_safe                         |1,00         |1           |7,80                      |
  |blazer_array_unsafe                       |195,00       |195         |6,60                      |
  |blazer_array_unsafe_corrected             |1,00         |1           |7,00                      |
@@ -121,6 +121,12 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |blazer_unixlogin_unsafe_corrected         |2,00         |2           |380,20                    |
  |stac_ibasys_unsafe                        |1,00         |1           |1,00                      |
  |stac_ibasys_unsafe_corrected              |1,00         |1           |1,40                      |
-
- 
+ |Mixed                                     |#############|############|##########################|
+ |apache_ftpserver_stringutils_safe         |0            |0           |0                         |
+ |apache_ftpserver_stringutils_unsafe       |53,00        |53          |2,00                      |
+ |apache_ftpserver_stringutils_unsafe_corrected| 0        |0           |0                         |
+ |blazer_sanity_safe                        |0            |0           |0                         |
+ |blazer_sanity_unsafe                      |4248461576,60|4294966785  |66,60                     |
+ |blazer_sanity_unsafe_corrected            |0            |0           |0                         | 
+  
  #### This tool will be constantly updated. 
