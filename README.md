@@ -25,7 +25,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Apache FtpServer Md5 | Yes | Early-Exit (If dependant) | Yes | No |  |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - |  |
  | Apache FtpServer Salted | Yes | Mixed | Yes | No |  |
- | Apache FtpServer StringUtils | Yes | Mixed | Yes | No | Yes |
+ | Apache FtpServer StringUtils | Yes | Mixed | Yes | Yes | Yes |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | ? (No) |
  | Blazer K96 | Yes | Control-Flow | Yes | Yes | ? (No) |
@@ -39,18 +39,18 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Example PWCheck | Yes | Mixed | Yes | Yes | Yes |
  | GitHub AuthmReloaded | Yes | Mixed | Yes | Yes | ? |
  | STAC Crime | No | Unknown | No | - |  |
- | STAC Ibasys | No | Control-Flow | Yes | Yes | Yes |
+ | STAC Ibasys | No | Control-Flow | Yes | No | - |
  | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | ? (Yes) |
- | Themis Dynatable | No | Early-Exit (If dependant) | Yes | No |  |
+ | Themis Dynatable | No | Early-Exit (If dependant) | Yes | Yes |  |
  | Themis GWT Advanced Table | No | Unknown | No | - |  |
  | Themis Jdk | Yes | Mixed | Yes | Yes | Yes |
  | Themis Jetty | Yes | Mixed | Yes | Yes | ? |
  | Themis OACC | No | Mixed | Yes | Yes | Yes |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - |  |
- | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
+ | Themis OrientDb | Yes | Mixed | Yes | No | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes |  |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
- | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | No |  |
+ | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | Yes |  |
  | Themis Tomcat | Yes |  Mixed | No | - | - |
  | Themis TourPlanner | Yes | Special Early-Exit (Ignored) | No | - |  |
  
@@ -86,9 +86,9 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |themis_jdk_safe                           |1,00         |1           |19,60                     |
  |themis_jdk_unsafe                         |29386,00     |44352       |5,80                      |
  |themis_jdk_unsafe_corrected               |0            |0           |0                         |
- |themis_jetty_safe                         |9841,40      |16390       |7,60                      |
- |themis_jetty_unsafe                       |56,00        |69          |7,80                      |
- |themis_jetty_unsafe_corrected             |7542,60      |13957       |8,60                      |
+ |themis_jetty_safe                         |8168,00      |11910       |7,40                      |
+ |themis_jetty_unsafe                       |13037,40     |17064       |6,80                      |
+ |themis_jetty_unsafe_corrected             |8911,40      |13283       |7,80                      |
  |themis_oacc_unsafe                        |49,40        |50          |8,80                      |
  |themis_oacc_unsafe_corrected              |0            |0           |0                         |
  |themis_orientdb_safe                      |6,00         |6           |2,40                      |
@@ -120,7 +120,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |blazer_unixlogin_unsafe                   |3200000008,00|3200000008  |177,60                    |
  |blazer_unixlogin_unsafe_corrected         |2,00         |2           |380,20                    |
  |stac_ibasys_unsafe                        |1,00         |1           |1,00                      |
- |stac_ibasys_unsafe_corrected              |1,00         |1           |1,40                      |
+ |stac_ibasys_unsafe_corrected              |             |            |                          |
  |Mixed                                     |#############|############|##########################|
  |apache_ftpserver_stringutils_safe         |0            |0           |0                         |
  |apache_ftpserver_stringutils_unsafe       |53,00        |53          |2,00                      |
