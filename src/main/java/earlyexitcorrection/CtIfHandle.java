@@ -16,11 +16,25 @@ import java.util.Iterator;
 class CtIfHandle {
     private static final Logger logger = LoggerFactory.getLogger(CtIfHandle.class);
 
+    /**
+     * The method where an 'if' statement is handled. Here a new 'if' statement will be created with a modified version
+     * of the original 'if' statement's condition. The 'then' and 'else' blocks will be a modified version of the original
+     * 'if' statement 'then' and 'else' block.
+     * @param factory   The factory used to create new instructions.
+     * @param returnsIterator   An iterator over the returns of the method.
+     * @param returnVariable  The variable to be returned.
+     * @param returnElement The valid return expression returned in the final return statement. Can't be a binary operator
+     *                      nor an invocation that uses a variable.
+     * @param afterWhileReturn  Indicates if this 'for' statement happens after a 'while' statement.
+     * @param newBody   A block of statements that will become the new body of the vulnerable method.
+     * @param currentStatement  The 'if' statement under analysis.
+     * @return  Indicates if the next statement will be after a 'while' cycle.
+     */
     static boolean handleIf(Factory factory,
                             Iterator<CtCFlowBreak> returnsIterator,
-                            CtLocalVariable<?> variable,
+                            CtLocalVariable<?> returnVariable,
                             CtExpression<?> returnElement,
-                            boolean afterCycleReturn,
+                            boolean afterWhileReturn,
                             CtBlock<?> newBody,
                             CtStatement currentStatement) {
 
@@ -33,12 +47,12 @@ class CtIfHandle {
         newIfStatement.setCondition(ifStatement.getCondition());
         modifyIfCondition(factory, newIfStatement);
 
-        CtBlock<?> newThenBlock = EarlyExitVulnerabilityCorrection.handleStatements(factory, thenStatements, returnsIterator, variable, returnElement, afterCycleReturn);
+        CtBlock<?> newThenBlock = EarlyExitVulnerabilityCorrection.handleStatements(factory, thenStatements, returnsIterator, returnVariable, returnElement, afterWhileReturn);
         newIfStatement.setThenStatement(newThenBlock);
 
         if (elseStatements != null) {
             Iterator<CtStatement> iterator = elseStatements.iterator();
-            CtBlock<?> newElseBlock = EarlyExitVulnerabilityCorrection.handleStatements(factory, iterator, returnsIterator, variable, returnElement, afterCycleReturn);
+            CtBlock<?> newElseBlock = EarlyExitVulnerabilityCorrection.handleStatements(factory, iterator, returnsIterator, returnVariable, returnElement, afterWhileReturn);
             newIfStatement.setElseStatement(newElseBlock);
         }
 
@@ -48,7 +62,7 @@ class CtIfHandle {
 
     /**
      * Modifies the condition of the if. This is important when accessing an array, to avoid IndexOutOfBoundsException.
-     * Since it is likely that the condition to avoid the IndexOutOfBoundsException no longer work to avoid early-exit
+     * Since it is likely that the condition to avoid the IndexOutOfBoundsException no longer works to avoid early-exit
      * timing side-channel.
      * @param factory   The factory used to create code snippets to add.
      * @param ifStatement   The if statement to be modified.
@@ -81,6 +95,13 @@ class CtIfHandle {
         }
     }
 
+    /**
+     * The method where a new binary operator is created if the original one is a field read operation or an array read
+     * operation.
+     * @param factory   The factory used to create new instructions.
+     * @param handOperator  The original hand operator to be modified.
+     * @return  The new binary operator that might include a null or length check to a variable in 'handOperator'
+     */
     private static CtBinaryOperator<Boolean> createNewHand(Factory factory, CtExpression<?> handOperator) {
         logger.info("Modifying the the hand operator.");
         CtBinaryOperator<Boolean> newHand = null;
@@ -93,6 +114,12 @@ class CtIfHandle {
         return newHand;
     }
 
+    /**
+     * The method to check if the variable in 'anotherHandOperator' is being compared to null. If so, that variable
+     * name must be kept for future protection of an access to that variable.
+     * @param handOperator  One of the hand operators in analysis. The one expected to be null.
+     * @param anotherHandOperator   The other hand operator in analysis. The one expected to be compared to null.
+     */
     private static void verifyNullCheck(CtElement handOperator, CtElement anotherHandOperator) {
         logger.info("Verifying if a null check is done to the element {}", handOperator.prettyprint());
         if (handOperator instanceof CtBinaryOperator) {
@@ -106,7 +133,13 @@ class CtIfHandle {
         }
     }
 
-
+    /**
+     * The method where a length check will be added to protect the access of the array in 'arrayRead'. If needed a null
+     * check will also be added.
+     * @param factory   The factory used to create new instructions.
+     * @param arrayRead The array read to protect.
+     * @return  Returns a new binary operator to be used as protection for the access of the 'arrayRead'.
+     */
     private static CtBinaryOperator<Boolean> addLengthCheck(Factory factory, CtArrayReadImpl<?> arrayRead) {
         logger.info("Adding a length check to and array read.");
         CtExpression<?> target = arrayRead.getTarget();
