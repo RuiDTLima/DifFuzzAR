@@ -6,6 +6,7 @@ import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.code.CtBlockImpl;
 import spoon.support.reflect.code.CtIfImpl;
 import util.NamingConvention;
@@ -61,8 +62,8 @@ class CtWhileModification {
 	/**
 	 * The method where the stopping condition of the while statement is modified so that it does not use any variable
 	 * being replaced by a new one.
-	 * @param factory	The factory used to create new instructions.
-	 * @param whileStatement	The 'while' statement to have its condition altered.
+	 * @param factory    The factory used to create new instructions.
+	 * @param whileStatement    The 'while' statement to have its condition altered.
 	 */
 	private static void updateStoppingCondition(Factory factory, CtWhile whileStatement) {
 		CtExpression<Boolean> loopingExpression = whileStatement.getLoopingExpression();
@@ -81,8 +82,8 @@ class CtWhileModification {
 	/**
 	 * The method where an hand operator of the binary operator is modified to try and remove a possible source of
 	 * vulnerability.
-	 * @param factory	The factory used to create new instructions.
-	 * @param handOperand	The hand operator to be modified.
+	 * @param factory    The factory used to create new instructions.
+	 * @param handOperand    The hand operator to be modified.
 	 * @return	Returns the newly modified version to the hand operator received.
 	 */
 	private static CtExpression<?> handleHandOperand(Factory factory, CtExpression<?> handOperand) {

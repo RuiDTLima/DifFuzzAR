@@ -124,7 +124,6 @@ class CtAssignmentModification {
 				logger.info("The assignment is an array write where the target is now a secret variable");
 			} else if (assigned instanceof CtVariableWrite) {
 				CtVariableWrite<?> variable = (CtVariableWrite<?>) assigned;
-				//secretVariable = variable.getVariable().getDeclaration();
 				secretVariable = factory.createLocalVariable(variable.getType(), variable.toString(), assignment.clone());
 			} else {
 				secretVariable = (CtVariable<?>) assigned;
@@ -150,6 +149,18 @@ class CtAssignmentModification {
 
 				dependableVariables.add(assigned.toString());
 				return new CtStatement[]{oldAssignment, null};
+			}
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(condition)) {
+				String newCondition = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(condition);
+				conditional.setCondition(factory.createCodeSnippetExpression(newCondition));
+			}
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(thenExpression)) {
+				String newThenExpression = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(thenExpression);
+				conditional.setThenExpression(factory.createCodeSnippetExpression(newThenExpression));
+			}
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(elseExpression)) {
+				String newElseExpression = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(elseExpression);
+				conditional.setElseExpression(factory.createCodeSnippetExpression(newElseExpression));
 			}
 		}
 

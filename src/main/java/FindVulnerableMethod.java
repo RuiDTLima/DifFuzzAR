@@ -93,7 +93,6 @@ public class FindVulnerableMethod {
     /**
      * Travels trough the AST of the main method, trying to find any of the patterns that indicates the presence of the
      * vulnerable method like it's presented in <a href="https://github.com/RuiDTLima/DifFuzzAR/issues/1">GitHub issue #1</a>.
-     * TODO add the comments of examples where that pattern can be seen.
      *
      * @param iterator         An iterator of AST of the method where the vulnerable method is present.
      * @param safeMode         Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
