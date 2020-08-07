@@ -11,7 +11,7 @@ import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.support.reflect.code.*;
-import util.ModifyOperation;
+import util.ModifyOperationFunction;
 import util.NamingConvention;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 class CtAssignmentModification {
 	private static final Logger logger = LoggerFactory.getLogger(CtAssignmentModification.class);
-	private static HashMap<Class<?>, ModifyOperation<Factory, CtExpression<?>, Set<String>, CtExpression<?>>> modifyOperation;
+	private static HashMap<Class<?>, ModifyOperationFunction<Factory, CtExpression<?>, Set<String>, CtExpression<?>>> modifyOperation;
 
 	static {
 		populateModifyOperation();
@@ -109,9 +109,32 @@ class CtAssignmentModification {
 		CtAssignment<?, ?> oldAssignment = assignmentImpl.clone();
 		CtTypeReference type = assignmentImpl.getType();
 		CtExpression<?> assigned = assignmentImpl.getAssigned();
-		CtExpression<?> assignment = assignmentImpl.getAssignment();
+		CtExpression assignment = assignmentImpl.getAssignment();
 
-		ModifyOperation<Factory, CtExpression<?>, Set<String>, CtExpression<?>> function = modifyOperation.get(assignment.getClass());
+		boolean usesSecret = ControlFlowBasedVulnerabilityCorrection.usesSecret(assignment.toString(), secretVariables);
+
+		if (usesSecret) {
+			CtVariable<?> secretVariable;
+
+			if (assigned instanceof CtArrayWrite) {
+				CtArrayWrite<?> arrayWrite = (CtArrayWrite<?>) assigned;
+				CtVariableReadImpl<?> localVariableReference = (CtVariableReadImpl<?>) arrayWrite.getTarget();
+				CtVariableReference<?> variable = localVariableReference.getVariable();
+				secretVariable = factory.createLocalVariable(variable.getType(), variable.getSimpleName(), null);
+				logger.info("The assignment is an array write where the target is now a secret variable");
+			} else if (assigned instanceof CtVariableWrite) {
+				CtVariableWrite<?> variable = (CtVariableWrite<?>) assigned;
+				secretVariable = factory.createLocalVariable(variable.getType(), variable.toString(), assignment.clone());
+			} else {
+				secretVariable = (CtVariable<?>) assigned;
+				logger.info("The assignment is to a variable, that is now a secret variable.");
+			}
+
+			if (secretVariable != null)
+				secretVariables.add(secretVariable);
+		}
+
+		ModifyOperationFunction<Factory, CtExpression<?>, Set<String>, CtExpression<?>> function = modifyOperation.get(assignment.getClass());
 
 		if (function != null) {
 			assignment = function.apply(factory, assignment, dependableVariables);
@@ -126,6 +149,18 @@ class CtAssignmentModification {
 
 				dependableVariables.add(assigned.toString());
 				return new CtStatement[]{oldAssignment, null};
+			}
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(condition)) {
+				String newCondition = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(condition);
+				conditional.setCondition(factory.createCodeSnippetExpression(newCondition));
+			}
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(thenExpression)) {
+				String newThenExpression = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(thenExpression);
+				conditional.setThenExpression(factory.createCodeSnippetExpression(newThenExpression));
+			}
+			if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(elseExpression)) {
+				String newElseExpression = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(elseExpression);
+				conditional.setElseExpression(factory.createCodeSnippetExpression(newElseExpression));
 			}
 		}
 
@@ -142,14 +177,6 @@ class CtAssignmentModification {
 			} else {
 				newAssigned = NamingConvention.produceNewVariable();
 				ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement(target.toString(), newAssigned);
-				/*CtNewArray<?> newArray1 = factory.createNewArray();
-				CtCodeSnippetExpression<Integer> dimension = factory.createCodeSnippetExpression(String.format("%s.length", target));
-				List<CtExpression<Integer>> size = new ArrayList<>(1);
-				size.add(dimension);
-				//newArray1 = newArray1.addElement(dimension);
-				newArray1.setType(type);
-				newArray1.setDimensionExpressions(size);
-				//newArray1 = newArray1.addDimensionExpression(dimension);*/
 				CtCodeSnippetExpression<Object> newArray = factory.createCodeSnippetExpression(String.format("new %s[%d]", arrayType, 1));
 				ControlFlowBasedVulnerabilityCorrection.addToVariablesToAdd(newAssigned, type, newArray);
 				logger.info("The assigned is a variable to be replaced.");
