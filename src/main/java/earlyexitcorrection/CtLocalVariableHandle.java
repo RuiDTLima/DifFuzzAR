@@ -14,15 +14,14 @@ class CtLocalVariableHandle {
     /**
      * The method where a 'local variable' is handled. An attempt will be made to protect the local variable. If the
      * value being assigned is a binary operator then a condition will be added considering each hand of the assignment.
-     * @param factory   The factory used to create new instructions.
+     * @param factory           The factory used to create new instructions.
      * @param returnsIterator   An iterator over the returns of the method. NOT USED.
-     * @param returnVariable  The variable to be returned. NOT USED.
-     * @param returnElement The valid return expression returned in the final return statement. Can't be a binary operator
-     *                      nor an invocation that uses a variable. NOT USED.
-     * @param afterWhileReturn  Indicates if this 'for' statement happens after a 'while' statement.
-     * @param newBody   A block of statements that will become the new body of the vulnerable method.
+     * @param returnVariable    The variable to be returned. NOT USED.
+     * @param returnElement     The valid return expression returned in the final return statement. NOT USED.
+     * @param afterWhileReturn  Indicates if this local variable happens after a 'while' statement. NOT USED.
+     * @param newBody           A block of statements that will become the new body of the vulnerable method.
      * @param currentStatement  The 'local variable' statement under analysis.
-     * @return  Indicates if the next statement will be after a 'while' cycle.
+     * @return                  Indicates if the next statement will be after a 'while' cycle.
      */
     static boolean handleLocalVariable(Factory factory,
                                        Iterator<CtCFlowBreak> returnsIterator,
@@ -64,9 +63,9 @@ class CtLocalVariableHandle {
 
     /**
      * The method where a new condition is produced considering the operators received in 'newOperator'.
-     * @param factory   The factory used to create new instructions.
+     * @param factory       The factory used to create new instructions.
      * @param newOperator   The list of conditions to modify.
-     * @return  Returns a new condition that joins the negation of all conditions in 'newOperator'.
+     * @return              Returns a new condition that joins the negation of all conditions in 'newOperator'.
      */
     private static CtExpression<Boolean> getNewConditionOperator(Factory factory, List<CtExpression<Boolean>> newOperator) {
         logger.info("Producing a new condition operator.");
@@ -92,7 +91,7 @@ class CtLocalVariableHandle {
      * The method where the 'condition' is negated.
      * @param factory   The factory used to create new instructions.
      * @param condition The condition to be negated.
-     * @return  Returns the negated version fo 'condition'.
+     * @return          Returns the negated version fo 'condition'.
      */
     private static CtUnaryOperator<Boolean> negateCondition(Factory factory, CtExpression<Boolean> condition) {
         logger.info("Negating the condition {}.", condition.toString());
@@ -106,14 +105,16 @@ class CtLocalVariableHandle {
      * The method where the local variable creation is protected. If the type of the local variable is a primitive type
      * then the local variable will be replaced with an assignment inside the 'then' block of the newly created 'if'
      * statement.
-     * @param factory   The factory used to create new instructions.
-     * @param newBody   A block of statements that will become the new body of the vulnerable method.
+     * @param factory       The factory used to create new instructions.
+     * @param newBody       A block of statements that will become the new body of the vulnerable method.
      * @param localVariable The 'local variable' to be protected.
-     * @param condition The condition to be used in the 'if' statement protecting the variable.
-     * @return Returns the newly created 'if' statement.
+     * @param condition     The condition to be used in the 'if' statement protecting the variable.
+     * @return              Returns the newly created 'if' statement.
      */
-    private static CtIf protectLocalVariable(Factory factory, CtBlock<?> newBody,
-                                             CtLocalVariable<?> localVariable, CtExpression<Boolean> condition) {
+    private static CtIf protectLocalVariable(Factory factory,
+                                             CtBlock<?> newBody,
+                                             CtLocalVariable<?> localVariable,
+                                             CtExpression<Boolean> condition) {
         logger.info("Protecting a local variable.");
         CtLocalVariable<?> newLocalVariable = localVariable.clone();
         CtTypeReference declaringType = newLocalVariable.getType();

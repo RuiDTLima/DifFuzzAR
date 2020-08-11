@@ -14,11 +14,11 @@ class CtArrayModification {
 	/**
 	 * The modification of an array read operation. Here the target, meaning the name of the array or the index might be swapped
 	 * by a previously created variable.
-	 * @param factory   The factory used to create new instructions.
-	 * @param expression    The array read expression.
+	 * @param factory   			The factory used to create new instructions.
+	 * @param expression    		The array read expression.
 	 * @param dependableVariables   A set of the dependable variables. It has no use here, but is passed so that the function
 	 *                              pattern can be employed.
-	 * @return  Returns the new array read operation.
+	 * @return  					Returns the new array read operation.
 	 */
 	static CtArrayRead<?> modifyArrayOperation(Factory factory, CtExpression<?> expression, Set<String> dependableVariables) {
 		logger.info("Modifying an array operation.");
@@ -42,7 +42,6 @@ class CtArrayModification {
 			newArrayRead.setIndexExpression(newIndex);
 			logger.info("Changed the index of the array read.");
 		}
-
 		return newArrayRead;
 	}
 }

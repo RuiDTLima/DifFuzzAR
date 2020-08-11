@@ -12,10 +12,10 @@ class CtLoopHandle {
     /**
      * The method where a loop is updated so that its body is transferred to be part of a 'then' block of a new 'if'
      * statement that will be the 'for' statement.
-     * @param factory   The factory used to create new instructions.
-     * @param loop  The loop to be updated.
+     * @param factory           The factory used to create new instructions.
+     * @param loop              The loop to be updated.
      * @param stoppingCondition The stopping of the loop.
-     * @return  Returns a new loop with all changes implemented.
+     * @return                  Returns a new loop with all changes implemented.
      */
     static CtLoop updateLoop(Factory factory, CtLoop loop, CtExpression<Boolean> stoppingCondition) {
         logger.info("The loop is being updated.");
@@ -57,10 +57,10 @@ class CtLoopHandle {
     /**
      * The method where is obtained the expression to which 'handOperand' was compared to.
      * @param handOperand   The expression to obtain a previous comparison.
-     * @return  Returns the expression to which 'handOperand' was compared previously.
+     * @return              Returns the expression to which 'handOperand' was compared previously.
      */
     private static CtExpression<?> obtainCompared(CtExpression<?> handOperand) {
-        logger.info("Retrieving the variable used as a comparison with {}", handOperand.toString());
+        logger.info("Retrieving the variable used as a comparison with {}.", handOperand.toString());
         List<CtExpression<Boolean>> conditionsList = EarlyExitVulnerabilityCorrection.getProtectionOfVariable(handOperand.toString());
         CtExpression<?> otherVariable = null;
         for (CtExpression<Boolean> expression : conditionsList) {

@@ -71,12 +71,16 @@ public class ModificationOfCode {
     /**
      * Where the process of code modification takes place. Retrieves all the return statements of the vulnerableMethod and
      * modifies them one by one in order of appearance.
-     * @param factory   The factory used to create code snippets to add.
-     * @param vulnerableMethod  The method with the vulnerability that will be modified.
-     * @param model The model of the code. Represents the file with the code to be modified.
-     * @param vulnerableMethodUsesCases
+     * @param factory                   The factory used to create code snippets to add.
+     * @param vulnerableMethod          The method with the vulnerability that will be modified.
+     * @param model                     The model of the code. Represents the file with the code to be modified.
+     * @param vulnerableMethodUsesCases Contains all the information about the vulnerable method produced when analysing
+     *                                  the drivers.
      */
-    private static void modifyCode(Factory factory, CtMethod<?> vulnerableMethod, CtModel model, VulnerableMethodUses vulnerableMethodUsesCases) {
+    private static void modifyCode(Factory factory,
+                                   CtMethod<?> vulnerableMethod,
+                                   CtModel model,
+                                   VulnerableMethodUses vulnerableMethodUsesCases) {
         List<CtStatement> statementList = vulnerableMethod.getBody().getStatements();
 
         if (statementList.size() == 1 && !(statementList.get(0) instanceof CtIfImpl)) {

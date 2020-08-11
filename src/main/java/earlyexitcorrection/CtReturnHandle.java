@@ -7,7 +7,6 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.factory.Factory;
 import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtReturnImpl;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,15 +16,14 @@ class CtReturnHandle {
     /**
      * The method where a return is handled. Here the current return statement will be modified to become an assignment.
      * If it happens after a 'while' statement then the new assignment must be added before the 'while' and not after.
-     * @param factory   The factory used to create new instructions.
+     * @param factory           The factory used to create new instructions.
      * @param returnsIterator   An iterator over the returns of the method.
-     * @param returnVariable  The variable to be returned.
-     * @param returnElement The valid return expression returned in the final return statement. Can't be a binary operator
-     *                      nor an invocation that uses a variable.
-     * @param afterWhileReturn  Indicates if this 'for' statement happens after a 'while' statement.
-     * @param newBody   A block of statements that will become the new body of the vulnerable method.
+     * @param returnVariable    The variable to be returned.
+     * @param returnElement     The valid return expression returned in the final return statement.
+     * @param afterWhileReturn  Indicates if this 'return' statement happens after a 'while' statement.
+     * @param newBody           A block of statements that will become the new body of the vulnerable method.
      * @param currentStatement  The 'local variable' statement under analysis.
-     * @return Indicates if the next instructions happens after a 'while' cycle.
+     * @return                  Indicates if the next instructions happens after a 'while' cycle.
      */
     static boolean handleReturn(Factory factory,
                                 Iterator<CtCFlowBreak> returnsIterator,
@@ -54,13 +52,13 @@ class CtReturnHandle {
      * the last return or none of the previous.
      * @param factory   The factory used to create new instructions.
      * @param returnStatement   The return statement being modified.
-     * @param variable  The variable to be returned.
-     * @param returnElement The valid return expression returned in the final return statement. Can't be a binary operator
-     *                      nor an invocation that uses a variable.
-     * @param isLastReturn  Indicates if this is the last return statement of the method.
-     * @return  Returns the modified return statement.
+     * @param variable          The variable to be returned.
+     * @param returnElement     The valid return expression returned in the final return statement.
+     * @param isLastReturn      Indicates if this is the last return statement of the method.
+     * @return                  Returns the modified return statement.
      */
-    private static CtStatement handleReturnStatement(Factory factory, CtReturnImpl<?> returnStatement,
+    private static CtStatement handleReturnStatement(Factory factory,
+                                                     CtReturnImpl<?> returnStatement,
                                                      CtLocalVariable<?> variable,
                                                      CtExpression<?> returnElement,
                                                      boolean isLastReturn) {
@@ -79,7 +77,7 @@ class CtReturnHandle {
 
     /**
      * Saves the condition in 'ifCondition' as condition protecting each variable in that same condition.
-     * @param ifCondition   The condition to be saved as protecting variables.
+     * @param ifCondition       The condition to be saved as protecting variables.
      * @param currentCondition  The sub-condition under analysis in the moment.
      */
     private static void saveCondition(CtExpression<Boolean> ifCondition, CtExpression<?> currentCondition) {
@@ -103,11 +101,11 @@ class CtReturnHandle {
      * Modifies the final return of the vulnerable method. This needs to be different because it will not only eliminate
      * a return expression but modify it. If the last return was an expression and it wasn't already assigned to the return
      * variable it is now, and a new return expression is created.
-     * @param factory   The factory used to create new instructions.
+     * @param factory       The factory used to create new instructions.
      * @param returnElement The element to return.
-     * @param variable  The name of the variable to be returned.
+     * @param variable      The name of the variable to be returned.
      * @param returnImpl    The return instruction to be replaced.
-     * @return  Returns the new statement replacing the return.
+     * @return              Returns the new statement replacing the return.
      */
     private static CtStatement modifyLastReturn(Factory factory,
                                                 CtExpression<?> returnElement,
@@ -127,10 +125,10 @@ class CtReturnHandle {
 
     /**
      * Transform the return statement into an assignment of the to return variable.
-     * @param factory   The factory used to create new instructions.
-     * @param variable  The variable to be returned.
+     * @param factory       The factory used to create new instructions.
+     * @param variable      The variable to be returned.
      * @param returnImpl    The return statement to transform.
-     * @return  Returns the newly created assignment statement.
+     * @return              Returns the newly created assignment statement.
      */
     private static CtAssignment<?, ?> alterReturnExpression(Factory factory, CtLocalVariable variable, CtReturnImpl<?> returnImpl) {
         CtExpression<?> returnedValue = returnImpl.getReturnedExpression();

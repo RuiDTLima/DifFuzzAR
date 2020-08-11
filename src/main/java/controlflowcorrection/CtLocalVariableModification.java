@@ -23,13 +23,15 @@ class CtLocalVariableModification {
     /**
      * This method is invoked when a local variable is found before finding an 'if' or cycle that uses a secret. If this
      * variable is assigned any value that uses a secret variable then this variable is added to list of secret variables.
-     * @param statement	The local variable found.
-     * @param factory	The factory used to create new instructions. NOT USED.
+     * @param statement	        The local variable found.
+     * @param factory	        The factory used to create new instructions. NOT USED.
      * @param secretVariables	A list of the secret variables.
      * @param publicArguments	The list of public arguments. NOT USED.
-     * @return	Returns an array of blocks where in the first index is the local variable and in the second index is null.
+     * @return	                Returns an array of blocks where in the first index is the local variable and in the
+     *                          second index is null.
      */
-    static CtBlock<?>[] traverseStatement(CtStatement statement, Factory factory,
+    static CtBlock<?>[] traverseStatement(CtStatement statement,
+                                          Factory factory,
                                           List<CtVariable<?>> secretVariables,
                                           List<CtParameter<?>> publicArguments) {
         logger.info("Found a local variable while traversing the method.");
@@ -60,15 +62,16 @@ class CtLocalVariableModification {
     /**
      * The method where a local variable is modified. If the value assigned uses a dependable variable then this variable
      * is added to the set of dependable variables, otherwise a new variable is created to take its place.
-     * @param element	The local variable to be modified.
-     * @param factory	The factory used to create new instructions.
-     * @param initialStatement	The initial 'if' statement that started this modification. NOT USED.
+     * @param element	            The local variable to be modified.
+     * @param factory	            The factory used to create new instructions.
+     * @param initialStatement	    The initial 'if' statement that started this modification. NOT USED.
      * @param dependableVariables	A set containing the dependable variables.
-     * @param secretVariables	A list of secret variables. NOT USED.
-     * @return An array of statements where in the first index is the local variable received, and in the second index
-     * is the modified version of the local variable.
+     * @param secretVariables	    A list of secret variables. NOT USED.
+     * @return                      An array of statements where in the first index is the local variable received,
+     *                              and in the second index is the modified version of the local variable.
      */
-    static CtStatement[] modifyLocalVariable(CtElement element, Factory factory,
+    static CtStatement[] modifyLocalVariable(CtElement element,
+                                             Factory factory,
                                              CtIfImpl initialStatement,
                                              Set<String> dependableVariables,
                                              List<CtVariable<?>> secretVariables) {
@@ -82,13 +85,13 @@ class CtLocalVariableModification {
             CtInvocation<?> invocation = (CtInvocation<?>) assignment;
             List<CtExpression<?>> invocationArguments = invocation.getArguments();
             List<CtExpression<?>> newArguments = new ArrayList<>(invocationArguments.size());
-            boolean special = false;	//	TODO change name.
+            boolean usesDependable = false;	//	TODO change name.
             for (CtExpression<?> argument : invocationArguments) {
                 if (argument instanceof CtArrayRead) {
                     CtArrayRead arrayRead = (CtArrayRead<?>) argument;
                     CtExpression<Integer> indexExpression = arrayRead.getIndexExpression();
                     if (dependableVariables.contains(indexExpression.toString())) {
-                        special = true;
+                        usesDependable = true;
                         CtArrayRead<?> newArrayRead = arrayRead.clone();
                         newArrayRead.setIndexExpression(factory.createCodeSnippetExpression("0"));
                         newArguments.add(newArrayRead);
@@ -97,7 +100,7 @@ class CtLocalVariableModification {
                 }
             }
 
-            if (special) {
+            if (usesDependable) {
                 CtInvocation<?> newInvocation = invocation.clone();
                 newInvocation.setArguments(newArguments);
 
@@ -124,8 +127,8 @@ class CtLocalVariableModification {
     /**
      * The method to check if in this invocation a dependable variable is used. Either in the arguments or in the target.
      * @param dependableVariables	A set containing the dependable variables.
-     * @param invocation	The invocation to check if it uses a dependable variable
-     * @return	True if it uses it uses a dependable variables, false otherwise.
+     * @param invocation	        The invocation to check if it uses a dependable variable
+     * @return	                    True if it uses it uses a dependable variables, false otherwise.
      */
     private static boolean isDependableVariableInUse(Set<String> dependableVariables, CtInvocation<?> invocation) {
         logger.info("Assignment is an invocation.");
@@ -158,27 +161,31 @@ class CtLocalVariableModification {
 
         expressionList.add(invocation.getTarget());
 
-        return expressionList.stream()
-                .anyMatch(ctExpression -> dependableVariables.stream()
+        return expressionList
+                .stream()
+                .anyMatch(ctExpression -> dependableVariables
+                        .stream()
                         .anyMatch(dependableVariable -> dependableVariable.equals(ctExpression.toString())));
     }
 
     /**
      * The method to check if in this variable read a dependable variable is used.
      * @param dependableVariables	A set containing the dependable variables.
-     * @param variableRead	The variable read to be checked.
-     * @return	True if it uses it uses a dependable variables, false otherwise.
+     * @param variableRead	        The variable read to be checked.
+     * @return	                    True if it uses it uses a dependable variables, false otherwise.
      */
     private static boolean isDependableVariableInUse(Set<String> dependableVariables, CtVariableReadImpl<?> variableRead) {
         String variable = variableRead.getVariable().toString();
-        return dependableVariables.stream().anyMatch(dependableVariable -> dependableVariable.equals(variable));
+        return dependableVariables
+                .stream()
+                .anyMatch(dependableVariable -> dependableVariable.equals(variable));
     }
 
     /**
      * The method to check if in this binary operator a dependable variable is used.
      * @param dependableVariables	A set containing the dependable variables.
-     * @param binaryOperator	The binary operator to be checked.
-     * @return	True if it uses it uses a dependable variables, false otherwise.
+     * @param binaryOperator	    The binary operator to be checked.
+     * @return	                    True if it uses it uses a dependable variables, false otherwise.
      */
     private static boolean isDependableVariableInUse(Set<String> dependableVariables, CtBinaryOperator<?> binaryOperator) {
         boolean condition = false;
@@ -202,14 +209,16 @@ class CtLocalVariableModification {
     /**
      * The method where the statement is modified if a dependable variable isn't used, otherwise it will add the local
      * variable to the set of dependable variables.
-     * @param factory	The factory used to create new instructions.
-     * @param dependableVariables	A set containing the dependable variables.
-     * @param localVariable	The local variable to modify.
+     * @param factory	                The factory used to create new instructions.
+     * @param dependableVariables	    A set containing the dependable variables.
+     * @param localVariable	            The local variable to modify.
      * @param usesDependableVariable	The boolean to indicate if the local variable is assigned a value that uses a
      *                                  dependable variable.
-     * @return	The new modified local variable or null if it is assigned a value that uses a dependable variable.
+     * @return	                        The new modified local variable or null if it is assigned a value that uses a
+     *                                  dependable variable.
      */
-    private static CtLocalVariable<?> modifyStatement(Factory factory, Set<String> dependableVariables,
+    private static CtLocalVariable<?> modifyStatement(Factory factory,
+                                                      Set<String> dependableVariables,
                                                       CtLocalVariable<?> localVariable,
                                                       boolean usesDependableVariable) {
         String variableName = localVariable.getSimpleName();

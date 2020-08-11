@@ -48,7 +48,8 @@ public class FindVulnerableMethod {
         boolean safeMode = false;
 
         List<CtField<?>> fieldList = model.filterChildren(new TypeFilter<>(CtField.class)).list();
-        Optional<CtField<Boolean>> optionalSafeModeField = fieldList.stream()
+        Optional<CtField<Boolean>> optionalSafeModeField = fieldList
+                .stream()
                 .filter(field -> field.isFinal() && field.getType().getSimpleName().equals("boolean"))
                 .findAny()
                 .map(ctField -> (CtField<Boolean>) ctField);
@@ -94,15 +95,17 @@ public class FindVulnerableMethod {
      * Travels trough the AST of the main method, trying to find any of the patterns that indicates the presence of the
      * vulnerable method like it's presented in <a href="https://github.com/RuiDTLima/DifFuzzAR/issues/1">GitHub issue #1</a>.
      *
-     * @param iterator         An iterator of AST of the method where the vulnerable method is present.
-     * @param safeMode         Indicates if in this method it is used the safe or unsafe variations of the vulnerable methods.
-     * @param safeModeVariable The name of the variable that indicates if the safeMode is in action.
-     * @param typedElementList All the typed elements in the class, here will be the initialization of the variable
-     *                         that represents the method.
-     * @param variables All the variables in the method
-     * @return The vulnerable method.
+     * @param iterator          An iterator of AST of the method where the vulnerable method is present.
+     * @param safeMode          Indicates if in this method it is used the safe or unsafe variations of the vulnerable
+     *                          methods.
+     * @param safeModeVariable  The name of the variable that indicates if the safeMode is in action.
+     * @param typedElementList  All the typed elements in the class, here will be the initialization of the variable
+     *                          that represents the method.
+     * @param variables         All the variables in the method
+     * @return                  The vulnerable method.
      */
-    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtStatement> iterator, boolean safeMode,
+    private static VulnerableMethodUses discoverMethodIdentification(Iterator<CtStatement> iterator,
+                                                                     boolean safeMode,
                                                                      String safeModeVariable,
                                                                      List<CtTypedElement<?>> typedElementList,
                                                                      List<CtVariable<?>> variables) {
@@ -145,7 +148,8 @@ public class FindVulnerableMethod {
             } else if (element instanceof CtTry) {
                 CtTry tryElement = (CtTry) element;
                 List<CtStatement> statements = tryElement.getBody().getStatements();
-                VulnerableMethodUses returnedVulnerableMethodUses = discoverMethodIdentification(statements.iterator(), safeMode, safeModeVariable, typedElementList, variables);
+                Iterator<CtStatement> iteratorStatement = statements.iterator();
+                VulnerableMethodUses returnedVulnerableMethodUses = discoverMethodIdentification(iteratorStatement, safeMode, safeModeVariable, typedElementList, variables);
                 vulnerableMethodUses.addFromOtherVulnerableMethodUses(returnedVulnerableMethodUses);
                 if (vulnerableMethodUses.isValid()) {
                     return vulnerableMethodUses;
@@ -162,8 +166,8 @@ public class FindVulnerableMethod {
      * Validates the instruction after a MemClear. That instruction can't be an assignment of a value to a variable other
      * than a method call, except for a object creation.
      *
-     * @param element  The element believed to be the invocation of the vulnerable method.
-     * @return  true if the line represents the invocation of the vulnerable method, false otherwise.
+     * @param element   The element believed to be the invocation of the vulnerable method.
+     * @return          Returns true if the line represents the invocation of the vulnerable method. False otherwise.
      */
     private static boolean validate(CtElement element) {
         if (!afterMemClear) {
@@ -180,14 +184,15 @@ public class FindVulnerableMethod {
     /**
      * Retrieves from the CtElement all the relevant information regarding the found vulnerable method. Retrieves the
      * vulnerable method's name, class name, and the arguments list.
-     * @param typedElementList  All the typed elements in the class, here will be the initialization of the variable
-     *                          that represents the method.
+     * @param typedElementList      All the typed elements in the class, here will be the initialization of the variable
+     *                              that represents the method.
      * @param vulnerableMethodUses  The object that contains all necessary information about the two invocations of the
      *                              vulnerable method.
-     * @param element   The element that represents the invocation of the vulnerable method.
-     * @param variables All the variables in the method
+     * @param element               The element that represents the invocation of the vulnerable method.
+     * @param variables             All the variables in the method
      */
-    private static void setVulnerableMethodUsesCase(List<CtTypedElement<?>> typedElementList, VulnerableMethodUses vulnerableMethodUses,
+    private static void setVulnerableMethodUsesCase(List<CtTypedElement<?>> typedElementList,
+                                                    VulnerableMethodUses vulnerableMethodUses,
                                                     CtElement element,
                                                     List<CtVariable<?>> variables) {
         CtInvocation<?> invocation;
@@ -222,20 +227,22 @@ public class FindVulnerableMethod {
      * Obtains the name of the class where the vulnerable method is defined.
      * @param typedElementList  All the typed elements in the class, here will be the initialization of the variable
      *                          that represents the method.
-     * @param variables All the variables in the method
-     * @param invocation    The variable containing the invocation of the vulnerable method.
-     * @return An array with two elements where the first element is the package name where the class with the vulnerable
-     * method is, and the second element the name of the class
+     * @param variables         All the variables in the method
+     * @param invocation        The variable containing the invocation of the vulnerable method.
+     * @return                  An array with two elements where the first element is the package name where the class
+     *                          with the vulnerable method is, and the second element the name of the class
      */
-    private static String[] getFullClassName(List<CtTypedElement<?>> typedElementList, List<CtVariable<?>> variables,
+    private static String[] getFullClassName(List<CtTypedElement<?>> typedElementList,
+                                             List<CtVariable<?>> variables,
                                              CtInvocation<?> invocation) {
 
         String sourceOfMethod = invocation.getTarget().toString();
         String packageName = "";
         String className = sourceOfMethod;
         if (variables.stream().anyMatch(variable -> variable.getSimpleName().equals(sourceOfMethod))) {
-            Optional<CtTypedElement<?>> objectCreation = typedElementList.stream().
-                    filter(it -> !it.toString().contains("main") &&
+            Optional<CtTypedElement<?>> objectCreation = typedElementList
+                    .stream()
+                    .filter(it -> !it.toString().contains("main") &&
                             it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*") &&
                             it.toString().contains("="))
                     .findFirst();
