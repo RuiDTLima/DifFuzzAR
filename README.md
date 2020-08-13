@@ -44,7 +44,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis Dynatable | No | Early-Exit (If dependant) | Yes | Yes | No |
  | Themis GWT Advanced Table | No | Unknown | No | - |  |
  | Themis Jdk | Yes | Mixed | Yes | Yes | Yes |
- | Themis Jetty | Yes | Mixed | Yes | Yes | ? |
+ | Themis Jetty | Yes | Mixed | Yes | Yes | Yes |
  | Themis OACC | No | Mixed | Yes | Yes | Yes |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - |  |
  | Themis OrientDb | Yes | Mixed | Yes | Yes |  |
@@ -86,9 +86,9 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |themis_jdk_safe                               |1,00         |1           |19,60                     |
  |themis_jdk_unsafe                             |29386,00     |44352       |5,80                      |
  |themis_jdk_unsafe_corrected                   |0            |0           |0                         |
- |themis_jetty_safe                             |8168,00      |11910       |7,40                      |
- |themis_jetty_unsafe                           |13037,40     |17064       |6,80                      |
- |themis_jetty_unsafe_corrected                 |8911,40      |13283       |7,80                      |
+ |themis_jetty_safe                             |6382,60      |17277       |8,80                      |
+ |themis_jetty_unsafe                           |14684,40     |22320       |6,80                      |
+ |themis_jetty_unsafe_corrected                 |0            |0           |0                         |
  |themis_oacc_unsafe                            |49,40        |50          |8,80                      |
  |themis_oacc_unsafe_corrected                  |0            |0           |0                         |
  |themis_orientdb_safe                          |6,00         |6           |2,40                      |
