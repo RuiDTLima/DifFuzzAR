@@ -17,7 +17,7 @@ public class FindVulnerableMethod {
     private static final Logger logger = LoggerFactory.getLogger(FindVulnerableMethod.class);
     private static boolean afterMemClear = false;
 
-    public static VulnerableMethodUses processDriver(String path) {
+    public static Optional<VulnerableMethodUses> processDriver(String path) {
         Launcher launcher = Setup.setupLauncher(path, "");
         CtModel model = launcher.buildModel();
 
@@ -27,7 +27,7 @@ public class FindVulnerableMethod {
 
         if (methodList.isEmpty()) {
             logger.warn("The file should contain at least the main method, and it contains no methods.");
-            return null;
+            return Optional.empty();
         }
 
         CtMethod<?> mainMethod = null;
@@ -41,7 +41,7 @@ public class FindVulnerableMethod {
 
         if (mainMethod == null) {
             logger.warn("The Driver provided did not contain a main method.");
-            return null;
+            return Optional.empty();
         }
 
         String safeModeVariable = null;
@@ -66,7 +66,7 @@ public class FindVulnerableMethod {
 
         if (!vulnerableMethodUseCases.isValid()) {
             logger.warn("The tool could not discover the vulnerable method.");
-            return null;
+            return Optional.empty();
         }
 
         // First Vulnerable method use case
@@ -84,11 +84,11 @@ public class FindVulnerableMethod {
 
         if (idx == firstVulnerableMethodArguments.length) {
             logger.warn(String.format("The vulnerable method %s is used in the Driver always with the same parameters.", firstVulnerableMethodName));
-            return null;
+            return Optional.empty();
         }
 
         logger.info(String.format("The private parameter in the vulnerable method %s is in position %d", firstVulnerableMethodName, idx));
-        return  vulnerableMethodUseCases;
+        return Optional.of(vulnerableMethodUseCases);
     }
 
     /**
@@ -177,8 +177,9 @@ public class FindVulnerableMethod {
             CtLocalVariable<?> localVariable = (CtLocalVariable<?>) element;
             CtExpression<?> defaultExpression = localVariable.getDefaultExpression();
             return defaultExpression instanceof CtInvocation;
-        } else
-            return element instanceof CtInvocation;
+        }
+
+        return element instanceof CtInvocation;
     }
 
     /**
@@ -256,7 +257,7 @@ public class FindVulnerableMethod {
                     packageName = targetType.getPackage().getSimpleName();
                     className = targetType.getSimpleName();
                 } else {
-                    packageName = invocation.getTarget().getType().getPackage().getSimpleName().replace(".", "\\");;
+                    packageName = invocation.getTarget().getType().getPackage().getSimpleName().replace(".", "\\");
                     className = target.prettyprint();
                 }
             } else {

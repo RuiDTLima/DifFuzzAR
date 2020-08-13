@@ -25,7 +25,7 @@ public class Driver {
     private static final int USERNAME_MAX_LENGTH = 5; // # of characters
     private static final int PASSWORD_MAX_LENGTH = 20;
 
-    private static final boolean RUN_UNSAFE_VERSION = true; // true=unsafe, false=safe version
+    private static final boolean RUN_UNSAFE_VERSION = false; // true=unsafe, false=safe version
 
     public static void main(String[] args) {
 
@@ -153,13 +153,15 @@ public class Driver {
             h.close();
         }
 
+        // Added
+        UsernamePasswordCredentials cred2 = new UsernamePasswordCredentials(user, pw, ""); // public info
         Mem.clear();
         boolean authenticated2 = false;
         try {
             if (RUN_UNSAFE_VERSION) {
-                dbAuth.validate_unsafe(cred);
+                dbAuth.validate_unsafe(cred2);
             } else {
-                dbAuth.validate_safe(cred);
+                dbAuth.validate_safe(cred2);
             }
             if (cred2.getUserProfile() != null) {
                 authenticated2 = true;

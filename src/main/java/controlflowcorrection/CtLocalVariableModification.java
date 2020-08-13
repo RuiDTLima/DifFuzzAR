@@ -85,7 +85,7 @@ class CtLocalVariableModification {
             CtInvocation<?> invocation = (CtInvocation<?>) assignment;
             List<CtExpression<?>> invocationArguments = invocation.getArguments();
             List<CtExpression<?>> newArguments = new ArrayList<>(invocationArguments.size());
-            boolean usesDependable = false;	//	TODO change name.
+            boolean usesDependable = false;
             for (CtExpression<?> argument : invocationArguments) {
                 if (argument instanceof CtArrayRead) {
                     CtArrayRead arrayRead = (CtArrayRead<?>) argument;

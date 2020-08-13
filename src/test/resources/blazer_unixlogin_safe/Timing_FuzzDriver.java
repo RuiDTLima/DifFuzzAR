@@ -100,20 +100,18 @@ public class Timing_FuzzDriver {
         System.out.println("username_secret2=" + username_secret2);
         System.out.println("password_secret2=" + password_secret2);
 
-        //Timing.resetMap(username_secret1, password_secret1);
-        Timing.resetMap(username, password);    // MODIFIED
+        Timing.resetMap(username_secret1, password_secret1);
         Mem.clear();
-        //boolean answer1 = Timing.login_safe(username, password);
-        boolean answer1 = Timing.login_safe(username_secret1, password_secret1);  // MODIFIED
+        boolean answer1 = Timing.login_safe(username, password);
+        boolean answer1 = Timing.login_safe(username_secret1, password_secret1);
         long cost1 = Mem.instrCost;
         System.out.println("Answer1: " + answer1);
         System.out.println("cost1=" + cost1);
 
-        //Timing.resetMap(username_secret2, password_secret2);
-        Timing.resetMap(username, password);    // MODIFIED
+        Timing.resetMap(username_secret2, password_secret2);
         Mem.clear();
-        //boolean answer2 = Timing.login_safe(username, password);
-        boolean answer2 = Timing.login_safe(username_secret2, password_secret2);  // MODIFIED
+        boolean answer2 = Timing.login_safe(username, password);
+
         long cost2 = Mem.instrCost;
         System.out.println("Answer2: " + answer2);
         System.out.println("cost2=" + cost2);

@@ -10,7 +10,6 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.TypeFilter;
 import util.Setup;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,70 +20,328 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import static org.testng.Assert.fail;
 
 public class TestDifFuzzAR {
     @DataProvider
+    /*
+        String classpath,
+        String expectedClassName,
+        String expectedMethodName
+     */
     private Object[][] findVulnerableMethodAndClass() {
         return new Object[][] {
-                {"apache_ftpserver_clear_safe/Driver_Clear.java", "ClearTextPasswordEncryptor", "matches"},
-                {"apache_ftpserver_clear_unsafe/Driver_Clear.java", "ClearTextPasswordEncryptor", "isEqual_unsafe"},
-                {"apache_ftpserver_md5_safe/Driver_MD5.java", "Md5PasswordEncryptor", "matches"},
-                {"apache_ftpserver_md5_unsafe/Driver_MD5.java", "Md5PasswordEncryptor", "matches"},
-                {"apache_ftpserver_salted_encrypt_unsafe/Driver_Salted_Encrypt.java", "SaltedPasswordEncryptor", "encrypt"},
-                {"apache_ftpserver_salted_safe/Driver_Salted.java", "SaltedPasswordEncryptor", "matches"},
-                {"apache_ftpserver_salted_unsafe/Driver_Salted.java", "SaltedPasswordEncryptor", "matches"},
-                {"apache_ftpserver_stringutils_safe/Driver_StringUtilsPad.java", "StringUtils", "pad_unsafe"},
-                {"apache_ftpserver_stringutils_unsafe/Driver_StringUtilsPad.java", "StringUtils", "pad_unsafe"},
-                {"blazer_array_safe/MoreSanity_Array_FuzzDriver.java", "MoreSanity", "array_safe"},
-                {"blazer_array_unsafe/MoreSanity_Array_FuzzDriver.java", "MoreSanity", "array_unsafe"},
-                {"blazer_gpt14_safe/GPT14_FuzzDriver.java", "GPT14", "modular_exponentiation_safe"},
-                {"blazer_gpt14_unsafe/GPT14_FuzzDriver.java", "GPT14", "modular_exponentiation_inline_unsafe"},
-                {"blazer_k96_safe/K96_FuzzDriver.java", "K96", "modular_exponentiation_safe"},
-                {"blazer_k96_unsafe/K96_FuzzDriver.java", "K96", "modular_exponentiation_unsafe"},
-                {"blazer_loopandbranch_safe/MoreSanity_LoopAndBranch_FuzzDriver.java", "MoreSanity", "loopAndbranch_safe"},
-                {"blazer_loopandbranch_unsafe/MoreSanity_LoopAndBranch_FuzzDriver.java", "MoreSanity", "loopAndbranch_unsafe"},
-                {"blazer_modpow1_safe/ModPow1_FuzzDriver.java", "ModPow1", "modPow1_safe"},
-                {"blazer_modpow1_unsafe/ModPow1_FuzzDriver.java", "ModPow1", "modPow1_unsafe"},
-                {"blazer_modpow2_safe/ModPow2_FuzzDriver.java", "ModPow2", "modPow2_safe"},
-                {"blazer_modpow2_unsafe/ModPow2_FuzzDriver.java", "ModPow2", "modPow2_unsafe"},
-                {"blazer_passwordEq_safe/User_FuzzDriver.java", "User", "passwordsEqual_safe"},
-                {"blazer_passwordEq_unsafe/User_FuzzDriver.java", "User", "passwordsEqual_unsafe"},
-                {"blazer_sanity_safe/Sanity_FuzzDriver.java", "Sanity", "sanity_safe"},
-                {"blazer_sanity_unsafe/Sanity_FuzzDriver.java", "Sanity", "sanity_unsafe"},
-                {"blazer_straightline_safe/Sanity_FuzzDriver.java", "Sanity", "straightline_safe"},
-                {"blazer_straightline_unsafe/Sanity_FuzzDriver.java", "Sanity", "straightline_unsafe"},
-                {"blazer_unixlogin_safe/Timing_FuzzDriver.java", "Timing", "login_safe"},
-                {"blazer_unixlogin_unsafe/Timing_FuzzDriver.java", "Timing", "login_unsafe"},
-                {"example_PWCheck_safe/Driver.java", "PWCheck", "pwcheck3_safe"},
-                {"example_PWCheck_unsafe/Driver.java", "PWCheck", "pwcheck1_unsafe"},
-                {"github_authmreloaded_safe/Driver.java", "RoyalAuth", "isEqual_unsafe"},
-                {"github_authmreloaded_unsafe/Driver.java", "RoyalAuth", "isEqual_unsafe"},
-                {"stac_crime_unsafe/CRIME_Driver.java", "LZ77T", "compress"},
-                {"stac_ibasys_unsafe/ImageMatcher_FuzzDriver.java", "ImageMatcherWorker", "test"},
-                {"themis_boot-stateless-auth_safe/Driver.java", "TokenHandler", "parseUserFromToken_unsafe"},
-                {"themis_boot-stateless-auth_unsafe/Driver.java", "TokenHandler", "parseUserFromToken_unsafe"},
-                {"themis_dynatable_unsafe/Driver.java", "SchoolCalendarServiceImpl", "getPeople"},
-                {"themis_GWT_advanced_table_unsafe/Driver.java", "UsersTableModelServiceImpl", "getRows"},
-                {"themis_jdk_safe/MessageDigest_FuzzDriver.java", "MessageDigest", "isEqual_safe"},
-                {"themis_jdk_unsafe/MessageDigest_FuzzDriver.java", "MessageDigest", "isEqual_unsafe"},
-                {"themis_jetty_safe/Credential_FuzzDriver.java", "Credential", "stringEquals_safe"},
-                {"themis_jetty_unsafe/Credential_FuzzDriver.java", "Credential", "stringEquals_original"},
-                {"themis_oacc_unsafe/Driver.java", "PasswordCredentials", "equals"},
-                {"themis_oacc_unsafe2/Driver.java", "PasswordCredentials", "ArraysIsEquals"},
-                {"themis_openmrs-core_unsafe/Driver.java", "Security", "hashMatches"},
-                {"themis_orientdb_safe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "checkPassword_safe"},
-                {"themis_orientdb_unsafe/OSecurityManager_FuzzDriver.java", "OSecurityManager", "equals_inline"},
-                {"themis_pac4j_safe/Driver.java", "DbAuthenticator", "validate_safe"},
-                {"themis_pac4j_unsafe/Driver.java", "DbAuthenticator", "validate_unsafe"},
-                {"themis_pac4j_unsafe_ext/Driver.java", "DbAuthenticator", "validate_unsafe"},
-                {"themis_picketbox_safe/UsernamePasswordLoginModule_FuzzDriver.java", "UsernamePasswordLoginModule", "validatePassword_safe"},
-                {"themis_picketbox_unsafe/UsernamePasswordLoginModule_FuzzDriver.java", "UsernamePasswordLoginModule", "equals"},
-                {"themis_spring-security_safe/PasswordEncoderUtils_FuzzDriver.java", "PasswordEncoderUtils", "equals_safe"},
-                {"themis_spring-security_unsafe/PasswordEncoderUtils_FuzzDriver.java", "PasswordEncoderUtils", "equals_unsafe"},
-                {"themis_tomcat_safe/Tomcat_FuzzDriver.java", "DataSourceRealm", "authenticate_safe"},
-                {"themis_tomcat_unsafe/Tomcat_FuzzDriver.java", "DataSourceRealm", "authenticate_unsafe"},
-                {"themis_tourplanner_safe/Driver.java", "TourServlet", "doGet"},
-                {"themis_tourplanner_unsafe/Driver.java", "TourServlet", "doGet"}
+                {
+                    "apache_ftpserver_clear_safe/Driver_Clear.java",
+                    "ClearTextPasswordEncryptor",
+                    "matches"
+                },
+                {
+                    "apache_ftpserver_clear_unsafe/Driver_Clear.java",
+                    "ClearTextPasswordEncryptor",
+                    "isEqual_unsafe"
+                },
+                {
+                    "apache_ftpserver_md5_safe/Driver_MD5.java",
+                    "Md5PasswordEncryptor",
+                    "matches"
+                },
+                {
+                    "apache_ftpserver_md5_unsafe/Driver_MD5.java",
+                    "Md5PasswordEncryptor",
+                    "matches"
+                },
+                {
+                    "apache_ftpserver_salted_encrypt_unsafe/Driver_Salted_Encrypt.java",
+                    "SaltedPasswordEncryptor",
+                    "encrypt"
+                },
+                {
+                    "apache_ftpserver_salted_safe/Driver_Salted.java",
+                    "SaltedPasswordEncryptor",
+                    "matches"
+                },
+                {
+                    "apache_ftpserver_salted_unsafe/Driver_Salted.java",
+                    "SaltedPasswordEncryptor",
+                    "matches"
+                },
+                {
+                    "apache_ftpserver_stringutils_safe/Driver_StringUtilsPad.java",
+                    "StringUtils",
+                    "pad_unsafe"
+                },
+                {
+                    "apache_ftpserver_stringutils_unsafe/Driver_StringUtilsPad.java",
+                    "StringUtils",
+                    "pad_unsafe"
+                },
+                {
+                    "blazer_array_safe/MoreSanity_Array_FuzzDriver.java",
+                    "MoreSanity",
+                    "array_safe"
+                },
+                {
+                    "blazer_array_unsafe/MoreSanity_Array_FuzzDriver.java",
+                    "MoreSanity",
+                    "array_unsafe"
+                },
+                {
+                    "blazer_gpt14_safe/GPT14_FuzzDriver.java",
+                    "GPT14",
+                    "modular_exponentiation_safe"
+                },
+                {
+                    "blazer_gpt14_unsafe/GPT14_FuzzDriver.java",
+                    "GPT14",
+                    "modular_exponentiation_inline_unsafe"
+                },
+                {
+                    "blazer_k96_safe/K96_FuzzDriver.java",
+                    "K96",
+                    "modular_exponentiation_safe"
+                },
+                {
+                    "blazer_k96_unsafe/K96_FuzzDriver.java",
+                    "K96",
+                    "modular_exponentiation_unsafe"
+                },
+                {
+                    "blazer_loopandbranch_safe/MoreSanity_LoopAndBranch_FuzzDriver.java",
+                    "MoreSanity",
+                    "loopAndbranch_safe"
+                },
+                {
+                    "blazer_loopandbranch_unsafe/MoreSanity_LoopAndBranch_FuzzDriver.java",
+                    "MoreSanity",
+                    "loopAndbranch_unsafe"
+                },
+                {
+                    "blazer_modpow1_safe/ModPow1_FuzzDriver.java",
+                    "ModPow1",
+                    "modPow1_safe"
+                },
+                {
+                    "blazer_modpow1_unsafe/ModPow1_FuzzDriver.java",
+                    "ModPow1",
+                    "modPow1_unsafe"
+                },
+                {
+                    "blazer_modpow2_safe/ModPow2_FuzzDriver.java",
+                    "ModPow2",
+                    "modPow2_safe"
+                },
+                {
+                    "blazer_modpow2_unsafe/ModPow2_FuzzDriver.java",
+                    "ModPow2",
+                    "modPow2_unsafe"
+                },
+                {
+                    "blazer_passwordEq_safe/User_FuzzDriver.java",
+                    "User",
+                    "passwordsEqual_safe"
+                },
+                {
+                    "blazer_passwordEq_unsafe/User_FuzzDriver.java",
+                    "User",
+                    "passwordsEqual_unsafe"
+                },
+                {
+                    "blazer_sanity_safe/Sanity_FuzzDriver.java",
+                    "Sanity",
+                    "sanity_safe"
+                },
+                {
+                    "blazer_sanity_unsafe/Sanity_FuzzDriver.java",
+                    "Sanity",
+                    "sanity_unsafe"
+                },
+                {
+                    "blazer_straightline_safe/Sanity_FuzzDriver.java",
+                    "Sanity",
+                    "straightline_safe"
+                },
+                {
+                    "blazer_straightline_unsafe/Sanity_FuzzDriver.java",
+                    "Sanity",
+                    "straightline_unsafe"
+                },
+                {
+                    "blazer_unixlogin_safe2/Timing_FuzzDriver.java",
+                    "Timing",
+                    "login_safe"
+                },
+                {
+                    "blazer_unixlogin_unsafe2/Timing_FuzzDriver.java",
+                    "Timing",
+                    "login_unsafe"
+                },
+                {
+                    "example_PWCheck_safe/Driver.java",
+                    "PWCheck",
+                    "pwcheck3_safe"
+                },
+                {
+                    "example_PWCheck_unsafe/Driver.java",
+                    "PWCheck",
+                    "pwcheck1_unsafe"
+                },
+                {
+                    "github_authmreloaded_safe/Driver.java",
+                    "RoyalAuth",
+                    "isEqual_unsafe"
+                },
+                {
+                    "github_authmreloaded_unsafe/Driver.java",
+                    "RoyalAuth",
+                    "isEqual_unsafe"
+                },
+                {
+                    "stac_crime_unsafe/CRIME_Driver.java",
+                    "LZ77T",
+                    "compress"
+                },
+                {
+                    "stac_ibasys_unsafe/ImageMatcher_FuzzDriver.java",
+                    "ImageMatcherWorker",
+                    "test"
+                },
+                {
+                    "themis_boot-stateless-auth_safe/Driver.java",
+                    "TokenHandler",
+                    "parseUserFromToken_unsafe"
+                },
+                {
+                    "themis_boot-stateless-auth_unsafe/Driver.java",
+                    "TokenHandler",
+                    "parseUserFromToken_unsafe"
+                },
+                {
+                    "themis_dynatable_unsafe2/Driver.java",
+                    "SchoolCalendarServiceImpl",
+                    "getPeople"
+                },
+                {
+                    "themis_GWT_advanced_table_unsafe2/Driver.java",
+                    "UsersTableModelServiceImpl",
+                    "getRows"
+                },
+                {
+                    "themis_jdk_safe/MessageDigest_FuzzDriver.java",
+                    "MessageDigest",
+                    "isEqual_safe"
+                },
+                {
+                    "themis_jdk_unsafe/MessageDigest_FuzzDriver.java",
+                    "MessageDigest",
+                    "isEqual_unsafe"
+                },
+                {
+                    "themis_jetty_safe/Credential_FuzzDriver.java",
+                    "Credential",
+                    "stringEquals_safe"
+                },
+                {
+                    "themis_jetty_unsafe/Credential_FuzzDriver.java",
+                    "Credential",
+                    "stringEquals_original"
+                },
+                {
+                    "themis_oacc_unsafe/Driver.java",
+                    "PasswordCredentials",
+                    "equals"
+                },
+                {
+                    "themis_oacc_unsafe2/Driver.java",
+                    "PasswordCredentials",
+                    "ArraysIsEquals"
+                },
+                {
+                    "themis_openmrs-core_unsafe/Driver.java",
+                    "Security",
+                    "hashMatches"
+                },
+                {
+                    "themis_orientdb_safe/OSecurityManager_FuzzDriver.java",
+                    "OSecurityManager",
+                    "checkPassword_safe"
+                },
+                {
+                    "themis_orientdb_unsafe/OSecurityManager_FuzzDriver.java",
+                    "OSecurityManager",
+                    "equals_inline"
+                },
+                {
+                    "themis_pac4j_safe2/Driver.java",
+                    "DbAuthenticator",
+                    "validate_safe"
+                },
+                {
+                    "themis_pac4j_unsafe2/Driver.java",
+                    "DbAuthenticator",
+                    "validate_unsafe"
+                },
+                {
+                    "themis_pac4j_unsafe_ext/Driver.java",
+                    "DbAuthenticator",
+                    "validate_unsafe"
+                },
+                {
+                    "themis_picketbox_safe/UsernamePasswordLoginModule_FuzzDriver.java",
+                    "UsernamePasswordLoginModule",
+                    "validatePassword_safe"
+                },
+                {
+                    "themis_picketbox_unsafe/UsernamePasswordLoginModule_FuzzDriver.java",
+                    "UsernamePasswordLoginModule",
+                    "equals"
+                },
+                {
+                    "themis_spring-security_safe/PasswordEncoderUtils_FuzzDriver.java",
+                    "PasswordEncoderUtils",
+                    "equals_safe"
+                },
+                {
+                    "themis_spring-security_unsafe/PasswordEncoderUtils_FuzzDriver.java",
+                    "PasswordEncoderUtils",
+                    "equals_unsafe"
+                },
+                {
+                    "themis_tomcat_safe/Tomcat_FuzzDriver.java",
+                    "DataSourceRealm",
+                    "authenticate_safe"
+                },
+                {
+                    "themis_tomcat_unsafe/Tomcat_FuzzDriver.java",
+                    "DataSourceRealm",
+                    "authenticate_unsafe"
+                },
+                {
+                    "themis_tourplanner_safe/Driver.java",
+                    "TourServlet",
+                    "doGet"
+                },
+                {
+                    "themis_tourplanner_unsafe/Driver.java",
+                    "TourServlet",
+                    "doGet"
+                }
+        };
+    }
+
+    @DataProvider
+    /*
+        String classpath
+     */
+    private Object[][] invalidDrivers() {
+        return new Object[][] {
+                {"blazer_unixlogin_unsafe/Timing_FuzzDriver.java"},
+                {"blazer_unixlogin_safe/Timing_FuzzDriver.java"},
+                {"themis_dynatable_unsafe/Driver.java"},
+                {"themis_GWT_advanced_table_unsafe/Driver.java"},
+                {"themis_pac4j_safe/Driver.java"},
+                {"themis_pac4j_unsafe/Driver.java"}
         };
     }
 
@@ -375,20 +632,31 @@ public class TestDifFuzzAR {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL resource = classLoader.getResource(classpath);
 
-        VulnerableMethodUses vulnerableMethodUsesCases = FindVulnerableMethod.processDriver(resource.getPath());
+        if (resource == null) {
+            fail(String.format("Could not obtain the resource in location %s", classpath));
+        }
 
-        if (!vulnerableMethodUsesCases.isValid())
-            Assert.fail();
+        Optional<VulnerableMethodUses> optionalVulnerableMethodUsesCases = FindVulnerableMethod.processDriver(resource.getPath());
+
+        if (!optionalVulnerableMethodUsesCases.isPresent()) {
+            fail("Could not obtain the vulnerable method uses cases.");
+        }
+
+        VulnerableMethodUses vulnerableMethodUses = optionalVulnerableMethodUsesCases.get();
+
+        if (!vulnerableMethodUses.isValid()) {
+            fail("The vulnerable method uses cases is not valid.");
+        }
 
         // First Vulnerable method use case
-        String firstVulnerableClassName = vulnerableMethodUsesCases.getFirstUseCaseClassName();
-        String firstVulnerableMethodName = vulnerableMethodUsesCases.getFirstUseCaseMethodName();
-        String[] firstVulnerableMethodArguments = vulnerableMethodUsesCases.getFirstUseCaseArgumentsNames();
+        String firstVulnerableClassName = vulnerableMethodUses.getFirstUseCaseClassName();
+        String firstVulnerableMethodName = vulnerableMethodUses.getFirstUseCaseMethodName();
+        String[] firstVulnerableMethodArguments = vulnerableMethodUses.getFirstUseCaseArgumentsNames();
 
         // Second Vulnerable method use case
-        String secondVulnerableClassName = vulnerableMethodUsesCases.getSecondUseCaseClassName();
-        String secondVulnerableMethodName = vulnerableMethodUsesCases.getSecondUseCaseMethodName();
-        String[] secondVulnerableMethodArguments = vulnerableMethodUsesCases.getSecondUseCaseArgumentsNames();
+        String secondVulnerableClassName = vulnerableMethodUses.getSecondUseCaseClassName();
+        String secondVulnerableMethodName = vulnerableMethodUses.getSecondUseCaseMethodName();
+        String[] secondVulnerableMethodArguments = vulnerableMethodUses.getSecondUseCaseArgumentsNames();
 
         Assert.assertEquals(firstVulnerableClassName, secondVulnerableClassName);
         Assert.assertEquals(firstVulnerableClassName, expectedClassName);
@@ -397,38 +665,67 @@ public class TestDifFuzzAR {
         Assert.assertEquals(firstVulnerableMethodArguments.length, secondVulnerableMethodArguments.length);
     }
 
-    @Test(dataProvider = "correctVulnerableMethodWithEarlyExit") //  TODO remove exceptions
-    public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod, String correctedClassName, String methodName,
+    @Test(dataProvider = "invalidDrivers")
+    public void testInvalidDrivers(String classpath) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL resource = classLoader.getResource(classpath);
+
+        if (resource == null) {
+            fail(String.format("Could not obtain the resource in location %s", classpath));
+        }
+
+        Optional<VulnerableMethodUses> optionalVulnerableMethodUsesCases = FindVulnerableMethod.processDriver(resource.getPath());
+
+        Assert.assertFalse(optionalVulnerableMethodUsesCases.isPresent());
+    }
+
+    @Test(dataProvider = "correctVulnerableMethodWithEarlyExit")
+    public void testCorrectMethodWithEarlyExit(String pathToVulnerableMethod,
+                                               String correctedClassName,
+                                               String methodName,
                                                String correctedMethodPath,
                                                String[] firstUseCaseArgumentsNames,
-                                               String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+                                               String[] secondUseCaseArgumentsNames) {
 
         runVulnerabilityCorrection(pathToVulnerableMethod, correctedClassName, methodName, correctedMethodPath, firstUseCaseArgumentsNames, secondUseCaseArgumentsNames);
     }
 
-    @Test(dataProvider = "correctVulnerableMethodWithControlFlow") //  TODO remove exceptions
-    public void testCorrectMethodWithControlFlow(String pathToVulnerableMethod, String correctedClassName, String methodName,
+    @Test(dataProvider = "correctVulnerableMethodWithControlFlow")
+    public void testCorrectMethodWithControlFlow(String pathToVulnerableMethod,
+                                                 String correctedClassName,
+                                                 String methodName,
                                                  String correctedMethodPath,
                                                  String[] firstUseCaseArgumentsNames,
-                                                 String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+                                                 String[] secondUseCaseArgumentsNames) {
 
         runVulnerabilityCorrection(pathToVulnerableMethod, correctedClassName, methodName, correctedMethodPath, firstUseCaseArgumentsNames, secondUseCaseArgumentsNames);
     }
 
-    @Test(dataProvider = "correctVulnerableMethodWithMixedVulnerability") //  TODO remove exceptions
-    public void testCorrectMethodWithMixedVulnerability(String pathToVulnerableMethod, String correctedClassName,
+    @Test(dataProvider = "correctVulnerableMethodWithMixedVulnerability")
+    public void testCorrectMethodWithMixedVulnerability(String pathToVulnerableMethod,
+                                                        String correctedClassName,
                                                         String methodName,
                                                         String correctedMethodPath,
                                                         String[] firstUseCaseArgumentsNames,
-                                                        String[] secondUseCaseArgumentsNames) throws URISyntaxException, IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+                                                        String[] secondUseCaseArgumentsNames) {
 
         runVulnerabilityCorrection(pathToVulnerableMethod, correctedClassName, methodName, correctedMethodPath, firstUseCaseArgumentsNames, secondUseCaseArgumentsNames);
     }
 
-    private void runVulnerabilityCorrection(String pathToVulnerableMethod, String correctedClassName, String methodName, String correctedMethodPath, String[] firstUseCaseArgumentsNames, String[] secondUseCaseArgumentsNames) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, IOException, URISyntaxException {
+    private void runVulnerabilityCorrection(String pathToVulnerableMethod,
+                                            String correctedClassName,
+                                            String methodName,
+                                            String correctedMethodPath,
+                                            String[] firstUseCaseArgumentsNames,
+                                            String[] secondUseCaseArgumentsNames) {
         // Setup
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL vulnerableMethodResource = classLoader.getResource(pathToVulnerableMethod);
+
+        if (vulnerableMethodResource == null) {
+            fail(String.format("Could not obtain the vulnerable method in the path %s.", pathToVulnerableMethod));
+        }
+
         Launcher launcher = Setup.setupLauncher(vulnerableMethodResource.getPath(), "");
         CtModel model = launcher.buildModel();
         Factory factory = launcher.getFactory();
@@ -440,13 +737,34 @@ public class TestDifFuzzAR {
         vulnerableMethodUses.setUseCase("", "", "", secondUseCaseArgumentsNames);
 
         // Act
-        final Method modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
+        Method modifyCode = null;
+        try {
+            modifyCode = ModificationOfCode.class.getDeclaredMethod("modifyCode", Factory.class, CtMethod.class, CtModel.class, VulnerableMethodUses.class);
+        } catch (NoSuchMethodException e) {
+            fail("Could not find the method modifyCode. All tests will have problems.");
+        }
+
         modifyCode.setAccessible(true);
-        modifyCode.invoke(null, factory, vulnerableMethod, model, vulnerableMethodUses);
+
+        try {
+            modifyCode.invoke(null, factory, vulnerableMethod, model, vulnerableMethodUses);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            fail("Error invoking the modifyCode method. An error possibly occurred in the method 'modifyCode' or any of its sub-methods.");
+        }
 
         // Assert
         URL resource = classLoader.getResource(correctedMethodPath);
-        List<String> strings = Files.readAllLines(Paths.get(resource.toURI()));
+
+        if (resource == null) {
+            fail(String.format("Could not obtain the corrected method in the path %s", correctedMethodPath));
+        }
+
+        List<String> strings = null;
+        try {
+            strings = Files.readAllLines(Paths.get(resource.toURI()));
+        } catch (IOException | URISyntaxException e) {
+            fail("An error occurred when trying to obtain the corrected method. Check possible error name of the file.");
+        }
 
         CtMethod<?> correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
         List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));
