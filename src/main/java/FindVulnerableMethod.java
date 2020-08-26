@@ -243,9 +243,9 @@ public class FindVulnerableMethod {
         if (variables.stream().anyMatch(variable -> variable.getSimpleName().equals(sourceOfMethod))) {
             Optional<CtTypedElement<?>> objectCreation = typedElementList
                     .stream()
-                    .filter(it -> !it.toString().contains("main") &&
-                            it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*") &&
-                            it.toString().contains("="))
+                    .filter(it -> !it.toString().contains("main")
+                            && it.toString().matches(".*\\b" + sourceOfMethod + "\\b.*")
+                            && it.toString().contains("="))
                     .findFirst();
 
             CtTypedElement<?> ctTypedElement = objectCreation.get();

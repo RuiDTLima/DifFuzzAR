@@ -24,6 +24,7 @@ import java.util.Optional;
 import static org.testng.Assert.fail;
 
 public class TestDifFuzzAR {
+    //region DataProviders
     @DataProvider
     /*
         String classpath,
@@ -210,7 +211,7 @@ public class TestDifFuzzAR {
                 {
                     "themis_boot-stateless-auth_safe/Driver.java",
                     "TokenHandler",
-                    "parseUserFromToken_unsafe"
+                    "parseUserFromToken"
                 },
                 {
                     "themis_boot-stateless-auth_unsafe/Driver.java",
@@ -626,6 +627,7 @@ public class TestDifFuzzAR {
                 }
         };
     }
+    //endregion
 
     @Test(dataProvider = "findVulnerableMethodAndClass")
     public void testDiscoverMethod(String classpath, String expectedClassName, String expectedMethodName) {

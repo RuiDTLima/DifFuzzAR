@@ -88,13 +88,13 @@ public class Driver {
         String userTokenInvalid = userBytesString + TokenHandler.SEPARATOR + hashByteStringInvalid;
 
         Mem.clear();
-        User userValid = th.parseUserFromToken_unsafe(userTokenValid);
+        User userValid = th.parseUserFromToken(userTokenValid);
         long cost1 = Mem.instrCost;
         System.out.println("auth1: " + (userValid == TokenHandler.VALID_USER));
         System.out.println("cost1: " + cost1);
 
         Mem.clear();
-        User userInvalid = th.parseUserFromToken_unsafe(userTokenInvalid);
+        User userInvalid = th.parseUserFromToken(userTokenInvalid);
         long cost2 = Mem.instrCost;
         System.out.println("auth2: " + (userInvalid == TokenHandler.VALID_USER));
         System.out.println("cost2: " + cost2);
