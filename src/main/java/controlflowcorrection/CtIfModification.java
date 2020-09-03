@@ -374,8 +374,7 @@ class CtIfModification {
                 logger.info("Invocation is of the type CtInvocation.");
                 CtInvocation<?> ctInvocation = (CtInvocation<?>) invocation;
                 CtTypeReference<?> type = ctInvocation.getType();
-                CtLocalVariable<?> newVariable = createNewVariable(factory, ctBlock, ctInvocation, type);
-                ControlFlowBasedVulnerabilityCorrection.addToVariablesReplacement("", newVariable.getSimpleName());
+                createNewVariable(factory, ctBlock, ctInvocation, type);
             } else if (invocation instanceof CtExecutableReference) {
                 logger.info("Invocation is of the type CtExecutableReference.");
                 CtExecutableReference<?> executableReference = (CtExecutableReference<?>) invocation;

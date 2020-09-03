@@ -50,7 +50,7 @@ class CtReturnHandle {
     /**
      * The method where the return statement is modified depending on whether it is part of an 'if' statement, if it is
      * the last return or none of the previous.
-     * @param factory   The factory used to create new instructions.
+     * @param factory           The factory used to create new instructions.
      * @param returnStatement   The return statement being modified.
      * @param variable          The variable to be returned.
      * @param returnElement     The valid return expression returned in the final return statement.

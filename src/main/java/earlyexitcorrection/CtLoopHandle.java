@@ -23,7 +23,6 @@ class CtLoopHandle {
         CtLoop newLoop = loop.clone();
         if (stoppingCondition instanceof CtBinaryOperator) {
             CtBinaryOperator<?> binaryOperator = (CtBinaryOperator<?>) stoppingCondition;
-            CtBinaryOperator<Boolean> newStoppingCondition;
             CtExpression<?> newRightHandOperand = null;
             CtExpression<?> leftHandOperand = binaryOperator.getLeftHandOperand();
             CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
@@ -41,12 +40,12 @@ class CtLoopHandle {
             }
 
             if (modified) {
-                newStoppingCondition = factory.createBinaryOperator();
-                newStoppingCondition.setKind(BinaryOperatorKind.AND);
-                newStoppingCondition.setLeftHandOperand(binaryOperator.clone());
-                newStoppingCondition.setRightHandOperand(newRightHandOperand);
+                CtBinaryOperator<Boolean> newCondition = factory.createBinaryOperator();
+                newCondition.setKind(BinaryOperatorKind.AND);
+                newCondition.setLeftHandOperand(binaryOperator.clone());
+                newCondition.setRightHandOperand(newRightHandOperand);
                 CtIf newIf = factory.createIf();
-                newIf.setCondition(newStoppingCondition);
+                newIf.setCondition(newCondition);
                 newIf.setThenStatement(loop.getBody());
                 newLoop.setBody(newIf);
             }
