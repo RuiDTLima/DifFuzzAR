@@ -48,7 +48,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis OACC | No | Mixed | Yes | Yes | Yes |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - |  |
  | Themis OrientDb | Yes | Mixed | Yes | Yes |  |
- | Themis Pac4j | Yes | Control-Flow | Yes | Yes |  |
+ | Themis Pac4j | Yes | Control-Flow | Yes | Yes | Yes |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
  | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | Yes | No |
  | Themis Tomcat | Yes |  Mixed | No | - | - |
@@ -97,9 +97,9 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |themis_picketbox_sade                         |1,00         |1           |20,40                     |
  |themis_picketbox_unsafe                       |5081,80      |9529        |5,60                      |
  |themis_picketbox_unsafe_corrected             |5864,00      |11836       |9,00                      |
- |themis_tomcat_safe                            |             |            |                          |
- |themis_tomcat_unsafe                          |             |            |                          |
- |themis_tomcat_unsafe_corrected                |             |            |                          |
+ |themis_tomcat_safe                            |24,40        |26          |40,40                     |
+ |themis_tomcat_unsafe                          |48,40        |50          |40,80                     |
+ |themis_tomcat_unsafe_corrected                |43,80        |45          |28,00                     |
  |themis_dynatable_unsafe                       |97,20        |99          |4,20                      |
  |themis_dynatable_unsafe_corrected             |94,40        |97          |3,40                      |
  |themis_spring-security_safe                   |1,00         |1           |9,20                      |
@@ -126,13 +126,13 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |blazer_unixlogin_unsafe_corrected             |2,00         |2           |380,20                    |
  |stac_ibasys_unsafe                            |1,00         |1           |1,00                      |
  |stac_ibasys_unsafe_corrected                  |1,00         |1           |1,40                      |
- |themis_pac4j_safe                             |             |            |                          |
- |themis_pac4j_unsafe                           |             |            |                          |
- |themis_pac4j_unsafe_corrected                 |             |            |                          |
+ |themis_pac4j_safe                             |1,00         |1           |4,40                      |
+ |themis_pac4j_unsafe                           |2,00         |2           |3,20                      |
+ |themis_pac4j_unsafe_corrected                 |1,00         |1           |4,20                      |
  |Mixed                                         |#############|############|##########################|
  |apache_ftpserver_stringutils_safe             |0            |0           |0                         |
  |apache_ftpserver_stringutils_unsafe           |53,00        |53          |2,00                      |
- |apache_ftpserver_stringutils_unsafe_corrected | 0        |0           |0                         |
+ |apache_ftpserver_stringutils_unsafe_corrected |0            |0           |0                         |
  |blazer_sanity_safe                            |0            |0           |0                         |
  |blazer_sanity_unsafe                          |4248461576,60|4294966785  |66,60                     |
  |blazer_sanity_unsafe_corrected                |0            |0           |0                         | 
