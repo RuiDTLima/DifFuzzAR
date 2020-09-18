@@ -51,7 +51,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | Yes |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
  | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | Yes | No |
- | Themis Tomcat | Yes |  Mixed | No | - | - |
+ | Themis Tomcat | Yes |  Mixed | Yes | Yes | No |
  | Themis TourPlanner | Yes | Special Early-Exit (Ignored) | No | - |  |
  
  #### Captions of table
