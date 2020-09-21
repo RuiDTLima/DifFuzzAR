@@ -22,37 +22,37 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | **Dataset name** | **Has secure version?** | **Type** | **Correction Attempted** | **Symbolically Correct?** | **Correct Vulnerability?** |
  | --- | --- | --- | --- | --- | --- |
  | Apache FtpServer Clear | Yes | Mixed | Yes | No | ? |
- | Apache FtpServer Md5 | Yes | Early-Exit (If dependant) | Yes | No |  |
- | Apache FtpServer Salted Encrypt | No | Undefined | No | - |  |
- | Apache FtpServer Salted | Yes | Mixed | Yes | No |  |
+ | Apache FtpServer Md5 | Yes | Early-Exit (If dependant) | Yes | No | - |
+ | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
+ | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
  | Apache FtpServer StringUtils | Yes | Mixed | Yes | Yes | Yes |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | ? (No) |
  | Blazer K96 | Yes | Control-Flow | Yes | Yes | ? (No) |
- | Blazer LoopAndBranch | Yes | Control-Flow (ignored) | No | - |  |
+ | Blazer LoopAndBranch | Yes | Control-Flow (ignored) | No | - | - |
  | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | Yes |
- | Blazer Modpow2 | Yes | Unknown | No | - |  |
+ | Blazer Modpow2 | Yes | Unknown | No | - | - |
  | Blazer PasswordEq | Yes | Early-Exit (If dependant) | Yes | Yes | Yes |
  | Blazer Sanity | Yes | Mixed | Yes | Yes | Yes |
  | Blazer StraightLine | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer UnixLogin | Yes | Control-Flow | Yes | Yes | Yes |
  | Example PWCheck | Yes | Mixed | Yes | Yes | Yes |
  | GitHub AuthmReloaded | Yes | Mixed | Yes | Yes | Yes |
- | STAC Crime | No | Unknown | No | - |  |
- | STAC Ibasys | No | Control-Flow | Yes | Yes | - |
+ | STAC Crime | No | Unknown | No | - | - |
+ | STAC Ibasys | No | Control-Flow | Yes | Yes | ? |
  | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | ? (Yes) |
  | Themis Dynatable | No | Early-Exit (If dependant) | Yes | Yes | No |
- | Themis GWT Advanced Table | No | Unknown | No | - |  |
+ | Themis GWT Advanced Table | No | Unknown | No | - | - |
  | Themis Jdk | Yes | Mixed | Yes | Yes | Yes |
  | Themis Jetty | Yes | Mixed | Yes | Yes | Yes |
  | Themis OACC | No | Mixed | Yes | Yes | Yes |
- | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - |  |
+ | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
  | Themis OrientDb | Yes | Mixed | Yes | Yes |  |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | Yes |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
  | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | Yes | No |
  | Themis Tomcat | Yes |  Mixed | Yes | Yes | No |
- | Themis TourPlanner | Yes | Special Early-Exit (Ignored) | No | - |  |
+ | Themis TourPlanner | Yes | Special Early-Exit (Ignored) | No | - | - |
  
  #### Captions of table
  **Has secure Version** indicates whether the dataset provided both the safe and unsafe versions of the program.
