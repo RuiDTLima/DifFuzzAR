@@ -47,12 +47,12 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis Jetty | Yes | Mixed | Yes | Yes | Yes |
  | Themis OACC | No | Mixed | Yes | Yes | Yes |
  | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
- | Themis OrientDb | Yes | Mixed | Yes | Yes |  |
+ | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | Yes |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
  | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | Yes | No |
  | Themis Tomcat | Yes |  Mixed | Yes | Yes | No |
- | Themis TourPlanner | Yes | Special Early-Exit (Ignored) | No | - | - |
+ | Themis TourPlanner | Yes | Size Timing Side-Channel | No | - | - |
  
  #### Captions of table
  **Has secure Version** indicates whether the dataset provided both the safe and unsafe versions of the program.
