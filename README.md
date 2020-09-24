@@ -21,7 +21,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
 ### Dataset Information
  | **Dataset name** | **Has secure version?** | **Type** | **Correction Attempted** | **Symbolically Correct?** | **Correct Vulnerability?** |
  | --- | --- | --- | --- | --- | --- |
- | Apache FtpServer Clear | Yes | Mixed | Yes | No | ? |
+ | Apache FtpServer Clear | Yes | Mixed | Yes | No | - |
  | Apache FtpServer Md5 | Yes | Early-Exit (If dependant) | Yes | No | - |
  | Apache FtpServer Salted Encrypt | No | Undefined | No | - | - |
  | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
