@@ -46,7 +46,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis Jdk | Yes | Mixed | Yes | Yes | Yes |
  | Themis Jetty | Yes | Mixed | Yes | Yes | Yes |
  | Themis OACC | No | Mixed | Yes | Yes | Yes |
- | Themis OpenMrs-Core | No | Possibly Early-Exit | No | - | - |
+ | Themis OpenMrs-Core | No | Unknown | No | - | - |
  | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | Yes |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
