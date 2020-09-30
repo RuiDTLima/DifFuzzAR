@@ -9,6 +9,7 @@ import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtReturnImpl;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 class CtReturnHandle {
     private static final Logger logger = LoggerFactory.getLogger(CtReturnHandle.class);
@@ -90,8 +91,7 @@ class CtReturnHandle {
         } else if (currentCondition instanceof CtVariableRead) {
             CtVariableRead<?> variableRead = (CtVariableRead<?>) currentCondition;
             String simpleName = variableRead.getVariable().getSimpleName();
-            List<CtExpression<Boolean>> conditionsList;
-            conditionsList = EarlyExitVulnerabilityCorrection.getProtectionOfVariableOrEmpty(simpleName);
+            Set<CtExpression<Boolean>> conditionsList = EarlyExitVulnerabilityCorrection.getProtectionOfVariableOrEmpty(simpleName);
             conditionsList.add(ifCondition);
             EarlyExitVulnerabilityCorrection.addVariableProtection(simpleName, conditionsList);
         }

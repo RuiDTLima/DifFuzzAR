@@ -6,7 +6,7 @@ import spoon.reflect.code.*;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 class CtLocalVariableHandle {
     private static final Logger logger = LoggerFactory.getLogger(CtLocalVariableHandle.class);
@@ -35,30 +35,67 @@ class CtLocalVariableHandle {
         CtLocalVariable<?> localVariable = (CtLocalVariable<?>) currentStatement;
         CtExpression<?> assignment = localVariable.getAssignment();
         CtStatement newStatement = currentStatement.clone();
-        if (assignment instanceof CtBinaryOperator) {   //  TODO add possibility of multiple binary operators.
+        if (assignment instanceof CtBinaryOperator) {
             CtBinaryOperator<?> binaryOperator = (CtBinaryOperator<?>) assignment;
             String leftHandOperand = binaryOperator.getLeftHandOperand().toString();
             String rightHandOperand = binaryOperator.getRightHandOperand().toString();
 
-            List<CtExpression<Boolean>> newLeftOperator = EarlyExitVulnerabilityCorrection.getProtectionOfVariableOrEmpty(leftHandOperand);
-            List<CtExpression<Boolean>> newRightOperator = EarlyExitVulnerabilityCorrection.getProtectionOfVariableOrEmpty(rightHandOperand);
+            newStatement = addProtection(factory, newBody, localVariable, newStatement, leftHandOperand, rightHandOperand);
+        } else if (assignment instanceof CtArrayRead) {
+            CtArrayRead<?> arrayRead = (CtArrayRead<?>) assignment;
+            String target = arrayRead.getTarget().toString();
+            CtExpression<Integer> index = arrayRead.getIndexExpression();
+            String indexVariable;
 
-            if (!newLeftOperator.isEmpty() && !newRightOperator.isEmpty() && !newLeftOperator.equals(newRightOperator)) {
-                CtExpression<Boolean> newLeftCondition = getNewConditionOperator(factory, newLeftOperator);
-                CtExpression<Boolean> newRightCondition = getNewConditionOperator(factory, newRightOperator);
-
-                CtBinaryOperator<Boolean> newCondition = factory.createBinaryOperator(newLeftCondition, newRightCondition, BinaryOperatorKind.AND);
-                newStatement = protectLocalVariable(factory, newBody, localVariable, newCondition);
-            } else if (!newLeftOperator.isEmpty()) {
-                CtExpression<Boolean> newLeftCondition = getNewConditionOperator(factory, newLeftOperator);
-                newStatement = protectLocalVariable(factory, newBody, localVariable, newLeftCondition);
-            } else if (!newRightOperator.isEmpty()) {
-                CtExpression<Boolean> newRightCondition = getNewConditionOperator(factory, newRightOperator);
-                newStatement = protectLocalVariable(factory, newBody, localVariable, newRightCondition);
+            if (index instanceof CtUnaryOperator) {
+                CtUnaryOperator<?> unaryOperator = (CtUnaryOperator<?>) index;
+                indexVariable = unaryOperator.getOperand().toString();
+            } else {
+                indexVariable = index.toString();
             }
+
+            newStatement = addProtection(factory, newBody, localVariable, newStatement, target, indexVariable);
         }
         newBody.addStatement(newStatement);
         return false;
+    }
+
+    /**
+     * Method where the necessary protection to the used of the variables 'firstVariable' and 'secondVariable' is created.
+     * @param factory           The factory used to create new instructions.
+     * @param newBody           A block of statements that will become the new body of the vulnerable method.
+     * @param localVariable     The 'local variable' statement to protect.
+     * @param newStatement      The new statement containing the protection.
+     * @param firstVariable     The first variable to be protected.
+     * @param secondVariable    The second variable to be protected.
+     * @return  Returns a new statement that protects the original one.
+     */
+    private static CtStatement addProtection(Factory factory,
+                                             CtBlock<?> newBody,
+                                             CtLocalVariable<?> localVariable,
+                                             CtStatement newStatement,
+                                             String firstVariable,
+                                             String secondVariable) {
+
+        Set<CtExpression<Boolean>> newLeftOperator = EarlyExitVulnerabilityCorrection.getProtectionOfVariableOrEmpty(firstVariable);
+        Set<CtExpression<Boolean>> newRightOperator = EarlyExitVulnerabilityCorrection.getProtectionOfVariableOrEmpty(secondVariable);
+
+        newLeftOperator.removeAll(newRightOperator);
+
+        if (!newLeftOperator.isEmpty() && !newRightOperator.isEmpty() && !newLeftOperator.equals(newRightOperator)) {
+            CtExpression<Boolean> newLeftCondition = getNewConditionOperator(factory, newLeftOperator);
+            CtExpression<Boolean> newRightCondition = getNewConditionOperator(factory, newRightOperator);
+
+            CtBinaryOperator<Boolean> newCondition = factory.createBinaryOperator(newLeftCondition, newRightCondition, BinaryOperatorKind.AND);
+            newStatement = protectLocalVariable(factory, newBody, localVariable, newCondition);
+        } else if (!newLeftOperator.isEmpty()) {
+            CtExpression<Boolean> newLeftCondition = getNewConditionOperator(factory, newLeftOperator);
+            newStatement = protectLocalVariable(factory, newBody, localVariable, newLeftCondition);
+        } else if (!newRightOperator.isEmpty()) {
+            CtExpression<Boolean> newRightCondition = getNewConditionOperator(factory, newRightOperator);
+            newStatement = protectLocalVariable(factory, newBody, localVariable, newRightCondition);
+        }
+        return newStatement;
     }
 
     /**
@@ -67,22 +104,24 @@ class CtLocalVariableHandle {
      * @param newOperator   The list of conditions to modify.
      * @return              Returns a new condition that joins the negation of all conditions in 'newOperator'.
      */
-    private static CtExpression<Boolean> getNewConditionOperator(Factory factory, List<CtExpression<Boolean>> newOperator) {
+    private static CtExpression<Boolean> getNewConditionOperator(Factory factory, Set<CtExpression<Boolean>> newOperator) {
         logger.info("Producing a new condition operator.");
         CtExpression<Boolean> newCondition = null;
 
-        if (newOperator.size() > 1) {
-            for (int i = 0; i < newOperator.size() - 1; i++) {
-                if (newCondition == null) {
-                    CtExpression<Boolean> left = negateCondition(factory, newOperator.get(i));
-                    CtExpression<Boolean> right = negateCondition(factory, newOperator.get(++i));
-                    newCondition = factory.createBinaryOperator(left, right, BinaryOperatorKind.AND);
-                } else {
-                    newCondition = factory.createBinaryOperator(newCondition, negateCondition(factory, newOperator.get(i)), BinaryOperatorKind.AND);
-                }
+        Iterator<CtExpression<Boolean>> iterator = newOperator.iterator();
+
+        while (iterator.hasNext()) {
+            CtExpression<Boolean> current = iterator.next();
+            if (newCondition == null && iterator.hasNext()) {
+                CtExpression<Boolean> left = negateCondition(factory, current);
+                CtExpression<Boolean> next = iterator.next();
+                CtExpression<Boolean> right = negateCondition(factory, next);
+                newCondition = factory.createBinaryOperator(left, right, BinaryOperatorKind.AND);
+            } else if (newCondition == null) {
+                newCondition = negateCondition(factory, current);
+            } else {
+                newCondition = factory.createBinaryOperator(newCondition, negateCondition(factory, current), BinaryOperatorKind.AND);
             }
-        } else {
-            newCondition = negateCondition(factory, newOperator.get(0));
         }
         return newCondition;
     }

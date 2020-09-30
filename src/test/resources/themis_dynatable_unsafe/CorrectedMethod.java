@@ -18,7 +18,7 @@ public Person[] getPeople_unsafe$Modification(int startIndex, int maxCount) {
         $1 = NO_PEOPLE;
     }
     int resultCount = 0;
-    if ((!(start == end)) && ((!(start >= peopleCount)) && (!(start == end)))) {
+    if ((!(start >= peopleCount)) && (!(start == end))) {
         resultCount = end - start;
     } else {
         $4 = $2 - $3;

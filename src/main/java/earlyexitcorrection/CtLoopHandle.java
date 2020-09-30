@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.reflect.code.*;
 import spoon.reflect.factory.Factory;
-import java.util.List;
+import java.util.Set;
 
 class CtLoopHandle {
     private static final Logger logger = LoggerFactory.getLogger(CtLoopHandle.class);
@@ -60,7 +60,7 @@ class CtLoopHandle {
      */
     private static CtExpression<?> obtainCompared(CtExpression<?> handOperand) {
         logger.info("Retrieving the variable used as a comparison with {}.", handOperand.toString());
-        List<CtExpression<Boolean>> conditionsList = EarlyExitVulnerabilityCorrection.getProtectionOfVariable(handOperand.toString());
+        Set<CtExpression<Boolean>> conditionsList = EarlyExitVulnerabilityCorrection.getProtectionOfVariable(handOperand.toString());
         CtExpression<?> otherVariable = null;
         for (CtExpression<Boolean> expression : conditionsList) {
             CtBinaryOperator<Boolean> booleanCtExpression = (CtBinaryOperator<Boolean>) expression;
