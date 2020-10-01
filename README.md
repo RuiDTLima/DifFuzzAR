@@ -41,7 +41,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | STAC Crime | No | Unknown | No | - | - |
  | STAC Ibasys | No | Control-Flow | Yes | Yes | ? |
  | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | ? (Yes) |
- | Themis Dynatable | No | Early-Exit (If dependant) | Yes | Yes | No |
+ | Themis Dynatable | No | Mixed | Yes | Yes | No |
  | Themis GWT Advanced Table | No | Unknown | No | - | - |
  | Themis Jdk | Yes | Mixed | Yes | Yes | Yes |
  | Themis Jetty | Yes | Mixed | Yes | Yes | Yes |
@@ -50,7 +50,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Themis OrientDb | Yes | Mixed | Yes | Yes | No |
  | Themis Pac4j | Yes | Control-Flow | Yes | Yes | Yes |
  | Themis PicketBox | Yes |  Mixed | Yes | Yes | No |
- | Themis Spring-Security | Yes | Early-Exit (If dependant and cycle dependant) | Yes | Yes | No |
+ | Themis Spring-Security | Yes | Mixed | Yes | Yes | No |
  | Themis Tomcat | Yes |  Mixed | Yes | Yes | No |
  | Themis TourPlanner | Yes | Size Timing Side-Channel | No | - | - |
  
