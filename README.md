@@ -27,8 +27,8 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Apache FtpServer Salted | Yes | Mixed | Yes | No | - |
  | Apache FtpServer StringUtils | Yes | Mixed | Yes | Yes | Yes |
  | Blazer Array | Yes | Control-Flow | Yes | Yes | Yes |
- | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | ? (No) |
- | Blazer K96 | Yes | Control-Flow | Yes | Yes | ? (No) |
+ | Blazer Gpt14 | Yes | Control-Flow | Yes | Yes | No |
+ | Blazer K96 | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer LoopAndBranch | Yes | Control-Flow (ignored) | No | - | - |
  | Blazer Modpow1 | Yes | Control-Flow | Yes | Yes | Yes |
  | Blazer Modpow2 | Yes | Unknown | No | - | - |
@@ -39,8 +39,8 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  | Example PWCheck | Yes | Mixed | Yes | Yes | Yes |
  | GitHub AuthmReloaded | Yes | Mixed | Yes | Yes | Yes |
  | STAC Crime | No | Unknown | No | - | - |
- | STAC Ibasys | No | Control-Flow | Yes | Yes | ? |
- | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | ? (Yes) |
+ | STAC Ibasys | No | Control-Flow | Yes | Yes | No |
+ | Themis Boot-Stateless-Auth | Yes | Mixed | Yes | Yes | No |
  | Themis Dynatable | No | Mixed | Yes | Yes | No |
  | Themis GWT Advanced Table | No | Unknown | No | - | - |
  | Themis Jdk | Yes | Mixed | Yes | Yes | Yes |
@@ -66,7 +66,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  **Correct Vulnerability** indicates if after executing DifFuzz in the corrected version of the dataset it found a vulnerability.
  
  ### Result of executing DifFuzz on the examples used.
- |Name                                          |Medium delta |  Max delta |Medium time for delta > 0 |
+ |Name                                          |Medium delta | Max delta  |Medium time for delta > 0 |
  |----------------------------------------------|-------------|------------|--------------------------|
  |apache_ftpserver_clear_safe                   |1,00         |1           |5,40                      |
  |apache_ftpserver_clear_unsafe                 |47,00        |47          |6,00                      |
