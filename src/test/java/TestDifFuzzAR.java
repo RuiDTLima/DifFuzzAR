@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -763,13 +764,13 @@ public class TestDifFuzzAR {
 
         List<String> strings = null;
         try {
-            strings = Files.readAllLines(Paths.get(resource.toURI()));
+            strings = Files.readAllLines(Paths.get(resource.toURI()), StandardCharsets.US_ASCII);
         } catch (IOException | URISyntaxException e) {
             fail("An error occurred when trying to obtain the corrected method. Check possible error name of the file.");
         }
 
         CtMethod<?> correctedMethod = model.filterChildren(new TypeFilter<>(CtMethod.class)).select(new NameFilter<>(methodName + "$Modification")).first();
-        List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r\\n"));
+        List<String> correctedMethodList = Arrays.asList(correctedMethod.toString().split("\\r?\\n"));
 
         Iterator<String> expectedCorrectionIterator = strings.iterator();
         Iterator<String> actualCorrectionIterator = correctedMethodList.iterator();
