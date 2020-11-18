@@ -57,7 +57,7 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  #### Captions of table
  **Has secure Version** indicates whether the dataset provided both the safe and unsafe versions of the program.
  
- **Type** indicates the type of timing side-channel in the dataset. It can be: *Early-Exit*, *Control-Flow*, *Mixed*. The Types: *Possibly Mixed* means that there is a possibility that the program has a mix of early-exit and control-flow, but further analysis is necessary, *Undefined* indicates that the analysis of the vulnerability showed that the vulnerability is in code inaccessible to the tool (the vulnerability is in a library), *Unknown* indicates a program where after analysis could not find the vulnerability. *Possibly Early-Exit* means that there is a suspicion that it might be early-exit, but further analysis is necessary, *Special Early-Exit* means that the vulnerability considered an early-exit but its correction is beyond the scope of the project.
+ **Type** indicates the type of timing side-channel in the dataset. It can be: *Early-Exit*, *Control-Flow*, *Mixed* and *Size Timing Side-Channel*. The type *Unknown* indicates a program where after analysis could not find the vulnerability. 
  
  **Correction attempted** indicates if the tool executed on the dataset at least once. 
  
