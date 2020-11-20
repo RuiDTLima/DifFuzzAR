@@ -29,7 +29,7 @@ class CtBinaryOperatorModification {
         CtExpression<?> rightHandOperand = binaryOperator.getRightHandOperand();
 
         if (leftHandOperand instanceof CtVariableRead) {
-            CtExpression<?> leftHandOperator = VariableReadModification.modifyVariableRead(factory, leftHandOperand);
+            CtExpression<?> leftHandOperator = CtVariableReadModification.modifyVariableRead(factory, leftHandOperand);
             binaryOperator.setLeftHandOperand(leftHandOperator);
             logger.info("The left hand operand is a variable read.");
         } else if (leftHandOperand instanceof CtArrayRead) {
@@ -39,7 +39,7 @@ class CtBinaryOperatorModification {
         }
 
         if (rightHandOperand instanceof CtVariableRead) {
-            CtExpression<?> rightHandOperator = VariableReadModification.modifyVariableRead(factory, rightHandOperand);
+            CtExpression<?> rightHandOperator = CtVariableReadModification.modifyVariableRead(factory, rightHandOperand);
             binaryOperator.setRightHandOperand(rightHandOperator);
             logger.info("The right hand operand is a variable read.");
         }

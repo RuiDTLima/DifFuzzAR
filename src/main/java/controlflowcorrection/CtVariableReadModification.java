@@ -8,8 +8,8 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtTypeReference;
 import util.NamingConvention;
 
-public class VariableReadModification {
-    private static final Logger logger = LoggerFactory.getLogger(VariableReadModification.class);
+public class CtVariableReadModification {
+    private static final Logger logger = LoggerFactory.getLogger(CtVariableReadModification.class);
 
     /**
      * The method where a variable read is modified. This is where a variable that is being replaced by a newly create

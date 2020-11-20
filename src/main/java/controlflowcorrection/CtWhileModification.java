@@ -100,7 +100,7 @@ class CtWhileModification {
         }
 
         if (ControlFlowBasedVulnerabilityCorrection.isKeyInVariablesReplacement(handOperandString)) {
-            logger.info("The left hand operand will be modified.");
+            logger.info("The hand operand will be modified.");
             String replacement = ControlFlowBasedVulnerabilityCorrection.getValueVariablesReplacement(handOperandString);
             newHandOperator = factory.createCodeSnippetExpression(replacement);
         } else if (variable instanceof CtVariableRead || variable instanceof CtVariableWrite) {
