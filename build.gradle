@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.ruidtlima'
-version '1.0.3'
+version '1.1.0'
 
 sourceCompatibility = 1.8
 

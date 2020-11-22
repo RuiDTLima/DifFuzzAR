@@ -17,6 +17,7 @@ import spoon.support.reflect.code.CtIfImpl;
 import spoon.support.reflect.code.CtReturnImpl;
 import util.NamingConvention;
 import util.Setup;
+import java.io.File;
 import java.util.*;
 
 public class ModificationOfCode {
@@ -29,8 +30,8 @@ public class ModificationOfCode {
 
         logger.info("The vulnerable method {} belongs to the class {}.", methodName, className);
 
-        String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf("\\")) + "\\"; // The new class will add the necessary package
-        String pathToVulnerableMethod = pathToCorrectedClass + packageName + "\\" + className + ".java";
+        String pathToCorrectedClass = driverPath.substring(0, driverPath.lastIndexOf(File.separator)) + File.separator; // The new class will add the necessary package
+        String pathToVulnerableMethod = pathToCorrectedClass + packageName + File.separator + className + ".java";
 
         logger.info("The path to the vulnerable class is {}.", pathToVulnerableMethod);
 
@@ -48,7 +49,7 @@ public class ModificationOfCode {
 
             if (vulnerableMethod == null) {
                 CtTypeReference<?> superClass = vulnerableClass.getSuperclass();
-                String superclass = superClass.getQualifiedName().replace(".", "\\");
+                String superclass = superClass.getQualifiedName().replace(".", File.separator);
                 className = superClass.getSimpleName();
                 pathToVulnerableMethod = pathToCorrectedClass + superclass + ".java";
                 launcher.addInputResource(pathToVulnerableMethod);
