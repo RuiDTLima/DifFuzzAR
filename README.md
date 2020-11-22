@@ -9,7 +9,7 @@ Automatic Repair of Java Code with Timing Side-Channel Vulnerabilities
 ### Setup
 To run this tool it is first necessary to have used [DifFuzz](https://github.com/RuiDTLima/diffuzz) tool since this tool will take advantage of the Driver used in DifFuzz.
 To run in the terminal simply run the command **gradle shadowJar** to create a Jar with all the dependencies needed. Once that is done, travel to the location of the jar. It should be in the **build/libs** of the tool directory.
-Once in the correct location simply run the command **java -jar .\DifFuzzAR-1.0-SNAPSHOT.jar** indicating the location of the Driver to be used.
+Once in the correct location simply run the command **java -jar .\DifFuzzAR-1.0.3.jar** indicating the location of the Driver to be used.
 
 ### Tests
 The tool contains a set of tests that use the examples taken from DifFuzz to modifications the development process. To try it, simply run **gradle build**. Once the build process finishes a report of the tests is available in the directory **build\reports\tests\modifications\index.html**.  
