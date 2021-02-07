@@ -145,3 +145,11 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
  |blazer_sanity_safe                            |0            |0           |0                         |
  |blazer_sanity_unsafe                          |4248461576,60|4294966785  |66,60                     |
  |blazer_sanity_unsafe_corrected                |0            |0           |0                         | 
+
+
+
+
+
+
+ # Reports
+ Two reports for this project are available as pdf files in this repository at **94073-rui-lima_dissertacao.pdf** is a complete report explaining the development of the project and at **94073-rui-lima_resumo.pdf** is an article explaining the project.
