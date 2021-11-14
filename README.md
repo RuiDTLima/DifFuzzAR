@@ -152,4 +152,5 @@ The tool contains a set of tests that use the examples taken from DifFuzz to mod
 
 
  # Reports
- Two reports for this project are available as pdf files in this repository at **94073-rui-lima_dissertacao.pdf** is a complete report explaining the development of the project and at **94073-rui-lima_resumo.pdf** is an article explaining the project.
+ Two reports for this project are available as pdf files in this repository in the folder **reports** at **rui-lima_dissertation.pdf** is a complete report explaining the development of the project and at **rui-lima_paper.pdf** is an article explaining the project.
+ There is also an article, named **rui-lima-IWoR-article.pdf**, that was published on ASE 2021 and presented on the *Fifth International Workshop on Refactoring*.
